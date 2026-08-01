@@ -47,6 +47,7 @@ const DEFAULT_STATE = {
   gracePeriodDurationMin: 5,
   firstInterventionShown: false,
   secondInterventionShown: false,
+  lastInterventionMessage: null,
   distractionSite: null,
   awaySince: null,
   intervenedLevel: 0,
@@ -560,6 +561,7 @@ async function triggerLevel1() {
   state.intervenedLevel = 1;
   state.distractionState = "first";
   state.firstInterventionShown = true;
+  state.lastInterventionMessage = message;
   await saveState();
   console.log("[TRIGGER LEVEL 1] State saved, posting intervention...");
   await post("/api/interventions", { level: 1, message, context_id: state.contextId });
@@ -579,6 +581,7 @@ async function triggerLevel2() {
   state.intervenedLevel = 2;
   state.distractionState = "second";
   state.secondInterventionShown = true;
+  state.lastInterventionMessage = message;
   await saveState();
   console.log("[TRIGGER LEVEL 2] State saved, posting intervention...");
   await post("/api/interventions", { level: 2, message, context_id: state.contextId });

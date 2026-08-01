@@ -136,10 +136,12 @@ function renderContextCard(active, st) {
       els.contextStatePill.textContent = st.distractionState === "first" ? "First intervention" : "Second intervention";
       els.contextStatePill.className = "state-pill drift";
       const title = st.contextTitle || "your focus";
+      // Show the real (possibly AI-generated) message, mock text only as fallback.
       els.contextMeta.textContent =
-        st.distractionState === "first"
+        st.lastInterventionMessage ||
+        (st.distractionState === "first"
           ? `You've been away from ${title}.`
-          : `${title} is crying in the corner 😭`;
+          : `${title} is crying in the corner 😭`);
       els.contextActions.hidden = false;
       els.backToWorkLabel.textContent = "Back to work";
       const isFirst = st.distractionState === "first";
