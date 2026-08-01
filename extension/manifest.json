@@ -20,7 +20,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["blocked.html"],
+      "resources": ["blocked.html", "intervention.html"],
       "matches": ["<all_urls>"]
     }
   ],

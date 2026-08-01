@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, TextInput, View } from 'react-native';
+import { AppState, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Notifications from 'expo-notifications';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -31,6 +33,15 @@ const TOOLS: { key: Tool; label: string; icon: React.ComponentProps<typeof Icon>
 ];
 
 const MOODS = ['😴', '😐', '🙂', '😄', '🔥'];
+const TIMER_STORAGE_PREFIX = 'focusguard:countdown:';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 function fmt(seconds: number) {
   const m = Math.floor(seconds / 60);
@@ -38,42 +49,179 @@ function fmt(seconds: number) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function useCountdown(initialSeconds: number) {
+function useCountdown(initialSeconds: number, storageKey: string) {
   const [remaining, setRemaining] = useState(initialSeconds);
   const [running, setRunning] = useState(false);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const endAtRef = useRef<number | null>(null);
+  const notificationIdRef = useRef<string | null>(null);
 
-  const stop = useCallback(() => {
-    if (timer.current) clearInterval(timer.current);
-    setRunning(false);
+  const clearPersistedState = useCallback(async () => {
+    try {
+      await AsyncStorage.removeItem(`${TIMER_STORAGE_PREFIX}${storageKey}`);
+    } catch {
+      // ignore persistence errors
+    }
+  }, [storageKey]);
+
+  const clearScheduledNotification = useCallback(async () => {
+    if (Platform.OS === 'web' || !notificationIdRef.current) return;
+    try {
+      await Notifications.cancelScheduledNotificationAsync(notificationIdRef.current);
+      notificationIdRef.current = null;
+    } catch {
+      // ignore notification errors
+    }
   }, []);
 
-  const start = useCallback(() => {
-    stop();
+  const persistState = useCallback(
+    async (nextRemaining: number, nextRunning: boolean, nextEndAt: number | null) => {
+      if (!storageKey) return;
+      try {
+        await AsyncStorage.setItem(
+          `${TIMER_STORAGE_PREFIX}${storageKey}`,
+          JSON.stringify({ remaining: nextRemaining, running: nextRunning, endAt: nextEndAt }),
+        );
+      } catch {
+        // ignore persistence errors
+      }
+    },
+    [storageKey],
+  );
+
+  const finish = useCallback(async () => {
+    endAtRef.current = null;
+    setRunning(false);
+    setRemaining(0);
+    await clearScheduledNotification();
+    await clearPersistedState();
+  }, [clearPersistedState, clearScheduledNotification]);
+
+  const stop = useCallback(async () => {
+    if (timer.current) {
+      clearInterval(timer.current);
+      timer.current = null;
+    }
+    endAtRef.current = null;
+    setRunning(false);
+    await clearScheduledNotification();
+    await persistState(remaining, false, null);
+  }, [clearScheduledNotification, persistState, remaining]);
+
+  const start = useCallback(async () => {
+    if (timer.current) {
+      clearInterval(timer.current);
+      timer.current = null;
+    }
+    if (remaining <= 0) {
+      setRemaining(initialSeconds);
+    }
+    const secondsToRun = Math.max(1, remaining > 0 ? remaining : initialSeconds);
+    const nextEndAt = Date.now() + secondsToRun * 1000;
+    endAtRef.current = nextEndAt;
+    setRemaining(secondsToRun);
     setRunning(true);
-  }, [stop]);
+    await persistState(secondsToRun, true, nextEndAt);
+    if (Platform.OS !== 'web') {
+      try {
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status === 'granted') {
+          await clearScheduledNotification();
+          notificationIdRef.current = await Notifications.scheduleNotificationAsync({
+            content: {
+              title: 'Focus timer complete',
+              body: 'Your session is done. Take a breath or start the next one.',
+            },
+            trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: new Date(nextEndAt) },
+          });
+        }
+      } catch {
+        // ignore notification errors
+      }
+    }
+  }, [clearScheduledNotification, initialSeconds, persistState, remaining]);
 
   const reset = useCallback(
-    (seconds: number) => {
-      stop();
+    async (seconds: number) => {
+      if (timer.current) {
+        clearInterval(timer.current);
+        timer.current = null;
+      }
+      endAtRef.current = null;
       setRemaining(seconds);
+      setRunning(false);
+      await clearScheduledNotification();
+      await clearPersistedState();
     },
-    [stop],
+    [clearPersistedState, clearScheduledNotification],
   );
 
   useEffect(() => {
-    if (!running) return;
-    timer.current = setInterval(() => {
-      setRemaining((r) => {
-        if (r <= 1) {
-          stop();
-          return 0;
+    const hydrate = async () => {
+      try {
+        const raw = await AsyncStorage.getItem(`${TIMER_STORAGE_PREFIX}${storageKey}`);
+        if (!raw) return;
+        const parsed = JSON.parse(raw) as { remaining?: number; running?: boolean; endAt?: number | null };
+        if (!parsed || typeof parsed !== 'object') return;
+        if (parsed.running && parsed.endAt && parsed.endAt > Date.now()) {
+          const nextRemaining = Math.max(0, Math.ceil((parsed.endAt - Date.now()) / 1000));
+          endAtRef.current = parsed.endAt;
+          setRemaining(nextRemaining);
+          setRunning(true);
+          await persistState(nextRemaining, true, parsed.endAt);
+        } else {
+          endAtRef.current = null;
+          setRemaining(parsed.remaining ?? initialSeconds);
+          setRunning(false);
+          await clearPersistedState();
         }
-        return r - 1;
-      });
+      } catch {
+        // ignore persistence errors
+      }
+    };
+
+    hydrate();
+  }, [clearPersistedState, initialSeconds, persistState, storageKey]);
+
+  useEffect(() => {
+    const appStateListener = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') return;
+      if (!endAtRef.current) return;
+      const nextRemaining = Math.max(0, Math.ceil((endAtRef.current - Date.now()) / 1000));
+      setRemaining(nextRemaining);
+      if (nextRemaining <= 0) {
+        void finish();
+      }
+    });
+
+    return () => appStateListener.remove();
+  }, [finish]);
+
+  useEffect(() => {
+    if (!running) return;
+    const tick = async () => {
+      if (!endAtRef.current) return;
+      const nextRemaining = Math.max(0, Math.ceil((endAtRef.current - Date.now()) / 1000));
+      setRemaining(nextRemaining);
+      if (nextRemaining <= 0) {
+        await finish();
+        return;
+      }
+      await persistState(nextRemaining, true, endAtRef.current);
+    };
+
+    void tick();
+    timer.current = setInterval(() => {
+      void tick();
     }, 1000);
-    return stop;
-  }, [running, stop]);
+
+    return () => {
+      if (timer.current) {
+        clearInterval(timer.current);
+        timer.current = null;
+      }
+    };
+  }, [finish, persistState, running]);
 
   return { remaining, running, start, stop, reset, setRemaining };
 }
@@ -104,13 +252,13 @@ export default function SupportScreen() {
   // Pomodoro
   const [focusMin, setFocusMin] = useState(25);
   const [breakMin, setBreakMin] = useState(5);
-  const timer = useCountdown(focusMin * 60);
+  const timer = useCountdown(focusMin * 60, 'focus');
   const [onBreak, setOnBreak] = useState(false);
 
   // Meditation
   const [medMin, setMedMin] = useState(5);
   const [ambient, setAmbient] = useState('Lo-fi');
-  const med = useCountdown(medMin * 60);
+  const med = useCountdown(medMin * 60, 'meditation');
 
   // Mood
   const [mood, setMood] = useState('');
@@ -137,28 +285,28 @@ export default function SupportScreen() {
     }, []),
   );
 
-  const pickFocus = (min: number) => {
+const pickFocus = async (min: number) => {
     setFocusMin(min);
-    timer.reset(min * 60);
+    await timer.reset(min * 60);
     setOnBreak(false);
   };
 
-  const handleStartTimer = () => {
+  const handleStartTimer = async () => {
     if (timer.remaining === 0 || onBreak) {
-      timer.reset((onBreak ? breakMin : focusMin) * 60);
+      await timer.reset((onBreak ? breakMin : focusMin) * 60);
       setOnBreak(false);
     }
-    timer.start();
+    await timer.start();
   };
 
-  const pickMeditate = (min: number) => {
+  const pickMeditate = async (min: number) => {
     setMedMin(min);
-    med.reset(min * 60);
+    await med.reset(min * 60);
   };
 
-  const handleStartMeditation = () => {
-    if (med.remaining === 0) med.reset(medMin * 60);
-    med.start();
+  const handleStartMeditation = async () => {
+    if (med.remaining === 0) await med.reset(medMin * 60);
+    await med.start();
   };
 
   const logMood = async () => {
@@ -248,7 +396,7 @@ export default function SupportScreen() {
                   {timer.running ? 'Pause' : 'Start'}
                 </AppText>
               </Pressable>
-              <Pressable onPress={() => timer.reset((onBreak ? breakMin : focusMin) * 60)} className="px-lg py-sm rounded-full border border-outline-variant active:opacity-85">
+              <Pressable onPress={() => void timer.reset((onBreak ? breakMin : focusMin) * 60)} className="px-lg py-sm rounded-full border border-outline-variant active:opacity-85">
                 <AppText variant="labelLg">Reset</AppText>
               </Pressable>
             </View>
@@ -290,7 +438,7 @@ export default function SupportScreen() {
                   {med.running ? 'Pause' : 'Begin'}
                 </AppText>
               </Pressable>
-              <Pressable onPress={() => med.reset(medMin * 60)} className="px-lg py-sm rounded-full border border-outline-variant active:opacity-85">
+              <Pressable onPress={() => void med.reset(medMin * 60)} className="px-lg py-sm rounded-full border border-outline-variant active:opacity-85">
                 <AppText variant="labelLg">Reset</AppText>
               </Pressable>
             </View>

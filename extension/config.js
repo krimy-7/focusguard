@@ -11,7 +11,7 @@ const FOCUSGUARD_CONFIG = {
   // A tab stay of at least this long counts as a focus session.
   MIN_SESSION_SECONDS: 300,
   // Watchdog grace period before the first intervention (minutes).
-  GRACE_MINUTES: 5,
+  GRACE_MINUTES: 10/60,
   // Delay before the second (playful) intervention if the first is ignored.
-  SECOND_MINUTES: 5,
+  SECOND_MINUTES: 10/60,
 };

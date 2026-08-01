@@ -71,11 +71,64 @@ async function saveState() {
 }
 
 function hostnameOf(url) {
+  if (!url) return null;
   try {
     return new URL(url).hostname || null;
   } catch {
-    return null;
+    return (url || "")
+      .trim()
+      .toLowerCase()
+      .replace(/^https?:\/\//, "")
+      .replace(/^www\./, "")
+      .split(/[/?#]/)[0] || null;
   }
+}
+
+function normalizeDomain(value) {
+  const host = hostnameOf(value);
+  return host ? host.replace(/^www\./, "") : null;
+}
+
+function domainTopic(value) {
+  const host = normalizeDomain(value || "");
+  if (!host) return null;
+  if (/researchgate|scholar|semanticscholar|arxiv|pubmed|sciencedirect|jstor/.test(host)) return "research";
+  if (/github|gitlab|bitbucket|stackoverflow|stackexchange|codesandbox|replit|vscode|react\.dev|expo\.dev|developer\.|mdn|nodejs|npmjs|python\.org/.test(host)) return "code";
+  if (/figma|dribbble|behance|canva|framer|photoshop|adobe|fonts\.google/.test(host)) return "design";
+  if (/youtube|coursera|udemy|khanacademy|duolingo|medium|dev\.to|wikipedia/.test(host)) return "learning";
+  if (/trello|linear|asana|jira|todoist|slack|teams|discord|mail\.google|outlook|proton|calendar|linkedin|upwork|fiverr/.test(host)) return "work";
+  if (/reddit|news\.google|cnn|bbc|nytimes|netflix|hulu|primevideo|amazon|flipkart|myntra|ebay|spotify|soundcloud|instagram|facebook|twitter|x\.com|tiktok|pinterest/.test(host)) return "personal";
+  return null;
+}
+
+function fallbackProposal(domain, title) {
+  const topic = domainTopic(domain) || domainTopic(title) || "work";
+  const titleMap = {
+    research: "Research",
+    code: "Programming",
+    design: "Design work",
+    learning: "Learning",
+    work: "Work",
+    personal: "Personal browsing",
+  };
+  const modeMap = {
+    research: "learning",
+    code: "work",
+    design: "work",
+    learning: "learning",
+    work: "work",
+    personal: "personal",
+  };
+  const proposedTitle = titleMap[topic] || "Active session";
+  return {
+    proposed_title: proposedTitle,
+    mode: modeMap[topic] || "work",
+    confidence: 0.62,
+    reason: `Based on the current site and recent browsing.`,
+    existing_context_id: null,
+    suggest_switch: false,
+    switch_reason: "",
+  };
 }
 
 async function api(path, init) {
@@ -143,12 +196,17 @@ async function maybeDetectContext(domain) {
   );
   if (recentIgnores.length) return;
 
-  const detected = await post("/api/contexts/detect", {
-    signals: { domain, title: state.activeTitle || "" },
-    recent_domains: state.recentDomains || [],
-  });
-  if (!detected || !detected.proposed_title) return;
-  if (detected.mode === "personal") return; // don't auto-propose personal browsing
+  let detected = null;
+  try {
+    detected = await post("/api/contexts/detect", {
+      signals: { domain, title: state.activeTitle || "" },
+      recent_domains: state.recentDomains || [],
+    });
+  } catch {}
+
+  const proposal = detected && detected.proposed_title ? detected : fallbackProposal(domain, state.activeTitle || "");
+  if (!proposal || !proposal.proposed_title) return;
+  if (proposal.mode === "personal") return; // don't auto-propose personal browsing
 
   // Re-surface an existing pending proposal for this domain.
   const pending = state.lastProposal;
@@ -159,10 +217,10 @@ async function maybeDetectContext(domain) {
 
   state.lastProposal = {
     domain,
-    title: detected.proposed_title,
-    proposed_title: detected.proposed_title,
-    mode: detected.mode,
-    confidence: detected.confidence,
+    title: proposal.proposed_title,
+    proposed_title: proposal.proposed_title,
+    mode: proposal.mode,
+    confidence: proposal.confidence || 0.62,
     ts: Date.now(),
   };
   await saveState();
@@ -172,27 +230,32 @@ async function maybeDetectContext(domain) {
 // ACTIVITY CLASSIFICATION: runs when an active context exists and the current
 // tab is NOT part of it. Decides RELATED vs DISTRACTION vs NEW-WORK-AREA.
 async function classifyActivity(domain) {
-  const detected = await post("/api/contexts/detect", {
-    signals: { domain, title: state.activeTitle || "" },
-    recent_domains: state.recentDomains || [],
-  });
-  if (!detected || !detected.proposed_title) return;
+  let detected = null;
+  try {
+    detected = await post("/api/contexts/detect", {
+      signals: { domain, title: state.activeTitle || "" },
+      recent_domains: state.recentDomains || [],
+    });
+  } catch {}
+  const proposal = detected && detected.proposed_title ? detected : fallbackProposal(domain, state.activeTitle || "");
+  if (!proposal || !proposal.proposed_title) return;
+
+  const currentTopic = domainTopic(domain);
+  const activeTopics = (state.contextDomains || []).map(domainTopic).filter(Boolean);
+  const sameTopic = Boolean(currentTopic && activeTopics.includes(currentTopic));
 
   // RELATED — same topic as the active context (e.g. Scholar while "Research"
   // is active): group the tab under the active context, no proposal, no grace.
-  // An exact match to the active context is always related. Otherwise the
-  // engine's "same topic" signal must also carry decent confidence, because
-  // weak/unknown sites (label-less domains) also report suggest_switch=false.
-  if (detected.existing_context_id === state.contextId) {
+  if (detected?.existing_context_id === state.contextId || proposal.existing_context_id === state.contextId || sameTopic) {
     await groupActiveContext(domain);
     return;
   }
-  if (detected.suggest_switch === false && detected.confidence >= 0.55) {
+  if (detected?.suggest_switch === false && detected?.confidence >= 0.55) {
     await groupActiveContext(domain);
     return;
   }
 
-  const mode = detected.mode;
+  const mode = proposal.mode;
 
   // LEARNING mode is ambiguous — evaluate it against the active context. A
   // YouTube/Coursera tutorial is plausibly legitimate when the active context
@@ -252,21 +315,30 @@ async function groupActiveContext(domain) {
 
 // POSSIBLE DISTRACTION: unrelated activity. Never creates a context and never
 // asks for confirmation. Starts the grace period (once per drift episode).
-function startDistraction(domain) {
+async function startDistraction(domain) {
   state.currentActivity = { domain, title: state.activeTitle || domain };
   state.activityRelation = "distraction";
   state.distractionState = "grace";
   state.distractionSite = domain;
-  if (!state.awaySince) {
+  if (!state.awaySince || state.awaySince <= 0) {
     state.awaySince = Date.now();
-    state.gracePeriodStartedAt = state.awaySince;
+    state.gracePeriodStartedAt = Date.now();
     state.gracePeriodDurationMin = GRACE_MIN;
     state.firstInterventionShown = false;
     state.secondInterventionShown = false;
     state.intervenedLevel = 0;
-    chrome.alarms.create("focusguard.grace", { delayInMinutes: GRACE_MIN });
+    
+    const graceDurationMs = GRACE_MIN * 60 * 1000;
+    console.log(`[DISTRACTION] Starting grace period of ${GRACE_MIN} minutes (${graceDurationMs}ms) for ${domain}`);
+    
+    // Chrome alarms have a 1-minute minimum. Always use alarms for reliability.
+    // For grace < 60s, set to 1 minute but the alarm handler will check actual elapsed time.
+    const delayMin = Math.max(1, GRACE_MIN);
+    chrome.alarms.create("focusguard.grace", { delayInMinutes: delayMin });
+    
+    await saveState();
+    console.log(`[DISTRACTION] Grace alarm created (${delayMin}min) and state saved`);
   }
-  saveState();
 }
 
 // LEGITIMATE NEW WORK AREA: propose a new context (the only case that asks the
@@ -331,6 +403,9 @@ async function confirmContext(proposal, customTitle) {
   state.lastProposal = null;
   state.activityRelation = "active";
   state.currentActivity = { domain: state.activeDomain, title: state.activeTitle || state.activeDomain };
+  state.distractionState = "none";
+  state.awaySince = null;
+  state.gracePeriodStartedAt = null;
   await saveState();
   // New active context — no drift, no pending interventions.
   resetWatchdog();
@@ -339,8 +414,18 @@ async function confirmContext(proposal, customTitle) {
 // ---- Watchdog ------------------------------------------------------------
 
 function isContextDomain(domain) {
-  if (!domain || !state.contextDomains.length) return false;
-  return state.contextDomains.some((d) => domain === d || domain.endsWith("." + d) || d.endsWith("." + domain));
+  if (!domain) return false;
+  const currentTopic = domainTopic(domain);
+  if (!state.contextDomains.length) return false;
+  return state.contextDomains.some((d) => {
+    const activeTopic = domainTopic(d);
+    return (
+      domain === d ||
+      domain.endsWith("." + d) ||
+      d.endsWith("." + domain) ||
+      (currentTopic && activeTopic && currentTopic === activeTopic)
+    );
+  });
 }
 
 function isBlocked(domain) {
@@ -421,9 +506,15 @@ async function triggerLevel1() {
   state.intervenedLevel = 1;
   state.distractionState = "first";
   state.firstInterventionShown = true;
-  post("/api/interventions", { level: 1, message, context_id: state.contextId });
-  chrome.alarms.create("focusguard.second", { delayInMinutes: SECOND_MIN });
-  saveState();
+  await saveState();
+  console.log("[TRIGGER LEVEL 1] State saved, posting intervention...");
+  await post("/api/interventions", { level: 1, message, context_id: state.contextId });
+  console.log("[TRIGGER LEVEL 1] Intervention posted, scheduling Level 2...");
+  
+  // Chrome alarms have a 1-minute minimum. Always use alarms for reliability.
+  const delayMin = Math.max(1, SECOND_MIN);
+  chrome.alarms.create("focusguard.second", { delayInMinutes: delayMin });
+  
   await notify(1, message);
 }
 
@@ -433,23 +524,38 @@ async function triggerLevel2() {
   state.intervenedLevel = 2;
   state.distractionState = "second";
   state.secondInterventionShown = true;
-  post("/api/interventions", { level: 2, message, context_id: state.contextId });
-  saveState();
+  await saveState();
+  console.log("[TRIGGER LEVEL 2] State saved, posting intervention...");
+  await post("/api/interventions", { level: 2, message, context_id: state.contextId });
+  console.log("[TRIGGER LEVEL 2] Intervention posted, creating notification...");
   await notify(2, message);
 }
 
 function notify(level, message) {
-  const buttons =
-    level === 1
-      ? [{ title: "Back to work" }, { title: "See progress" }, { title: "Extend 5 min" }]
-      : [{ title: "Back to work" }, { title: "Take a break" }, { title: "Extend 5 min" }];
-  return chrome.notifications.create(`focusguard-${level}`, {
-    type: "basic",
-    iconUrl: "icons/icon128.png",
-    title: level === 1 ? "Possible distraction" : "Still distracted?",
-    message,
-    buttons,
-    priority: 1,
+  const context = state.contextTitle || 'your focus';
+  const url = chrome.runtime.getURL('intervention.html') + 
+    `?level=${level}&message=${encodeURIComponent(message)}&context=${encodeURIComponent(context)}`;
+  
+  console.log(`[NOTIFICATION] Opening intervention popup (Level ${level})`);
+  
+  chrome.windows.create({
+    url: url,
+    type: 'popup',
+    width: 540,
+    height: 680,
+    left: 100,
+    top: 100,
+    focused: true,
+  }).then((window) => {
+    console.log(`[NOTIFICATION] Intervention window created:`, window.id);
+    // Close the popup after 30 seconds if user doesn't interact
+    setTimeout(() => {
+      if (window && window.id) {
+        chrome.windows.remove(window.id).catch(() => {});
+      }
+    }, 30000);
+  }).catch((err) => {
+    console.error(`[NOTIFICATION ERROR] Failed to create intervention window:`, err);
   });
 }
 
@@ -493,10 +599,48 @@ async function extendTimer() {
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   await loadState();
+  console.log(`[ALARM] ${alarm.name}`, { distractionState: state.distractionState, awaySince: state.awaySince, intervenedLevel: state.intervenedLevel });
+  
   if (alarm.name === "focusguard.grace") {
-    if (state.awaySince) await triggerLevel1();
+    // Check if distraction is still active AND enough actual time has passed
+    if (state.awaySince && state.awaySince > 0 && state.distractionState === "grace") {
+      const elapsedMs = Date.now() - (state.gracePeriodStartedAt || state.awaySince);
+      const expectedMs = (state.gracePeriodDurationMin || 5) * 60 * 1000;
+      
+      console.log(`[GRACE ALARM] Elapsed: ${elapsedMs}ms, Expected: ${expectedMs}ms`);
+      
+      // Only trigger if actual grace period has elapsed
+      // (Chrome enforces 1-minute minimum, so this handles grace < 60s)
+      if (elapsedMs >= expectedMs) {
+        console.log("[GRACE ALARM] Triggering Level 1 intervention");
+        await triggerLevel1();
+      } else {
+        console.log(`[GRACE ALARM] Too early, rescheduling (need ${expectedMs - elapsedMs}ms more)`);
+        // Reschedule for 1 minute later (alarm minimum), and check again
+        chrome.alarms.create("focusguard.grace", { delayInMinutes: 1 });
+      }
+    } else {
+      console.log("[GRACE ALARM] State check failed, skipping Level 1", { awaySince: state.awaySince, distractionState: state.distractionState });
+    }
   } else if (alarm.name === "focusguard.second") {
-    if (state.awaySince && state.intervenedLevel === 1) await triggerLevel2();
+    // Check if Level 2 is due and enough time has passed
+    if (state.awaySince && state.intervenedLevel === 1 && state.distractionState === "first") {
+      const firstTriggeredAt = (state.gracePeriodStartedAt || state.awaySince) + (state.gracePeriodDurationMin || 5) * 60 * 1000;
+      const elapsedSinceFirst = Date.now() - firstTriggeredAt;
+      const expectedMs = (state.gracePeriodDurationMin || 5) * 60 * 1000; // Grace duration again before Level 2
+      
+      console.log(`[SECOND ALARM] Elapsed since Level 1: ${elapsedSinceFirst}ms, Expected: ${expectedMs}ms`);
+      
+      if (elapsedSinceFirst >= expectedMs) {
+        console.log("[SECOND ALARM] Triggering Level 2 intervention");
+        await triggerLevel2();
+      } else {
+        console.log(`[SECOND ALARM] Too early, rescheduling`);
+        chrome.alarms.create("focusguard.second", { delayInMinutes: 1 });
+      }
+    } else {
+      console.log("[SECOND ALARM] State check failed, skipping Level 2", { awaySince: state.awaySince, intervenedLevel: state.intervenedLevel, distractionState: state.distractionState });
+    }
   } else if (alarm.name === "focusguard.sync") {
     await syncBackend();
   }
@@ -728,6 +872,35 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     return true;
   }
   if (msg && msg.type === "EXTEND_TIMER") {
+    loadState().then(async () => {
+      extendTimer();
+      sendResponse({ ok: true });
+    });
+    return true;
+  }
+  // Handlers for intervention popup actions (using 'action' field instead of 'type')
+  if (msg && msg.action === "BACK_TO_WORK") {
+    loadState().then(async () => {
+      await backToWork();
+      sendResponse({ ok: true });
+    });
+    return true;
+  }
+  if (msg && msg.action === "SEE_PROGRESS") {
+    loadState().then(async () => {
+      await seeProgress();
+      sendResponse({ ok: true });
+    });
+    return true;
+  }
+  if (msg && msg.action === "TAKE_BREAK") {
+    loadState().then(async () => {
+      await takeBreak();
+      sendResponse({ ok: true });
+    });
+    return true;
+  }
+  if (msg && msg.action === "EXTEND_TIMER") {
     loadState().then(async () => {
       extendTimer();
       sendResponse({ ok: true });

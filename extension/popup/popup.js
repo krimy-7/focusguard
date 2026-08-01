@@ -42,6 +42,10 @@ const FOCUS_GOAL_SECONDS = 25 * 60;
 let focusSeconds = 0;
 let paused = false;
 let ticker = null;
+let lastPolledState = null;
+let pollingInterval = null;
+let contextCacheTime = 0;
+let contextCache = null;
 
 function fmt(seconds) {
   const s = Math.max(0, Math.floor(seconds));
@@ -158,16 +162,12 @@ function renderContextCard(active, st) {
       // Grace countdown ticker.
       const start = st.gracePeriodStartedAt || st.awaySince;
       const durMs = (st.gracePeriodDurationMin || 5) * 60 * 1000;
-      if (start) {
+      if (start && typeof start === 'number' && start > 0) {
         const remaining = Math.max(0, start + durMs - Date.now());
-        els.contextMeta.textContent = `${site ? `You're on ${site}` : "You left your focus"} · grace: ${fmt(Math.round(remaining / 1000))}`;
-        if (remaining > 0 && !window.__graceTicker) {
-          window.__graceTicker = setInterval(() => {
-            const rem = Math.max(0, start + durMs - Date.now());
-            els.contextMeta.textContent = `${site ? `You're on ${site}` : "You left your focus"} · grace: ${fmt(Math.round(rem / 1000))}`;
-            if (rem <= 0) clearInterval(window.__graceTicker);
-          }, 1000);
-        }
+        const siteStr = site ? `You're on ${site}` : "You left your focus";
+        els.contextMeta.textContent = `${siteStr} · grace: ${fmt(Math.round(remaining / 1000))}`;
+      } else {
+        els.contextMeta.textContent = site ? `You're on ${site}` : "You left your focus";
       }
     }
     if (mode) els.contextMeta.textContent += ` · ${mode}`;
@@ -207,7 +207,7 @@ async function loadFromBackend() {
     if (stats.current_focus) {
       els.currentFocus.textContent = stats.current_focus;
     } else {
-      els.currentFocus.textContent = "No active focus";
+      els.currentFocus.textContent = "No active context";
     }
     startTicker();
 
@@ -242,10 +242,12 @@ async function loadLocalFallback() {
     if (res) {
       focusSeconds = res.focusSecondsToday || 0;
       els.interrupts.textContent = res.interruptCountToday || 0;
-      if (res.activeDomain) {
+      if (res.contextTitle) {
+        els.currentFocus.textContent = res.contextTitle;
+      } else if (res.activeDomain) {
         els.currentFocus.textContent = res.activeTitle || res.activeDomain;
       } else {
-        els.currentFocus.textContent = "No active focus";
+        els.currentFocus.textContent = "No active context";
       }
       const active = res.contextTitle
         ? { title: res.contextTitle, mode: res.contextMode || "", activities: (res.contextDomains || []).map((d) => ({ kind: "tab", domain: d })) }
@@ -256,9 +258,40 @@ async function loadLocalFallback() {
       }
     }
   } catch {
-    els.currentFocus.textContent = "No active focus";
+    els.currentFocus.textContent = "No active context";
   }
   startTicker();
+}
+
+async function pollBackgroundState() {
+  try {
+    const st = await chrome.runtime.sendMessage({ type: "GET_STATE" }).catch(() => null);
+    if (!st) return;
+    
+    // Detect if state has changed (avoid unnecessary renders)
+    const currentJson = JSON.stringify(st);
+    if (currentJson === lastPolledState) return;
+    lastPolledState = currentJson;
+    
+    // Update focus time and interrupts
+    focusSeconds = st.focusSecondsToday || 0;
+    els.interrupts.textContent = st.interruptCountToday || 0;
+    render();
+    
+    // Refresh context from backend every 5 seconds
+    if (Date.now() - contextCacheTime > 5000) {
+      try {
+        const ctxRes = await fetch(`${CONFIG.BASE_URL}/api/contexts`, { signal: AbortSignal.timeout(3000) });
+        if (ctxRes.ok) {
+          contextCache = await ctxRes.json();
+          contextCacheTime = Date.now();
+        }
+      } catch {}
+    }
+    
+    const active = contextCache ? (Array.isArray(contextCache) ? contextCache : []).find((c) => c.active) || null : null;
+    renderContextCard(active, st);
+  } catch {}
 }
 
 (async function init() {
@@ -328,4 +361,7 @@ async function loadLocalFallback() {
     els.currentFocus.textContent = "Backend offline — local mode";
     await loadLocalFallback();
   }
+  
+  // Start polling background state every 500ms to stay synced with real-time changes
+  pollingInterval = setInterval(pollBackgroundState, 500);
 })();

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FocusGuard Intervention</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 100%;
+      padding: 40px;
+      text-align: center;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .emoji {
+      font-size: 60px;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    h1 {
+      font-size: 24px;
+      color: #333;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .level-badge {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .level-badge.level-1 {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .level-badge.level-2 {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .message {
+      font-size: 16px;
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: capitalize;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #5568d3 0%, #6a3e8e 100%);
+    }
+
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
+    .context-info {
+      background: #f8f9fa;
+      padding: 16px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .timer {
+      font-size: 32px;
+      font-weight: 700;
+      color: #667eea;
+      margin: 20px 0;
+      font-family: 'Monaco', 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <span class="emoji" id="emoji"></span>
+    <div class="level-badge" id="badge"></div>
+    <h1 id="title"></h1>
+    <p class="subtitle" id="subtitle"></p>
+    <div class="context-info" id="context-info"></div>
+    <p class="message" id="message"></p>
+    <div class="timer" id="timer" style="display:none;"></div>
+    <div class="actions" id="actions"></div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const level = parseInt(params.get('level')) || 1;
+    const message = params.get('message') || 'Stay focused!';
+    const context = params.get('context') || 'your focus';
+
+    // Set content based on level
+    if (level === 1) {
+      document.getElementById('emoji').textContent = '⚠️';
+      document.getElementById('badge').textContent = 'Level 1 - Gentle Reminder';
+      document.getElementById('badge').className = 'level-badge level-1';
+      document.getElementById('title').textContent = 'Possible Distraction';
+      document.getElementById('subtitle').textContent = 'You\'ve drifted from your focus';
+    } else {
+      document.getElementById('emoji').textContent = '😭';
+      document.getElementById('badge').textContent = 'Level 2 - Playful Warning';
+      document.getElementById('badge').className = 'level-badge level-2';
+      document.getElementById('title').textContent = 'Still Distracted?';
+      document.getElementById('subtitle').textContent = `${context} is missing you`;
+    }
+
+    document.getElementById('context-info').textContent = `Active context: ${context}`;
+    document.getElementById('message').textContent = message;
+
+    // Action buttons
+    const actionsDiv = document.getElementById('actions');
+    
+    const backBtn = document.createElement('button');
+    backBtn.className = 'btn-primary';
+    backBtn.textContent = '← Back to work';
+    backBtn.onclick = () => {
+      chrome.runtime.sendMessage({ action: 'BACK_TO_WORK' });
+      window.close();
+    };
+    actionsDiv.appendChild(backBtn);
+
+    if (level === 1) {
+      const progressBtn = document.createElement('button');
+      progressBtn.className = 'btn-secondary';
+      progressBtn.textContent = '📊 See progress';
+      progressBtn.onclick = () => {
+        chrome.runtime.sendMessage({ action: 'SEE_PROGRESS' });
+        window.close();
+      };
+      actionsDiv.appendChild(progressBtn);
+
+      const extendBtn = document.createElement('button');
+      extendBtn.className = 'btn-secondary';
+      extendBtn.textContent = '⏱️ Extend 5 min';
+      extendBtn.onclick = () => {
+        chrome.runtime.sendMessage({ action: 'EXTEND_TIMER' });
+        window.close();
+      };
+      actionsDiv.appendChild(extendBtn);
+    } else {
+      const breakBtn = document.createElement('button');
+      breakBtn.className = 'btn-secondary';
+      breakBtn.textContent = '☕ Take a break';
+      breakBtn.onclick = () => {
+        chrome.runtime.sendMessage({ action: 'TAKE_BREAK' });
+        window.close();
+      };
+      actionsDiv.appendChild(breakBtn);
+
+      const extendBtn = document.createElement('button');
+      extendBtn.className = 'btn-secondary';
+      extendBtn.textContent = '⏱️ Extend 5 min';
+      extendBtn.onclick = () => {
+        chrome.runtime.sendMessage({ action: 'EXTEND_TIMER' });
+        window.close();
+      };
+      actionsDiv.appendChild(extendBtn);
+    }
+
+    // Auto-close after 30 seconds
+    setTimeout(() => {
+      if (window.location.href.includes('intervention.html')) {
+        window.close();
+      }
+    }, 30000);
+
+    // Listen for close command from background
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (msg.action === 'CLOSE_INTERVENTION') {
+        window.close();
+      }
+    });
+  </script>
+</body>
+</html>
