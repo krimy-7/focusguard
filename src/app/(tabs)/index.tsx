@@ -17,8 +17,9 @@ import { EmptyState } from '@/components/empty-state';
 import { Icon } from '@/components/icon';
 import { MascotAvatar } from '@/components/mascot';
 import { ModePill } from '@/components/mode-pill';
+import { useDashboardLayout } from '@/hooks/use-dashboard-layout';
 import { api, type BreakState, type FocusContext, type Goal, type Insight, type Intervention, type Stats } from '@/lib/api';
-import { Palette, ScreenContent } from '@/theme';
+import { Palette } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
 function greeting(): string {
@@ -54,7 +55,7 @@ function GoalRow({
   editable?: boolean;
 }) {
   const done = goal.status === 'done';
-  const [editing, setEditing] = useState(false);
+  const [, setEditing] = useState(false);
 
   return (
     <View
@@ -63,8 +64,8 @@ function GoalRow({
         done && 'opacity-55',
       )}>
       <Pressable onPress={onToggle} hitSlop={8} className="w-8 h-8 rounded-full border-2 items-center justify-center active:scale-90"
-        style={{ borderColor: done ? Palette.secondary : Palette.outline, backgroundColor: done ? Palette.secondary : 'transparent' }}>
-        {done && <Icon name="check" size={16} color={Palette.onSecondary} />}
+        style={{ borderColor: done ? Palette.primary : Palette.outline, backgroundColor: done ? Palette.primary : 'transparent' }}>
+        {done && <Icon name="check" size={16} color={Palette.onPrimary} />}
       </Pressable>
 
       {editable && onChange ? (
@@ -92,8 +93,18 @@ function GoalRow({
   );
 }
 
+function DashboardMetric({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <View className={cn('flex-1 min-w-[92px] rounded-[18px] px-md py-sm gap-[2px]', accent ? 'bg-primary' : 'bg-surface-container-lowest border border-outline-variant/70')}>
+      <AppText variant="labelLg" color={accent ? 'on-primary' : 'on-surface'}>{value}</AppText>
+      <AppText variant="labelSm" color={accent ? 'inverse-on-surface' : 'on-surface-variant'}>{label}</AppText>
+    </View>
+  );
+}
+
 export default function TodayScreen() {
   const insets = useSafeAreaInsets();
+  const { contentStyle, isDesktop } = useDashboardLayout();
 
   const [goals, setGoals] = useState<Goal[]>([]);
   const [contexts, setContexts] = useState<FocusContext[]>([]);
@@ -194,12 +205,13 @@ export default function TodayScreen() {
   };
 
   const plannedToday = goals.filter((g) => g.day === todayKey());
+  const completedToday = plannedToday.filter((g) => g.status === 'done').length;
 
   return (
     <View className="flex-1 bg-background">
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ ...ScreenContent, paddingTop: 12, paddingBottom: 40 + insets.bottom }}
+        contentContainerStyle={{ ...contentStyle, paddingTop: isDesktop ? 36 : 12, paddingBottom: 40 + insets.bottom }}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={load} tintColor={Palette.primary} />}
         showsVerticalScrollIndicator={false}>
         {/* Greeting */}
@@ -213,10 +225,25 @@ export default function TodayScreen() {
               </AppText>
             </View>
           </View>
-          <Pressable hitSlop={8} onPress={() => router.push('/settings')} className="w-10 h-10 items-center justify-center rounded-full active:bg-surface-container-high">
-            <Icon name="cog-outline" color={Palette.onSurfaceVariant} />
-          </Pressable>
+          <View className="flex-row items-center gap-xs">
+            <Pressable onPress={() => router.push('/progress')} className="px-sm py-xs rounded-full bg-primary-container active:opacity-80">
+              <AppText variant="labelSm" color="on-primary-container">
+                {stats?.score ?? 0} focus
+              </AppText>
+            </Pressable>
+            <Pressable hitSlop={8} onPress={() => router.push('/settings')} className="w-10 h-10 items-center justify-center rounded-full bg-surface-container-low active:bg-surface-container-high">
+              <Icon name="cog-outline" color={Palette.onSurfaceVariant} />
+            </Pressable>
+          </View>
         </View>
+
+        {!loading ? (
+          <View className="flex-row gap-sm">
+            <DashboardMetric label="Focus score" value={`${stats?.score ?? 0}%`} accent />
+            <DashboardMetric label="Today" value={`${completedToday}/${plannedToday.length}`} />
+            <DashboardMetric label="Streak" value={`${stats?.streak_days ?? 0} days`} />
+          </View>
+        ) : null}
 
         {loading ? (
           <View className="items-center py-xl">
@@ -224,15 +251,23 @@ export default function TodayScreen() {
           </View>
         ) : (
           <>
-            <Card surface="surface-container-low" radius={24} className="p-lg gap-sm border border-primary/10">
-              <AppText variant="headlineLgMobile">Plan your day</AppText>
-              <AppText variant="bodyMd" color="on-surface-variant">
+              <Card surface="inverse-surface" radius={32} className={cn('p-lg gap-md border-0', isDesktop && 'p-xl')}>
+              <View className="flex-row items-center justify-between">
+                <View className="gap-xs flex-1 pr-md">
+                  <AppText variant="labelSm" color="inverse-primary" className="uppercase tracking-[1.5px]">Daily intention</AppText>
+                  <AppText variant="headlineLgMobile" color="inverse-on-surface">Start with what matters.</AppText>
+                </View>
+                <View className="w-12 h-12 rounded-[18px] bg-primary items-center justify-center">
+                  <Icon name="arrow-up-right" size={22} color={Palette.onPrimary} />
+                </View>
+              </View>
+              <AppText variant="bodyMd" color="inverse-on-surface" className="opacity-80">
                 Type a morning intention or upload a voice note, and I’ll convert it into focused goals.
               </AppText>
               <TextInput
                 value={captureText}
                 onChangeText={setCaptureText}
-                placeholder="What do you want to accomplish today?"
+                placeholder="What needs your attention today?"
                 placeholderTextColor={Palette.outline}
                 className="bg-surface-container-lowest border border-outline-variant rounded-[14px] px-md py-sm font-body text-body-md text-on-surface"
               />
@@ -269,13 +304,13 @@ export default function TodayScreen() {
               </View>
             </Card>
             {!plannedToday.length ? (
-              <Card surface="surface-container-low" radius={24} className="p-lg gap-sm border border-primary/10">
+            <Card surface="surface-container-low" radius={24} className="p-lg gap-sm border border-outline-variant/40">
                 <AppText variant="headlineLgMobile">No goals for today yet</AppText>
                 <AppText variant="bodyMd" color="on-surface-variant">
                   FocusGuard can show goals already created in your dashboard once they exist.
                 </AppText>
                 <AppText variant="labelSm" color="on-surface-variant" className="text-center">
-                  If you'd like, open the desktop dashboard to add a goal or confirm a detected context.
+                  If you{"\u2019"}d like, open the desktop dashboard to add a goal or confirm a detected context.
                 </AppText>
                 <Pressable onPress={() => router.push('/contexts')} className="bg-primary rounded-full px-lg py-sm items-center active:opacity-85">
                   <AppText variant="labelLg" color="on-primary">
@@ -286,7 +321,7 @@ export default function TodayScreen() {
             ) : (
               <View className="gap-sm">
                 <View className="flex-row items-center justify-between">
-                  <AppText variant="headlineLgMobile">Today's goals</AppText>
+                  <AppText variant="headlineLgMobile">Today{"\u2019"}s goals</AppText>
                   <Pressable hitSlop={8} onPress={() => router.push('/progress')} className="flex-row items-center gap-xs">
                     <AppText variant="labelSm" color="primary">
                       {stats?.score ?? 0} focus
@@ -324,13 +359,13 @@ export default function TodayScreen() {
 
             {/* Active context / watchdog */}
             {activeContext ? (
-              <Card className="p-lg gap-sm border border-primary/10">
+              <Card className="p-lg gap-sm border border-outline-variant/40">
                 <View className="flex-row items-center justify-between">
                   <AppText variant="labelSm" color="on-surface-variant" className="uppercase tracking-[1.5px]">
                     Active context
                   </AppText>
                   <View className="flex-row items-center gap-xs">
-                    <View className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                    <View className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                     <AppText variant="labelSm" color="on-surface-variant">
                       Watching
                     </AppText>
@@ -404,8 +439,8 @@ export default function TodayScreen() {
               <Pressable
                 onPress={() => router.push('/support')}
                 className="flex-row items-center gap-md p-md rounded-[20px] bg-surface-container-high active:opacity-85">
-                <View className="w-10 h-10 rounded-full bg-secondary-container items-center justify-center">
-                  <Icon name="plus" color={Palette.onSecondaryContainer} />
+                <View className="w-10 h-10 rounded-full bg-primary-container items-center justify-center">
+                  <Icon name="plus" color={Palette.primary} />
                 </View>
                 <View className="flex-1">
                   <AppText variant="labelLg">Quick capture</AppText>
@@ -419,7 +454,7 @@ export default function TodayScreen() {
               {!intervention && activeContext ? (
                 <Card surface="tertiary-container" radius={20} className="p-md gap-xs">
                   <AppText variant="labelSm" color="on-tertiary-container" className="italic">
-                    "{insight?.message ?? apiInsightFallback}"
+                    {"\u201C"}{insight?.message ?? apiInsightFallback}{"\u201D"}
                   </AppText>
                   {insight?.suggestion ? (
                     <AppText variant="labelSm" color="on-tertiary-container" className="font-body-bold">

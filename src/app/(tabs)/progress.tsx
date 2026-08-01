@@ -8,9 +8,10 @@ import { AppText } from '@/components/app-text';
 import { Card } from '@/components/card';
 import { Icon } from '@/components/icon';
 import { TopAppBar } from '@/components/top-app-bar';
+import { useDashboardLayout } from '@/hooks/use-dashboard-layout';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { api, type Achievement, type Goal, type Session, type Stats } from '@/lib/api';
-import { Palette, ScreenContent } from '@/theme';
+import { Palette } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
 const DAY_LABELS = 'SMTWTFS';
@@ -67,7 +68,7 @@ function EnergyChart({ sessions }: { sessions: Session[] }) {
             {totalMinutes > 0 ? `Peak activity at ${displayHour} ${suffix}` : 'No focus sessions logged yet'}
           </AppText>
         </View>
-        <Icon name="lightning-bolt" color={Palette.secondary} />
+        <Icon name="lightning-bolt" color={Palette.primary} />
       </View>
       <View className="flex-row items-end justify-between h-32 gap-xs px-xs">
         {days.map((item) => (
@@ -144,6 +145,7 @@ function StatTile({ icon, label, value, bg }: { icon: React.ComponentProps<typeo
 
 export default function ProgressScreen() {
   const insets = useSafeAreaInsets();
+  const { contentStyle } = useDashboardLayout();
 
   const [stats, setStats] = useState<Stats | null>(null);
   const [goals, setGoals] = useState<Goal[]>([]);
@@ -175,7 +177,7 @@ export default function ProgressScreen() {
       <TopAppBar />
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ ...ScreenContent, paddingBottom: 40 + insets.bottom }}
+        contentContainerStyle={{ ...contentStyle, paddingBottom: 40 + insets.bottom }}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={load} tintColor={Palette.primary} />}
         showsVerticalScrollIndicator={false}>
         {loading ? (
@@ -187,7 +189,7 @@ export default function ProgressScreen() {
             <View className="gap-xs">
               <AppText variant="headlineXl">Your progress</AppText>
               <AppText variant="bodyMd" color="on-surface-variant">
-                Small wins compound. Here's what your focus is building.
+                Small wins compound. Here{"\u2019"}s what your focus is building.
               </AppText>
             </View>
 
@@ -222,7 +224,7 @@ export default function ProgressScreen() {
                         unlocked ? 'bg-primary-fixed border-primary/20' : 'bg-surface-container-lowest border-outline-variant/40 opacity-60',
                       )}>
                       <View className="flex-row items-center justify-between">
-                        <Icon name={unlocked ? 'trophy' : 'trophy-outline'} size={22} color={unlocked ? Palette.tertiary : Palette.outline} />
+                        <Icon name={unlocked ? 'trophy' : 'trophy-outline'} size={22} color={unlocked ? Palette.primary : Palette.outline} />
                         {unlocked ? <AppText variant="labelSm" color="primary">Earned</AppText> : null}
                       </View>
                       <AppText variant="labelLg">{a.title}</AppText>

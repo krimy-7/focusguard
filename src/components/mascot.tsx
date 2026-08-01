@@ -1,6 +1,7 @@
 import { View, type ViewStyle } from 'react-native';
 
 import { Icon } from '@/components/icon';
+import { Palette } from '@/theme';
 
 export function MascotAvatar({ size = 40, style }: { size?: number; style?: ViewStyle }) {
   return (
@@ -9,12 +10,13 @@ export function MascotAvatar({ size = 40, style }: { size?: number; style?: View
         {
           width: size,
           height: size,
-          borderRadius: size / 2,
+          borderRadius: size * 0.34,
+          backgroundColor: Palette.primaryContainer,
         },
         style,
       ]}
-      className="bg-primary-container border-2 border-primary-fixed items-center justify-center overflow-hidden">
-      <Icon name="creation" size={size * 0.5} color="#ffffff" />
+      className="items-center justify-center overflow-hidden">
+      <Icon name="creation" size={size * 0.5} color={Palette.primary} />
     </View>
   );
 }
