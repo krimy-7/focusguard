@@ -17,11 +17,6 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
-CLAUDE.md
-.claude/
-.vscode/
-AGENTS.md
-.env
 
 # Metro
 .metro-health-check*
@@ -37,6 +32,17 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
+.env.example
+backend/.env
+backend/.env.example
+
+# backend
+backend/.venv/
+backend/focusguard.db
+__pycache__/
+*.pyc
+uvicorn_*.log
 
 # typescript
 *.tsbuildinfo

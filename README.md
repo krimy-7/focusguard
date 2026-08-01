@@ -1,56 +1,131 @@
-# Welcome to your Expo app 👋
+# FocusGuard
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Privacy-first focus coach. An Expo (SDK 57) mobile app + Chrome MV3 extension backed by a
+FastAPI/Postgres service with an AI-powered, mock-data-safe layer.
 
-## Get started
+**The loop:** morning planning → automatic context detection/confirmation/grouping → a watchdog
+that gives you **grace**, then **gentle interventions** → breaks that preserve your progress →
+progress/achievements → support tools (Pomodoro, meditation, mood, Beast Mode) → cross-device sync.
 
-1. Install dependencies
+> Design system: Plus Jakarta Sans + Be Vietnam Pro, Material-3 palette, Tailwind via NativeWind v4.
 
-   ```bash
-   npm install
-   ```
+## Stack
 
-2. Start the app
+| Layer      | Tech                                                                  |
+| ---------- | --------------------------------------------------------------------- |
+| Mobile     | Expo SDK 57, expo-router, React 19, TypeScript, NativeWind v4 (Tailwind) |
+| Extension  | Chrome Manifest V3 (service worker + content script + popup)           |
+| Backend    | FastAPI, SQLAlchemy, Postgres (falls back to SQLite), WebSocket        |
+| AI         | DeepSeek / OpenAI / Claude / Gemini / Ollama via env — auto mock fallback |
+| Tunnel     | ngrok (scripts included)                                               |
 
-   ```bash
-   npx expo start
-   ```
+## Structure
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```
+FocusGuard/
+├─ src/                    # Expo app (expo-router)
+│  ├─ app/                 # (tabs): Today, Contexts, Progress, Support + Settings
+│  ├─ components/          # AppText, Card, TopAppBar, ModePill, EmptyState, …
+│  ├─ lib/                 # api.ts (API client + mock fallback), mock.ts
+│  └─ theme/               # Material-3 palette → Tailwind safelist
+├─ backend/
+│  ├─ app/                 # FastAPI app (routers, models, services, config)
+│  ├─ requirements.txt
+│  └─ .env.example
+├─ extension/
+│  ├─ manifest.json        # MV3
+│  ├─ background.js        # watchdog: grace period → level 1/2 interventions + Beast Mode
+│  ├─ blocked.html         # Beast Mode block page
+│  ├─ content.js
+│  ├─ config.js            # BASE_URL / GRACE_MINUTES / SECOND_MINUTES / DASHBOARD_URL
+│  ├─ popup/               # 320×520 popup UI (context + Beast Mode status line)
+│  └─ icons/
+└─ scripts/
+   ├─ dev.ps1              # ONE command: Postgres + ngrok + backend + Expo
+   ├─ ngrok-backend.ps1 / .sh
+   └─ reset-project.js     # expo template helper
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Run it
 
-### Other setup steps
+### Quickstart (recommended)
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```powershell
+.\scripts\dev.ps1
+```
 
-## Learn more
+This single command: ensures PostgreSQL is running, starts the ngrok tunnel for the
+backend, auto-writes the tunnel URL into `.env` and `backend/.env` (CORS), then opens
+the backend and Expo dev server in their own terminals. Scan the QR code in the Expo
+window to run on your phone — it talks to the backend through ngrok, no `localhost`.
 
-To learn more about developing your project with Expo, look at the following resources:
+### 1. Mobile app
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm install
+npx expo start        # dev server (a / web / android / ios)
+npx expo export --platform web   # static build check
+npx tsc --noEmit                 # typecheck
+```
 
-## Join the community
+### 2. Backend
 
-Join our community of developers creating universal apps.
+```bash
+cd backend
+python -m venv .venv
+.\.venv\Scripts\activate        # Windows   (source .venv/bin/activate on macOS/Linux)
+pip install -r requirements.txt
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+# Postgres (default): create DB `focusguard`, user `postgres`, password `CHANGE_ME`
+#   cp .env.example .env  -> set DATABASE_URL=postgresql://postgres:CHANGE_ME@localhost:5432/focusguard
+# No Postgres?  leave DATABASE_URL empty -> uses local SQLite and seeds itself.
+
+uvicorn app.main:app --reload --port 8000
+```
+
+- API: `http://localhost:8000/api/health`, plus product routers:
+  `/api/planning` (extract goals), `/api/goals`, `/api/contexts` (detect/confirm/group),
+  `/api/interventions`, `/api/break`, `/api/mood`, `/api/beast`, `/api/achievements`,
+  `/api/sync`, and legacy `/api/stats`, `/api/tasks`, `/api/sessions`, `/api/events`, `/api/insights`
+- WebSocket: `ws://localhost:8000/ws`
+- On first run the DB auto-seeds realistic mock data (goals, active context, moods, achievements).
+
+### 3. Chrome extension
+
+1. Open `chrome://extensions`
+2. Enable **Developer mode**
+3. **Load unpacked** → select the `extension/` folder
+4. Pin FocusGuard and open the popup.
+
+The watchdog in `extension/background.js` pulls the active context from the backend and:
+- starts a quiet **grace period** (default 5 min, `GRACE_MINUTES` in `config.js`) when you drift;
+- then sends a gentle **level 1** notification ("Back to work / Extend timer / Dismiss"),
+  and a playful **level 2** nudge if ignored;
+- **blocks** sites listed in an active Beast Mode session (redirects to `blocked.html`).
+
+Set the backend URL in `extension/config.js` (`BASE_URL`, `DASHBOARD_URL`).
+
+### 4. AI provider (optional)
+
+Set `AI_PROVIDER` and the matching key in `backend/.env` (deepseek / openai / claude / gemini / ollama).
+If the provider is missing a key or unreachable, insights automatically fall back to local mock data —
+the demo never breaks.
+
+### 5. ngrok for the demo
+
+The mobile app cannot reach `localhost:8000` on your machine, so it needs a public tunnel.
+
+```powershell
+ngrok http 8000
+```
+
+Copy the HTTPS URL into:
+- `.env` → `EXPO_PUBLIC_API_URL=https://<sub>.ngrok-free.dev` (and `EXPO_PUBLIC_WS_URL=wss://<sub>.ngrok-free.dev/ws`),
+  then **restart `npx expo start`** so the app picks it up;
+- `backend/.env` → append it to `CORS_ORIGINS`.
+
+The API client already sends `ngrok-skip-browser-warning: true`, so requests pass straight through
+ngrok's free-tier interstitial. The desktop extension keeps using `localhost` (same backend, so
+phone ↔ desktop sync works against the same Postgres).
+
+> `ngrok` must stay running while you demo. If it restarts, the URL changes — update the two spots above.
