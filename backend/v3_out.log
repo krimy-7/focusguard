@@ -1,0 +1,384 @@
+2026-07-31 23:01:12,796 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-07-31 23:01:12,812 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("tasks")
+2026-07-31 23:01:12,837 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:12,860 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("tasks")
+2026-07-31 23:01:12,878 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:12,896 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("focus_sessions")
+2026-07-31 23:01:12,920 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:12,946 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("focus_sessions")
+2026-07-31 23:01:12,970 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:12,996 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("focus_events")
+2026-07-31 23:01:12,998 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:12,999 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("focus_events")
+2026-07-31 23:01:12,999 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,000 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("milestones")
+2026-07-31 23:01:13,001 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,003 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("milestones")
+2026-07-31 23:01:13,004 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,005 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("contexts")
+2026-07-31 23:01:13,006 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,007 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("contexts")
+2026-07-31 23:01:13,008 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,009 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("context_activities")
+2026-07-31 23:01:13,009 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,010 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("context_activities")
+2026-07-31 23:01:13,011 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,012 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("daily_goals")
+2026-07-31 23:01:13,013 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,014 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("daily_goals")
+2026-07-31 23:01:13,015 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,016 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("mood_entries")
+2026-07-31 23:01:13,017 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,018 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("mood_entries")
+2026-07-31 23:01:13,019 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,021 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("beast_mode_sessions")
+2026-07-31 23:01:13,022 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,023 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("beast_mode_sessions")
+2026-07-31 23:01:13,024 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,025 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("intervention_logs")
+2026-07-31 23:01:13,026 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,027 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("intervention_logs")
+2026-07-31 23:01:13,027 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,029 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("achievements")
+2026-07-31 23:01:13,029 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,030 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("achievements")
+2026-07-31 23:01:13,031 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,032 INFO sqlalchemy.engine.Engine PRAGMA main.table_info("break_sessions")
+2026-07-31 23:01:13,033 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,034 INFO sqlalchemy.engine.Engine PRAGMA temp.table_info("break_sessions")
+2026-07-31 23:01:13,034 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-07-31 23:01:13,037 INFO sqlalchemy.engine.Engine 
+CREATE TABLE tasks (
+	id INTEGER NOT NULL, 
+	title VARCHAR(300) NOT NULL, 
+	category VARCHAR(20) NOT NULL, 
+	tag VARCHAR(40) NOT NULL, 
+	status VARCHAR(20) NOT NULL, 
+	created_at DATETIME NOT NULL, 
+	completed_at DATETIME, 
+	PRIMARY KEY (id)
+)
+
+
+2026-07-31 23:01:13,039 INFO sqlalchemy.engine.Engine [no key 0.00116s] ()
+2026-07-31 23:01:13,145 INFO sqlalchemy.engine.Engine CREATE INDEX ix_tasks_category ON tasks (category)
+2026-07-31 23:01:13,146 INFO sqlalchemy.engine.Engine [no key 0.00080s] ()
+2026-07-31 23:01:13,229 INFO sqlalchemy.engine.Engine CREATE INDEX ix_tasks_status ON tasks (status)
+2026-07-31 23:01:13,229 INFO sqlalchemy.engine.Engine [no key 0.00077s] ()
+2026-07-31 23:01:13,346 INFO sqlalchemy.engine.Engine 
+CREATE TABLE focus_sessions (
+	id INTEGER NOT NULL, 
+	task_title VARCHAR(300) NOT NULL, 
+	app_name VARCHAR(120) NOT NULL, 
+	url TEXT NOT NULL, 
+	started_at DATETIME NOT NULL, 
+	ended_at DATETIME, 
+	duration_s FLOAT NOT NULL, 
+	score INTEGER NOT NULL, 
+	PRIMARY KEY (id)
+)
+
+
+2026-07-31 23:01:13,347 INFO sqlalchemy.engine.Engine [no key 0.00062s] ()
+2026-07-31 23:01:13,525 INFO sqlalchemy.engine.Engine CREATE INDEX ix_focus_sessions_task_title ON focus_sessions (task_title)
+2026-07-31 23:01:13,526 INFO sqlalchemy.engine.Engine [no key 0.00079s] ()
+2026-07-31 23:01:13,665 INFO sqlalchemy.engine.Engine CREATE INDEX ix_focus_sessions_started_at ON focus_sessions (started_at)
+2026-07-31 23:01:13,666 INFO sqlalchemy.engine.Engine [no key 0.00128s] ()
+2026-07-31 23:01:13,812 INFO sqlalchemy.engine.Engine 
+CREATE TABLE focus_events (
+	id INTEGER NOT NULL, 
+	type VARCHAR(40) NOT NULL, 
+	detail VARCHAR(300) NOT NULL, 
+	duration_s FLOAT NOT NULL, 
+	occurred_at DATETIME NOT NULL, 
+	PRIMARY KEY (id)
+)
+
+
+2026-07-31 23:01:13,812 INFO sqlalchemy.engine.Engine [no key 0.00090s] ()
+2026-07-31 23:01:13,926 INFO sqlalchemy.engine.Engine CREATE INDEX ix_focus_events_type ON focus_events (type)
+2026-07-31 23:01:13,926 INFO sqlalchemy.engine.Engine [no key 0.00086s] ()
+2026-07-31 23:01:14,023 INFO sqlalchemy.engine.Engine CREATE INDEX ix_focus_events_occurred_at ON focus_events (occurred_at)
+2026-07-31 23:01:14,024 INFO sqlalchemy.engine.Engine [no key 0.00087s] ()
+2026-07-31 23:01:14,107 INFO sqlalchemy.engine.Engine 
+CREATE TABLE milestones (
+	id INTEGER NOT NULL, 
+	title VARCHAR(120) NOT NULL, 
+	description TEXT NOT NULL, 
+	achieved BOOLEAN NOT NULL, 
+	achieved_at DATETIME, 
+	PRIMARY KEY (id)
+)
+
+
+2026-07-31 23:01:14,108 INFO sqlalchemy.engine.Engine [no key 0.00085s] ()
+2026-07-31 23:01:14,199 INFO sqlalchemy.engine.Engine 
+CREATE TABLE contexts (
+	id INTEGER NOT NULL, 
+	title VARCHAR(200) NOT NULL, 
+	mode VARCHAR(20) NOT NULL, 
+	source VARCHAR(40) NOT NULL, 
+	active BOOLEAN NOT NULL, 
+	confirmed BOOLEAN NOT NULL, 
+	note TEXT NOT NULL, 
+	created_at DATETIME NOT NULL, 
+	PRIMARY KEY (id)
+)
+
+
+2026-07-31 23:01:14,200 INFO sqlalchemy.engine.Engine [no key 0.00070s] ()
+2026-07-31 23:01:14,307 INFO sqlalchemy.engine.Engine CREATE INDEX ix_contexts_title ON contexts (title)
+2026-07-31 23:01:14,307 INFO sqlalchemy.engine.Engine [no key 0.00091s] ()
+2026-07-31 23:01:14,457 INFO sqlalchemy.engine.Engine CREATE INDEX ix_contexts_active ON contexts (active)
+2026-07-31 23:01:14,458 INFO sqlalchemy.engine.Engine [no key 0.00105s] ()
+2026-07-31 23:01:14,565 INFO sqlalchemy.engine.Engine CREATE INDEX ix_contexts_created_at ON contexts (created_at)
+2026-07-31 23:01:14,566 INFO sqlalchemy.engine.Engine [no key 0.00071s] ()
+2026-07-31 23:01:14,657 INFO sqlalchemy.engine.Engine 
+CREATE TABLE daily_goals (
+	id INTEGER NOT NULL, 
+	title VARCHAR(300) NOT NULL, 
+	status VARCHAR(20) NOT NULL, 
+	source VARCHAR(20) NOT NULL, 
+	day VARCHAR(10) NOT NULL, 
+	created_at DATETIME NOT NULL, 
+	PRIMARY KEY (id)
+)
+
+
+2026-07-31 23:01:14,657 INFO sqlalchemy.engine.Engine [no key 0.00062s] ()
+2026-07-31 23:01:14,748 INFO sqlalchemy.engine.Engine CREATE INDEX ix_daily_goals_day ON daily_goals (day)
+2026-07-31 23:01:14,749 INFO sqlalchemy.engine.Engine [no key 0.00061s] ()
+2026-07-31 23:01:14,831 INFO sqlalchemy.engine.Engine CREATE INDEX ix_daily_goals_status ON daily_goals (status)
+2026-07-31 23:01:14,833 INFO sqlalchemy.engine.Engine [no key 0.00202s] ()
+2026-07-31 23:01:14,967 INFO sqlalchemy.engine.Engine 
+CREATE TABLE mood_entries (
+	id INTEGER NOT NULL, 
+	mood VARCHAR(20) NOT NULL, 
+	note VARCHAR(200) NOT NULL, 
+	recorded_at DATETIME NOT NULL, 
+	PRIMARY KEY (id)
+)
+
+
+2026-07-31 23:01:14,967 INFO sqlalchemy.engine.Engine [no key 0.00072s] ()
+2026-07-31 23:01:15,066 INFO sqlalchemy.engine.Engine CREATE INDEX ix_mood_entries_recorded_at ON mood_entries (recorded_at)
+2026-07-31 23:01:15,067 INFO sqlalchemy.engine.Engine [no key 0.00075s] ()
+2026-07-31 23:01:15,165 INFO sqlalchemy.engine.Engine 
+CREATE TABLE beast_mode_sessions (
+	id INTEGER NOT NULL, 
+	started_at DATETIME NOT NULL, 
+	ends_at DATETIME, 
+	duration_min INTEGER NOT NULL, 
+	active BOOLEAN NOT NULL, 
+	blocked_sites TEXT NOT NULL, 
+	PRIMARY KEY (id)
+)
+
+
+2026-07-31 23:01:15,166 INFO sqlalchemy.engine.Engine [no key 0.00131s] ()
+2026-07-31 23:01:15,264 INFO sqlalchemy.engine.Engine CREATE INDEX ix_beast_mode_sessions_active ON beast_mode_sessions (active)
+2026-07-31 23:01:15,264 INFO sqlalchemy.engine.Engine [no key 0.00078s] ()
+2026-07-31 23:01:15,356 INFO sqlalchemy.engine.Engine 
+CREATE TABLE achievements (
+	id INTEGER NOT NULL, 
+	code VARCHAR(60) NOT NULL, 
+	title VARCHAR(120) NOT NULL, 
+	description TEXT NOT NULL, 
+	unlocked_at DATETIME, 
+	PRIMARY KEY (id), 
+	UNIQUE (code)
+)
+
+
+2026-07-31 23:01:15,356 INFO sqlalchemy.engine.Engine [no key 0.00066s] ()
+2026-07-31 23:01:15,456 INFO sqlalchemy.engine.Engine 
+CREATE TABLE context_activities (
+	id INTEGER NOT NULL, 
+	context_id INTEGER NOT NULL, 
+	kind VARCHAR(20) NOT NULL, 
+	label VARCHAR(200) NOT NULL, 
+	domain VARCHAR(200) NOT NULL, 
+	duration_s FLOAT NOT NULL, 
+	occurred_at DATETIME NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(context_id) REFERENCES contexts (id)
+)
+
+
+2026-07-31 23:01:15,456 INFO sqlalchemy.engine.Engine [no key 0.00065s] ()
+2026-07-31 23:01:15,564 INFO sqlalchemy.engine.Engine CREATE INDEX ix_context_activities_occurred_at ON context_activities (occurred_at)
+2026-07-31 23:01:15,564 INFO sqlalchemy.engine.Engine [no key 0.00067s] ()
+2026-07-31 23:01:15,664 INFO sqlalchemy.engine.Engine CREATE INDEX ix_context_activities_context_id ON context_activities (context_id)
+2026-07-31 23:01:15,664 INFO sqlalchemy.engine.Engine [no key 0.00059s] ()
+2026-07-31 23:01:15,764 INFO sqlalchemy.engine.Engine 
+CREATE TABLE intervention_logs (
+	id INTEGER NOT NULL, 
+	level INTEGER NOT NULL, 
+	message TEXT NOT NULL, 
+	action VARCHAR(30) NOT NULL, 
+	context_id INTEGER, 
+	occurred_at DATETIME NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(context_id) REFERENCES contexts (id)
+)
+
+
+2026-07-31 23:01:15,765 INFO sqlalchemy.engine.Engine [no key 0.00065s] ()
+2026-07-31 23:01:15,864 INFO sqlalchemy.engine.Engine CREATE INDEX ix_intervention_logs_occurred_at ON intervention_logs (occurred_at)
+2026-07-31 23:01:15,864 INFO sqlalchemy.engine.Engine [no key 0.00070s] ()
+2026-07-31 23:01:15,973 INFO sqlalchemy.engine.Engine 
+CREATE TABLE break_sessions (
+	id INTEGER NOT NULL, 
+	context_id INTEGER, 
+	saved_progress TEXT NOT NULL, 
+	next_step TEXT NOT NULL, 
+	started_at DATETIME NOT NULL, 
+	ended_at DATETIME, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(context_id) REFERENCES contexts (id)
+)
+
+
+2026-07-31 23:01:15,973 INFO sqlalchemy.engine.Engine [no key 0.00071s] ()
+2026-07-31 23:01:16,064 INFO sqlalchemy.engine.Engine CREATE INDEX ix_break_sessions_started_at ON break_sessions (started_at)
+2026-07-31 23:01:16,065 INFO sqlalchemy.engine.Engine [no key 0.00075s] ()
+2026-07-31 23:01:16,165 INFO sqlalchemy.engine.Engine COMMIT
+2026-07-31 23:01:16,184 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-07-31 23:01:16,195 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT tasks.id AS tasks_id, tasks.title AS tasks_title, tasks.category AS tasks_category, tasks.tag AS tasks_tag, tasks.status AS tasks_status, tasks.created_at AS tasks_created_at, tasks.completed_at AS tasks_completed_at 
+FROM tasks) AS anon_1
+2026-07-31 23:01:16,196 INFO sqlalchemy.engine.Engine [generated in 0.00078s] ()
+2026-07-31 23:01:16,201 INFO sqlalchemy.engine.Engine INSERT INTO contexts (title, mode, source, active, confirmed, note, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+2026-07-31 23:01:16,201 INFO sqlalchemy.engine.Engine [generated in 0.00083s] ('Landing Page Design', 'work', 'detected', 1, 1, '', '2026-07-31 17:16:16.201128')
+2026-07-31 23:01:16,206 INFO sqlalchemy.engine.Engine INSERT INTO daily_goals (title, status, source, day, created_at) VALUES (?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,207 INFO sqlalchemy.engine.Engine [generated in 0.00022s (insertmanyvalues) 1/3 (ordered; batch not supported)] ('Finish the landing page hero', 'in_progress', 'ai', '2026-07-31', '2026-07-31 14:16:16.197421')
+2026-07-31 23:01:16,208 INFO sqlalchemy.engine.Engine INSERT INTO daily_goals (title, status, source, day, created_at) VALUES (?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,209 INFO sqlalchemy.engine.Engine [insertmanyvalues 2/3 (ordered; batch not supported)] ('Study React for one hour', 'open', 'ai', '2026-07-31', '2026-07-31 15:16:16.197421')
+2026-07-31 23:01:16,210 INFO sqlalchemy.engine.Engine INSERT INTO daily_goals (title, status, source, day, created_at) VALUES (?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,210 INFO sqlalchemy.engine.Engine [insertmanyvalues 3/3 (ordered; batch not supported)] ('Prepare the presentation', 'open', 'ai', '2026-07-31', '2026-07-31 16:16:16.197421')
+2026-07-31 23:01:16,213 INFO sqlalchemy.engine.Engine INSERT INTO focus_events (type, detail, duration_s, occurred_at) VALUES (?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,214 INFO sqlalchemy.engine.Engine [generated in 0.00021s (insertmanyvalues) 1/2 (ordered; batch not supported)] ('context_switch', 'Switched to Figma', 4.0, '2026-07-31 15:16:16.197421')
+2026-07-31 23:01:16,215 INFO sqlalchemy.engine.Engine INSERT INTO focus_events (type, detail, duration_s, occurred_at) VALUES (?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,216 INFO sqlalchemy.engine.Engine [insertmanyvalues 2/2 (ordered; batch not supported)] ('interruption', 'Notification ping', 45.0, '2026-07-31 16:16:16.197421')
+2026-07-31 23:01:16,220 INFO sqlalchemy.engine.Engine INSERT INTO focus_sessions (task_title, app_name, url, started_at, ended_at, duration_s, score) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,221 INFO sqlalchemy.engine.Engine [generated in 0.00080s (insertmanyvalues) 1/6 (ordered; batch not supported)] ('Deep focus block', 'VS Code', '', '2026-07-25 16:16:16.197421', '2026-07-25 16:51:16.197421', 2100.0, 70)
+2026-07-31 23:01:16,222 INFO sqlalchemy.engine.Engine INSERT INTO focus_sessions (task_title, app_name, url, started_at, ended_at, duration_s, score) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,223 INFO sqlalchemy.engine.Engine [insertmanyvalues 2/6 (ordered; batch not supported)] ('Deep focus block', 'VS Code', '', '2026-07-26 16:16:16.197421', '2026-07-26 17:06:16.197421', 3000.0, 75)
+2026-07-31 23:01:16,224 INFO sqlalchemy.engine.Engine INSERT INTO focus_sessions (task_title, app_name, url, started_at, ended_at, duration_s, score) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,225 INFO sqlalchemy.engine.Engine [insertmanyvalues 3/6 (ordered; batch not supported)] ('Deep focus block', 'VS Code', '', '2026-07-27 16:16:16.197421', '2026-07-27 16:58:16.197421', 2520.0, 80)
+2026-07-31 23:01:16,226 INFO sqlalchemy.engine.Engine INSERT INTO focus_sessions (task_title, app_name, url, started_at, ended_at, duration_s, score) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,227 INFO sqlalchemy.engine.Engine [insertmanyvalues 4/6 (ordered; batch not supported)] ('Deep focus block', 'VS Code', '', '2026-07-28 16:16:16.197421', '2026-07-28 17:16:16.197421', 3600.0, 85)
+2026-07-31 23:01:16,227 INFO sqlalchemy.engine.Engine INSERT INTO focus_sessions (task_title, app_name, url, started_at, ended_at, duration_s, score) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,228 INFO sqlalchemy.engine.Engine [insertmanyvalues 5/6 (ordered; batch not supported)] ('Deep focus block', 'VS Code', '', '2026-07-29 16:16:16.197421', '2026-07-29 16:41:16.197421', 1500.0, 90)
+2026-07-31 23:01:16,229 INFO sqlalchemy.engine.Engine INSERT INTO focus_sessions (task_title, app_name, url, started_at, ended_at, duration_s, score) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,230 INFO sqlalchemy.engine.Engine [insertmanyvalues 6/6 (ordered; batch not supported)] ('Deep focus block', 'VS Code', '', '2026-07-30 16:16:16.197421', '2026-07-30 16:56:16.197421', 2400.0, 95)
+2026-07-31 23:01:16,233 INFO sqlalchemy.engine.Engine INSERT INTO milestones (title, description, achieved, achieved_at) VALUES (?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,233 INFO sqlalchemy.engine.Engine [generated in 0.00018s (insertmanyvalues) 1/2 (ordered; batch not supported)] ('First Step', 'Your journey began. Welcome to the FocusGuard family.', 1, '2026-07-17 17:16:16.197421')
+2026-07-31 23:01:16,234 INFO sqlalchemy.engine.Engine INSERT INTO milestones (title, description, achieved, achieved_at) VALUES (?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,235 INFO sqlalchemy.engine.Engine [insertmanyvalues 2/2 (ordered; batch not supported)] ('Consistency King', 'You maintained a 7-day streak for the first time!', 1, '2026-07-29 16:16:16.197421')
+2026-07-31 23:01:16,238 INFO sqlalchemy.engine.Engine INSERT INTO tasks (title, category, tag, status, created_at, completed_at) VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,239 INFO sqlalchemy.engine.Engine [generated in 0.00031s (insertmanyvalues) 1/5 (ordered; batch not supported)] ('Morning workout', 'must', 'Personal', 'open', '2026-07-31 17:16:16.238620', None)
+2026-07-31 23:01:16,240 INFO sqlalchemy.engine.Engine INSERT INTO tasks (title, category, tag, status, created_at, completed_at) VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,241 INFO sqlalchemy.engine.Engine [insertmanyvalues 2/5 (ordered; batch not supported)] ('Check emails', 'must', 'Work', 'open', '2026-07-31 17:16:16.238626', None)
+2026-07-31 23:01:16,242 INFO sqlalchemy.engine.Engine INSERT INTO tasks (title, category, tag, status, created_at, completed_at) VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,242 INFO sqlalchemy.engine.Engine [insertmanyvalues 3/5 (ordered; batch not supported)] ('Study the RAFT Paper', 'should', 'Learning', 'open', '2026-07-31 17:16:16.238629', None)
+2026-07-31 23:01:16,244 INFO sqlalchemy.engine.Engine INSERT INTO tasks (title, category, tag, status, created_at, completed_at) VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,244 INFO sqlalchemy.engine.Engine [insertmanyvalues 4/5 (ordered; batch not supported)] ('Drink water', 'should', 'Health', 'open', '2026-07-31 17:16:16.238632', None)
+2026-07-31 23:01:16,245 INFO sqlalchemy.engine.Engine INSERT INTO tasks (title, category, tag, status, created_at, completed_at) VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,246 INFO sqlalchemy.engine.Engine [insertmanyvalues 5/5 (ordered; batch not supported)] ('Validate Tokens', 'should', 'Work', 'open', '2026-07-31 17:16:16.238635', None)
+2026-07-31 23:01:16,250 INFO sqlalchemy.engine.Engine INSERT INTO achievements (code, title, description, unlocked_at) VALUES (?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,251 INFO sqlalchemy.engine.Engine [generated in 0.00018s (insertmanyvalues) 1/3 (ordered; batch not supported)] ('first_focus', 'First Focus', 'Complete your first focus session.', '2026-07-29 17:16:16.197421')
+2026-07-31 23:01:16,252 INFO sqlalchemy.engine.Engine INSERT INTO achievements (code, title, description, unlocked_at) VALUES (?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,253 INFO sqlalchemy.engine.Engine [insertmanyvalues 2/3 (ordered; batch not supported)] ('first_recovery', 'First Context Recovery', 'Returned to your context after drifting.', '2026-07-29 17:16:16.197421')
+2026-07-31 23:01:16,254 INFO sqlalchemy.engine.Engine INSERT INTO achievements (code, title, description, unlocked_at) VALUES (?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,255 INFO sqlalchemy.engine.Engine [insertmanyvalues 3/3 (ordered; batch not supported)] ('deep_work', 'Deep Work', 'Logged a 50+ minute deep focus session.', '2026-07-29 17:16:16.197421')
+2026-07-31 23:01:16,258 INFO sqlalchemy.engine.Engine INSERT INTO context_activities (context_id, kind, label, domain, duration_s, occurred_at) VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,258 INFO sqlalchemy.engine.Engine [generated in 0.00022s (insertmanyvalues) 1/3 (ordered; batch not supported)] (1, 'domain', 'figma.com', 'figma.com', 1920.0, '2026-07-31 16:44:16.197421')
+2026-07-31 23:01:16,259 INFO sqlalchemy.engine.Engine INSERT INTO context_activities (context_id, kind, label, domain, duration_s, occurred_at) VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,260 INFO sqlalchemy.engine.Engine [insertmanyvalues 2/3 (ordered; batch not supported)] (1, 'domain', 'fonts.google.com', 'fonts.google.com', 360.0, '2026-07-31 17:10:16.197421')
+2026-07-31 23:01:16,261 INFO sqlalchemy.engine.Engine INSERT INTO context_activities (context_id, kind, label, domain, duration_s, occurred_at) VALUES (?, ?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:16,262 INFO sqlalchemy.engine.Engine [insertmanyvalues 3/3 (ordered; batch not supported)] (1, 'domain', 'photoshop.adobe.com', 'photoshop.adobe.com', 660.0, '2026-07-31 17:05:16.197421')
+2026-07-31 23:01:16,264 INFO sqlalchemy.engine.Engine INSERT INTO mood_entries (mood, note, recorded_at) VALUES (?, ?, ?)
+2026-07-31 23:01:16,454 INFO sqlalchemy.engine.Engine COMMIT
+[seed] Mock data inserted (first run).
+INFO:     127.0.0.1:57784 - "GET /api/health HTTP/1.1" 200 OK
+2026-07-31 23:01:17,813 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-07-31 23:01:17,816 INFO sqlalchemy.engine.Engine INSERT INTO daily_goals (title, status, source, day, created_at) VALUES (?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:17,817 INFO sqlalchemy.engine.Engine [generated in 0.00044s (insertmanyvalues) 1/2 (ordered; batch not supported)] ('Today I need to finish the landing page', 'open', 'ai', '2026-07-31', '2026-07-31 17:16:17.816146')
+2026-07-31 23:01:17,819 INFO sqlalchemy.engine.Engine INSERT INTO daily_goals (title, status, source, day, created_at) VALUES (?, ?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:17,819 INFO sqlalchemy.engine.Engine [insertmanyvalues 2/2 (ordered; batch not supported)] ('study React for an hour and prepare the presentation', 'open', 'ai', '2026-07-31', '2026-07-31 17:16:17.816157')
+2026-07-31 23:01:17,821 INFO sqlalchemy.engine.Engine COMMIT
+2026-07-31 23:01:17,916 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-07-31 23:01:17,919 INFO sqlalchemy.engine.Engine SELECT daily_goals.id, daily_goals.title, daily_goals.status, daily_goals.source, daily_goals.day, daily_goals.created_at 
+FROM daily_goals 
+WHERE daily_goals.id = ?
+2026-07-31 23:01:17,920 INFO sqlalchemy.engine.Engine [generated in 0.00080s] (4,)
+2026-07-31 23:01:17,923 INFO sqlalchemy.engine.Engine SELECT daily_goals.id, daily_goals.title, daily_goals.status, daily_goals.source, daily_goals.day, daily_goals.created_at 
+FROM daily_goals 
+WHERE daily_goals.id = ?
+2026-07-31 23:01:17,924 INFO sqlalchemy.engine.Engine [cached since 0.004543s ago] (5,)
+2026-07-31 23:01:17,949 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57784 - "POST /api/planning/extract HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57784 - "POST /api/contexts/detect HTTP/1.1" 200 OK
+2026-07-31 23:01:18,036 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-07-31 23:01:18,041 INFO sqlalchemy.engine.Engine SELECT break_sessions.id AS break_sessions_id, break_sessions.context_id AS break_sessions_context_id, break_sessions.saved_progress AS break_sessions_saved_progress, break_sessions.next_step AS break_sessions_next_step, break_sessions.started_at AS break_sessions_started_at, break_sessions.ended_at AS break_sessions_ended_at 
+FROM break_sessions 
+WHERE break_sessions.ended_at IS NULL
+ LIMIT ? OFFSET ?
+2026-07-31 23:01:18,042 INFO sqlalchemy.engine.Engine [generated in 0.00103s] (1, 0)
+2026-07-31 23:01:18,045 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57784 - "GET /api/break HTTP/1.1" 200 OK
+2026-07-31 23:01:18,107 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-07-31 23:01:18,109 INFO sqlalchemy.engine.Engine SELECT achievements.id AS achievements_id, achievements.code AS achievements_code, achievements.title AS achievements_title, achievements.description AS achievements_description, achievements.unlocked_at AS achievements_unlocked_at 
+FROM achievements
+2026-07-31 23:01:18,110 INFO sqlalchemy.engine.Engine [generated in 0.00107s] ()
+2026-07-31 23:01:18,121 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT focus_sessions.id AS focus_sessions_id, focus_sessions.task_title AS focus_sessions_task_title, focus_sessions.app_name AS focus_sessions_app_name, focus_sessions.url AS focus_sessions_url, focus_sessions.started_at AS focus_sessions_started_at, focus_sessions.ended_at AS focus_sessions_ended_at, focus_sessions.duration_s AS focus_sessions_duration_s, focus_sessions.score AS focus_sessions_score 
+FROM focus_sessions) AS anon_1
+2026-07-31 23:01:18,121 INFO sqlalchemy.engine.Engine [generated in 0.00098s] ()
+2026-07-31 23:01:18,128 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT focus_sessions.id AS focus_sessions_id, focus_sessions.task_title AS focus_sessions_task_title, focus_sessions.app_name AS focus_sessions_app_name, focus_sessions.url AS focus_sessions_url, focus_sessions.started_at AS focus_sessions_started_at, focus_sessions.ended_at AS focus_sessions_ended_at, focus_sessions.duration_s AS focus_sessions_duration_s, focus_sessions.score AS focus_sessions_score 
+FROM focus_sessions 
+WHERE focus_sessions.duration_s >= ?) AS anon_1
+2026-07-31 23:01:18,129 INFO sqlalchemy.engine.Engine [generated in 0.00121s] (3000,)
+2026-07-31 23:01:18,137 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts) AS anon_1
+2026-07-31 23:01:18,138 INFO sqlalchemy.engine.Engine [generated in 0.00088s] ()
+2026-07-31 23:01:18,146 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT focus_events.id AS focus_events_id, focus_events.type AS focus_events_type, focus_events.detail AS focus_events_detail, focus_events.duration_s AS focus_events_duration_s, focus_events.occurred_at AS focus_events_occurred_at 
+FROM focus_events 
+WHERE focus_events.type = ?) AS anon_1
+2026-07-31 23:01:18,149 INFO sqlalchemy.engine.Engine [generated in 0.00296s] ('interruption',)
+2026-07-31 23:01:18,152 INFO sqlalchemy.engine.Engine SELECT count(*) AS count_1 
+FROM (SELECT focus_sessions.id AS focus_sessions_id, focus_sessions.task_title AS focus_sessions_task_title, focus_sessions.app_name AS focus_sessions_app_name, focus_sessions.url AS focus_sessions_url, focus_sessions.started_at AS focus_sessions_started_at, focus_sessions.ended_at AS focus_sessions_ended_at, focus_sessions.duration_s AS focus_sessions_duration_s, focus_sessions.score AS focus_sessions_score 
+FROM focus_sessions) AS anon_1
+2026-07-31 23:01:18,153 INFO sqlalchemy.engine.Engine [cached since 0.03218s ago] ()
+2026-07-31 23:01:18,155 INFO sqlalchemy.engine.Engine INSERT INTO achievements (code, title, description, unlocked_at) VALUES (?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:18,156 INFO sqlalchemy.engine.Engine [cached since 1.905s ago (insertmanyvalues) 1/4 (ordered; batch not supported)] ('seven_day_streak', '7 Day Streak', 'Focused 7 days in a row.', None)
+2026-07-31 23:01:18,158 INFO sqlalchemy.engine.Engine INSERT INTO achievements (code, title, description, unlocked_at) VALUES (?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:18,159 INFO sqlalchemy.engine.Engine [insertmanyvalues 2/4 (ordered; batch not supported)] ('context_master', 'Context Master', 'Confirmed 5 different contexts.', None)
+2026-07-31 23:01:18,160 INFO sqlalchemy.engine.Engine INSERT INTO achievements (code, title, description, unlocked_at) VALUES (?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:18,161 INFO sqlalchemy.engine.Engine [insertmanyvalues 3/4 (ordered; batch not supported)] ('comeback', 'Comeback', 'Recovered from a distraction the same day.', '2026-07-31 17:16:18.115257')
+2026-07-31 23:01:18,161 INFO sqlalchemy.engine.Engine INSERT INTO achievements (code, title, description, unlocked_at) VALUES (?, ?, ?, ?) RETURNING id
+2026-07-31 23:01:18,162 INFO sqlalchemy.engine.Engine [insertmanyvalues 4/4 (ordered; batch not supported)] ('beast_mode', 'Beast Mode', 'Completed a Beast Mode session.', None)
+2026-07-31 23:01:18,165 INFO sqlalchemy.engine.Engine COMMIT
+2026-07-31 23:01:18,239 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-07-31 23:01:18,242 INFO sqlalchemy.engine.Engine SELECT achievements.id AS achievements_id, achievements.code AS achievements_code, achievements.title AS achievements_title, achievements.description AS achievements_description, achievements.unlocked_at AS achievements_unlocked_at 
+FROM achievements ORDER BY achievements.unlocked_at IS NULL, achievements.unlocked_at
+2026-07-31 23:01:18,243 INFO sqlalchemy.engine.Engine [generated in 0.00080s] ()
+2026-07-31 23:01:18,246 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57784 - "GET /api/achievements HTTP/1.1" 200 OK
+2026-07-31 23:01:18,328 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-07-31 23:01:18,334 INFO sqlalchemy.engine.Engine UPDATE beast_mode_sessions SET active=? WHERE beast_mode_sessions.active IS 1
+2026-07-31 23:01:18,335 INFO sqlalchemy.engine.Engine [generated in 0.00126s] (0,)
+2026-07-31 23:01:18,342 INFO sqlalchemy.engine.Engine INSERT INTO beast_mode_sessions (started_at, ends_at, duration_min, active, blocked_sites) VALUES (?, ?, ?, ?, ?)
+2026-07-31 23:01:18,342 INFO sqlalchemy.engine.Engine [generated in 0.00110s] ('2026-07-31 17:16:18.327142', '2026-07-31 18:16:18.327142', 60, 1, '["youtube.com", "instagram.com"]')
+2026-07-31 23:01:18,345 INFO sqlalchemy.engine.Engine COMMIT
+2026-07-31 23:01:18,423 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-07-31 23:01:18,426 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id, beast_mode_sessions.started_at, beast_mode_sessions.ends_at, beast_mode_sessions.duration_min, beast_mode_sessions.active, beast_mode_sessions.blocked_sites 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.id = ?
+2026-07-31 23:01:18,427 INFO sqlalchemy.engine.Engine [generated in 0.00110s] (1,)
+2026-07-31 23:01:18,434 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57784 - "POST /api/beast HTTP/1.1" 201 Created
