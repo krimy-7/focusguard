@@ -17,6 +17,11 @@ expo-env.d.ts
 *.p12
 *.key
 *.mobileprovision
+CLAUDE.md
+.claude/
+.vscode/
+AGENTS.md
+.env
 
 # Metro
 .metro-health-check*
@@ -35,6 +40,8 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+example
 
 # generated native folders
 /ios
