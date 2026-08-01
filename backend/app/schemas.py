@@ -134,6 +134,8 @@ class ContextOut(BaseModel):
 class ContextDetectIn(BaseModel):
     signals: dict[str, str] = {}
     recent_domains: list[str] = []
+    active_context: str | None = None
+    active_context_id: int | None = None
 
 
 class ContextDetectOut(BaseModel):
@@ -141,6 +143,9 @@ class ContextDetectOut(BaseModel):
     mode: str
     confidence: float
     reason: str
+    existing_context_id: int | None = None
+    suggest_switch: bool = False
+    switch_reason: str = ""
 
 
 class ExtractGoalsIn(BaseModel):

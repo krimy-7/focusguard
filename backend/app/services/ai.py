@@ -3,6 +3,7 @@ import time
 import httpx
 
 from app.config import get_settings
+from app.services import context_engine
 
 settings = get_settings()
 
@@ -70,32 +71,101 @@ class AIService:
             pass
         return self._mock_goals(text)
 
-    def propose_context(self, signals: dict, recent_domains: list[str]) -> dict:
-        """Propose a focus context (title + mode) from observed desktop signals."""
+    def propose_context(
+        self,
+        signals: dict,
+        recent_domains: list[str],
+        active_context: dict | None = None,
+        existing_contexts: list[dict] | None = None,
+    ) -> dict:
+        """Propose a focus context (title + mode) from observed desktop signals.
+
+        Always starts from the deterministic engine (domain taxonomy + evidence
+        weighting), then optionally refines with the AI provider. Falls back to
+        the engine result on any provider failure."""
+        base = context_engine.detect_context(
+            signals,
+            recent_domains,
+            active_context=active_context,
+            existing_contexts=existing_contexts or [],
+        )
         try:
             provider = self._effective_provider()
             if provider == "mock":
-                return self._mock_context(signals, recent_domains)
+                return base
 
-            prompt = (
-                "You are FocusGuard's context detector. Given browser signals, propose the single "
-                "best focus context the user is working on. Return ONLY a JSON object with keys "
-                "'title' (short, e.g. 'Landing Page Design'), 'mode' (one of learning|work|personal), "
-                "'reason' (one short sentence).\n"
-                f"Signals: {signals}\nRecent domains: {recent_domains}"
-            )
+            prompt = self._context_prompt(signals, recent_domains, active_context, existing_contexts or [])
             content = self._chat(prompt) if provider != "claude" else self._anthropic_raw(prompt)
             data = self._parse_json_object(content)
             if data and data.get("title"):
-                return {
+                result = {
                     "proposed_title": str(data["title"])[:200],
-                    "mode": str(data.get("mode", "work"))[:20],
-                    "confidence": float(data.get("confidence", 0.7)),
-                    "reason": str(data.get("reason", ""))[:200],
+                    "mode": str(data.get("mode", base["mode"]))[:20],
+                    "confidence": min(
+                        0.99, max(0.3, float(data.get("confidence", base["confidence"])))
+                    ),
+                    "reason": str(data.get("reason", "") or base["reason"])[:200],
+                    "suggest_switch": base["suggest_switch"],
+                    "switch_reason": base["switch_reason"],
                 }
+                if data.get("related_to_active") is True:
+                    result["suggest_switch"] = False
+                    result["switch_reason"] = ""
+                elif data.get("related_to_active") is False:
+                    result["suggest_switch"] = True
+                    result["switch_reason"] = "Your current activity looks like a different topic."
+
+                existing_id, matched_title, _ = context_engine.match_existing(
+                    result["proposed_title"], existing_contexts or []
+                )
+                result["existing_context_id"] = existing_id
+                if matched_title:
+                    result["proposed_title"] = matched_title
+                return result
         except Exception:
             pass
-        return self._mock_context(signals, recent_domains)
+        return base
+
+    def _context_prompt(
+        self,
+        signals: dict,
+        recent_domains: list[str],
+        active_context: dict | None,
+        existing_contexts: list[dict],
+    ) -> str:
+        taxonomy_hint = (
+            "Domain hints: github/stackoverflow/react/expo=programming; figma/canva/adobe=design; "
+            "notion/docs.google=notes & docs; trello/linear/jira=planning; slack/mail=communication; "
+            "youtube/coursera/udemy=learning; netflix/instagram/reddit/amazon=personal."
+        )
+        lines = [
+            "You are FocusGuard's context detector. The user is actively working in a browser; "
+            "guess the single best 'focus context' they are working on right now.",
+            "",
+            taxonomy_hint,
+            "",
+            "Current tab signals:",
+        ]
+        for key, value in (signals or {}).items():
+            lines.append(f"- {key}: {value}")
+        lines.append("Recent domains (most recent first): " + ", ".join((recent_domains or [])[:10]))
+        if active_context:
+            lines.append(f"Active context: {active_context.get('title')}")
+            if active_context.get("domains"):
+                lines.append("Active context domains: " + ", ".join(active_context["domains"][:8]))
+        if existing_contexts:
+            lines.append("Existing contexts: " + ", ".join(c.get("title", "") for c in existing_contexts[:8]))
+        lines.append("")
+        lines.append(
+            "Return ONLY a JSON object with these keys: "
+            '{"title": string, "mode": "work"|"learning"|"personal", '
+            '"confidence": number 0..1, "reason": string, "related_to_active": boolean}. '
+            "title must be short (3-7 words), specific to what they're doing now (never a URL). "
+            "related_to_active=true if this is the same task as the active context, false if it's "
+            "clearly a different topic. confidence ~0.5 for weak evidence, >=0.85 when several "
+            "recent domains agree."
+        )
+        return "\n".join(lines)
 
     # -- Credentials ------------------------------------------------------
 
@@ -263,28 +333,6 @@ class AIService:
         if not goals:
             goals = [text[:120] or "Plan my day"]
         return [{"title": g, "source": "ai"} for g in goals]
-
-    def _mock_context(self, signals: dict, recent_domains: list[str]) -> dict:
-        title = signals.get("title") or signals.get("domain") or ""
-        if not title:
-            title = (recent_domains[0] if recent_domains else "Browsing") or "Research"
-        title = title[:200]
-
-        text = f"{signals.get('title', '')} {signals.get('domain', '')}".lower()
-        mode = "work"
-        if any(w in text for w in ("learn", "tutorial", "course", "doc", "study", "youtube")):
-            mode = "learning"
-        elif any(w in text for w in ("mail", "calendar", "slack", "meet", "github")):
-            mode = "work"
-        elif any(w in text for w in ("shop", "news", "health", "recipe")):
-            mode = "personal"
-
-        return {
-            "proposed_title": title,
-            "mode": mode,
-            "confidence": 0.75,
-            "reason": "Matches your recent activity.",
-        }
 
     def _parse_json_list(self, content: str) -> list[str] | None:
         try:

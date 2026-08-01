@@ -96,6 +96,111 @@ svg {
   transform: scale(0.9);
 }
 
+/* Context card */
+.context-card {
+  background: var(--surface-container-lowest);
+  border: 1px solid rgba(94, 65, 208, 0.1);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 30px 60px -12px rgba(94, 65, 208, 0.08);
+}
+
+.context-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.context-title-row h2 {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.state-pill {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+}
+
+.state-pill.drift {
+  background: var(--error-container);
+  color: var(--on-error-container);
+}
+
+.state-pill.proposal {
+  background: var(--primary-fixed-dim);
+  color: var(--on-surface);
+}
+
+.context-actions {
+  margin-top: 10px;
+}
+
+.propose-note {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  margin-bottom: 8px;
+}
+
+.propose-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--outline-variant);
+  border-radius: 10px;
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+}
+
+.propose-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(94, 65, 208, 0.15);
+}
+
+.propose-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.action-btn.small {
+  padding: 9px 12px;
+  font-size: 13px;
+  border-radius: 10px;
+  justify-content: center;
+}
+
+.action-btn.small.confirm {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: transparent;
+}
+
+.action-btn.small.confirm:hover {
+  background: var(--primary-container);
+}
+
+.action-btn.small.ghost {
+  background: transparent;
+  border: 1px solid var(--outline-variant);
+  color: var(--on-surface-variant);
+}
+
+.action-btn.small.ghost:hover {
+  background: var(--surface-container-high);
+}
+
 /* Current focus card */
 .focus-card {
   position: relative;
@@ -412,4 +517,21 @@ svg {
 
 .toast.show {
   opacity: 1;
+}
+
+.reset-btn {
+  width: 100%;
+  border: 1px solid var(--outline-variant);
+  background: transparent;
+  color: var(--error);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.reset-btn:hover {
+  background: var(--error-container);
 }

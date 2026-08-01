@@ -9,6 +9,7 @@ from app.routers import (
     achievements,
     beast,
     contexts,
+    dev,
     events,
     insights,
     interventions,
@@ -56,6 +57,7 @@ app.include_router(mood.router, prefix="/api")
 app.include_router(beast.router, prefix="/api")
 app.include_router(achievements.router, prefix="/api")
 app.include_router(sync.router, prefix="/api")
+app.include_router(dev.router, prefix="/api")
 
 
 class ConnectionManager:

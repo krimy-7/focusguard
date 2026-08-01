@@ -47,7 +47,21 @@ def create_context(payload: ContextCreate, db: Session = Depends(get_db)):
 def detect_context(payload: ContextDetectIn, db: Session = Depends(get_db)):
     """Propose a context from desktop signals. The extension calls this when
     the current activity no longer matches the active context."""
-    return ai_service.propose_context(payload.signals, payload.recent_domains)
+    active = db.query(Context).filter(Context.active.is_(True)).first()
+    active_context = None
+    if active:
+        domains = [a.domain for a in active.activities if a.domain]
+        active_context = {"id": active.id, "title": active.title, "domains": domains}
+    existing_contexts = [
+        {"id": c.id, "title": c.title}
+        for c in db.query(Context).order_by(Context.created_at.desc()).all()
+    ]
+    return ai_service.propose_context(
+        payload.signals,
+        payload.recent_domains,
+        active_context=active_context,
+        existing_contexts=existing_contexts,
+    )
 
 
 @router.patch("/{context_id}", response_model=ContextOut)

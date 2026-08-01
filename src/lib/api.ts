@@ -31,6 +31,9 @@ export type ContextDetect = {
   mode: Mode;
   confidence: number;
   reason: string;
+  existing_context_id?: number | null;
+  suggest_switch?: boolean;
+  switch_reason?: string;
 };
 
 export type Goal = {

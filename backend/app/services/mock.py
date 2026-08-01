@@ -80,7 +80,7 @@ def seed_database(db: Session) -> bool:
             )
         )
 
-    ctx = Context(title="Landing Page Design", mode="work", source="detected", active=True, confirmed=True)
+    ctx = Context(title="Landing Page Design", mode="work", source="detected", active=False, confirmed=True)
     db.add(ctx)
     db.flush()
     for domain, minutes in [("figma.com", 32), ("fonts.google.com", 6), ("photoshop.adobe.com", 11)]:
