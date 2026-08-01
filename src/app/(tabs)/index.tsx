@@ -17,7 +17,7 @@ import { Icon } from '@/components/icon';
 import { MascotAvatar } from '@/components/mascot';
 import { ModePill } from '@/components/mode-pill';
 import { api, type BreakState, type FocusContext, type Goal, type Insight, type Intervention, type Stats } from '@/lib/api';
-import { Palette } from '@/theme';
+import { Palette, ScreenContent } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
 function greeting(): string {
@@ -171,7 +171,7 @@ export default function TodayScreen() {
     <View className="flex-1 bg-background">
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 12, gap: 20, paddingBottom: 40 + insets.bottom }}
+        contentContainerStyle={{ ...ScreenContent, paddingTop: 12, paddingBottom: 40 + insets.bottom }}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={load} tintColor={Palette.primary} />}
         showsVerticalScrollIndicator={false}>
         {/* Greeting */}

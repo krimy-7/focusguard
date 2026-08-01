@@ -6,8 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { TopAppBar } from '@/components/top-app-bar';
-import { API_URL } from '@/lib/api';
-import { Palette } from '@/theme';
+import { API_URL, api, type FocusContext } from '@/lib/api';
+import { Palette, ScreenContent } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
 type ToggleRowProps = {
@@ -37,10 +37,7 @@ function ToggleRow({ icon, label, sub, value, onChange, danger }: ToggleRowProps
         hitSlop={8}
         onPress={() => onChange(!value)}
         className={cn('w-[46px] h-[28px] rounded-full items-center justify-start p-[3px]', value ? 'bg-primary' : 'bg-surface-container-highest')}>
-        <View
-          className={cn('w-5 h-5 rounded-full shadow-sm', value ? 'bg-on-primary ml-auto' : 'bg-white')}
-          style={{ marginLeft: value ? undefined : undefined }}
-        />
+        <View className={cn('w-5 h-5 rounded-full shadow-sm', value ? 'bg-on-primary ml-auto' : 'bg-white')} />
       </Pressable>
     </View>
   );
@@ -69,15 +66,19 @@ export default function SettingsScreen() {
   const [quietWatch, setQuietWatch] = useState(true);
   const [cloudSync, setCloudSync] = useState(true);
   const [contextRetention, setContextRetention] = useState(true);
-  const [extensionConnected, setExtensionConnected] = useState(false);
+  const [privateMode, setPrivateMode] = useState(false);
+  const [contexts, setContexts] = useState<FocusContext[]>([]);
 
   useFocusEffect(
     useCallback(() => {
       let active = true;
       (async () => {
         try {
-          const res = await fetch(`${API_URL}/api/health`);
-          if (active) setSyncStatus(res.ok ? 'online' : 'offline');
+          const [res, cs] = await Promise.all([fetch(`${API_URL}/api/health`), api.getContexts()]);
+          if (active) {
+            setSyncStatus(res.ok ? 'online' : 'offline');
+            setContexts(cs);
+          }
         } catch {
           if (active) setSyncStatus('offline');
         }
@@ -88,6 +89,8 @@ export default function SettingsScreen() {
     }, []),
   );
 
+  const extensionConnected = contexts.some((c) => c.source === 'extension');
+
   const gracePresets = [5, 10, 15];
 
   return (
@@ -95,7 +98,7 @@ export default function SettingsScreen() {
       <TopAppBar />
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, gap: 20, paddingBottom: 40 + insets.bottom }}
+        contentContainerStyle={{ ...ScreenContent, paddingBottom: 40 + insets.bottom }}
         showsVerticalScrollIndicator={false}>
         <View className="items-center gap-sm pt-sm">
           <View className="w-20 h-20 rounded-[28px] bg-primary-container items-center justify-center">
@@ -123,7 +126,17 @@ export default function SettingsScreen() {
             </View>
           </View>
           <ToggleRow icon="cloud-sync" label="Cloud sync" sub="Keep goals, context and progress in sync" value={cloudSync} onChange={setCloudSync} />
-          <ToggleRow icon="puzzle" label="Chrome extension" sub="Desktop watchdog" value={extensionConnected} onChange={setExtensionConnected} />
+          <View className="flex-row items-center gap-md py-sm px-sm">
+            <View className={cn('w-10 h-10 rounded-full items-center justify-center', extensionConnected ? 'bg-secondary-container' : 'bg-surface-container-high')}>
+              <Icon name="puzzle" size={20} color={extensionConnected ? Palette.onSecondaryContainer : Palette.onSurfaceVariant} />
+            </View>
+            <View className="flex-1">
+              <AppText variant="bodyLg">Chrome extension</AppText>
+              <AppText variant="labelSm" color="on-surface-variant">
+                {extensionConnected ? 'Desktop watchdog connected' : 'Not connected — open your laptop to sync'}
+              </AppText>
+            </View>
+          </View>
         </Section>
 
         {/* Watchdog / preferences */}
@@ -159,8 +172,18 @@ export default function SettingsScreen() {
         {/* Privacy */}
         <Section title="Privacy">
           <ToggleRow icon="history" label="Context retention" sub="Keep grouped activity history" value={contextRetention} onChange={setContextRetention} />
-          <ToggleRow icon="shield-lock-outline" label="Private mode" sub="Never send raw activity" value={quietWatch} onChange={setQuietWatch} />
-          <ToggleRow icon="database-export-outline" label="Export my data" value={false} onChange={() => {}} />
+          <ToggleRow icon="shield-lock-outline" label="Private mode" sub="Never send raw activity" value={privateMode} onChange={setPrivateMode} />
+          <View className="flex-row items-center gap-md py-sm px-sm opacity-60">
+            <View className="w-10 h-10 rounded-full bg-surface-container-high items-center justify-center">
+              <Icon name="database-export-outline" size={20} color={Palette.onSurfaceVariant} />
+            </View>
+            <View className="flex-1">
+              <AppText variant="bodyLg">Export my data</AppText>
+              <AppText variant="labelSm" color="on-surface-variant">
+                Coming soon
+              </AppText>
+            </View>
+          </View>
         </Section>
 
         <Section title="Account" danger>

@@ -128,6 +128,18 @@ export const Radius = {
   pill: 999,
 } as const;
 
+// Shared ScrollView content container: keeps the phone-first layout readable
+// on wide screens (web/tablet) by capping the column width and centering it.
+export const ScreenContent = {
+  width: '100%',
+  maxWidth: 560,
+  alignSelf: 'center',
+  paddingHorizontal: Spacing.containerPadding,
+  paddingTop: Spacing.md,
+  paddingBottom: Spacing.xl,
+  gap: Spacing.lg,
+} as const;
+
 export const CardShadow = Platform.select({
   web: {
     boxShadow:

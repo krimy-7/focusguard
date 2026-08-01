@@ -21,7 +21,7 @@ export function TopAppBar({ onSettings }: { onSettings?: () => void }) {
         hitSlop={8}
         className="w-10 h-10 rounded-full items-center justify-center active:opacity-70"
         onPress={onSettings ?? (() => router.push('/settings'))}>
-        <Icon name="cog" color={theme.onSurfaceVariant} />
+        <Icon name="cog-outline" color={theme.onSurfaceVariant} />
       </Pressable>
     </View>
   );

@@ -10,7 +10,7 @@ import { Icon } from '@/components/icon';
 import { TopAppBar } from '@/components/top-app-bar';
 import { useThemeColors } from '@/hooks/use-theme-colors';
 import { api, type Achievement, type Goal, type Session, type Stats } from '@/lib/api';
-import { Palette } from '@/theme';
+import { Palette, ScreenContent } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
 const DAY_LABELS = 'SMTWTFS';
@@ -175,7 +175,7 @@ export default function ProgressScreen() {
       <TopAppBar />
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, gap: 20, paddingBottom: 40 + insets.bottom }}
+        contentContainerStyle={{ ...ScreenContent, paddingBottom: 40 + insets.bottom }}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={load} tintColor={Palette.primary} />}
         showsVerticalScrollIndicator={false}>
         {loading ? (

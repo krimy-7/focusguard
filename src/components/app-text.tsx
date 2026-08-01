@@ -19,7 +19,7 @@ type AppTextProps = TextProps & {
   color?: TwColorName;
 };
 
-export function AppText({ variant = 'bodyMd',   color = 'on-surface', className, ...rest }: AppTextProps) {
+export function AppText({ variant = 'bodyMd', color = 'on-surface', className, ...rest }: AppTextProps) {
   return (
     <Text className={cn(VARIANT_CLASSES[variant], TEXT_COLORS[color], className)} {...rest} />
   );

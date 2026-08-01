@@ -18,11 +18,14 @@ import type {
 // navigable when the backend is unreachable.
 
 export const MOCK = {
-  goals: (): Goal[] => [
-    { id: 1, title: 'Finish the landing page hero', status: 'in_progress', source: 'ai', day: '2026-07-31', created_at: '2026-07-31T06:00:00Z' },
-    { id: 2, title: 'Study React for one hour', status: 'open', source: 'ai', day: '2026-07-31', created_at: '2026-07-31T06:00:05Z' },
-    { id: 3, title: 'Prepare the presentation', status: 'open', source: 'ai', day: '2026-07-31', created_at: '2026-07-31T06:00:10Z' },
-  ],
+  goals: (): Goal[] => {
+    const day = new Date().toISOString().slice(0, 10);
+    return [
+      { id: 1, title: 'Finish the landing page hero', status: 'in_progress', source: 'ai', day, created_at: `${day}T06:00:00Z` },
+      { id: 2, title: 'Study React for one hour', status: 'open', source: 'ai', day, created_at: `${day}T06:00:05Z` },
+      { id: 3, title: 'Prepare the presentation', status: 'open', source: 'ai', day, created_at: `${day}T06:00:10Z` },
+    ];
+  },
 
   contexts: (): FocusContext[] => [
     {
@@ -88,12 +91,20 @@ export const MOCK = {
     generated_at: new Date().toISOString(),
   }),
 
-  sessions: (): Session[] => [
-    { id: 1, task_title: 'Landing Page Design', app_name: 'Chrome', url: 'figma.com', started_at: '2026-07-31T09:00:00Z', ended_at: '2026-07-31T09:32:00Z', duration_s: 1920, score: 85 },
-    { id: 2, task_title: 'React Tutorial', app_name: 'Chrome', url: 'react.dev', started_at: '2026-07-31T10:15:00Z', ended_at: '2026-07-31T10:55:00Z', duration_s: 2400, score: 78 },
-    { id: 3, task_title: 'PR Review', app_name: 'Chrome', url: 'github.com', started_at: '2026-07-30T14:00:00Z', ended_at: '2026-07-30T14:40:00Z', duration_s: 2400, score: 90 },
-    { id: 4, task_title: 'Email batch', app_name: 'Chrome', url: 'gmail.com', started_at: '2026-07-29T08:30:00Z', ended_at: '2026-07-29T08:50:00Z', duration_s: 1200, score: 60 },
-  ],
+  sessions: (): Session[] => {
+    const now = new Date();
+    const block = (hoursAgo: number, mins: number) => {
+      const start = new Date(now.getTime() - hoursAgo * 3600_000);
+      const end = new Date(start.getTime() + mins * 60_000);
+      return { started_at: start.toISOString(), ended_at: end.toISOString(), duration_s: mins * 60 };
+    };
+    return [
+      { id: 1, task_title: 'Landing Page Design', app_name: 'Chrome', url: 'figma.com', ...block(3, 32), score: 85 },
+      { id: 2, task_title: 'React Tutorial', app_name: 'Chrome', url: 'react.dev', ...block(26, 40), score: 78 },
+      { id: 3, task_title: 'PR Review', app_name: 'Chrome', url: 'github.com', ...block(50, 40), score: 90 },
+      { id: 4, task_title: 'Email batch', app_name: 'Chrome', url: 'gmail.com', ...block(74, 20), score: 60 },
+    ];
+  },
 
   break: (): BreakState => ({
     on_break: false,

@@ -8,7 +8,7 @@ import { Card } from '@/components/card';
 import { Icon } from '@/components/icon';
 import { TopAppBar } from '@/components/top-app-bar';
 import { api, type BeastMode } from '@/lib/api';
-import { Palette } from '@/theme';
+import { Palette, ScreenContent } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
 type Tool = 'timer' | 'meditate' | 'mood' | 'beast';
@@ -164,7 +164,7 @@ export default function SupportScreen() {
       <TopAppBar />
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, gap: 16, paddingBottom: 40 + insets.bottom }}
+        contentContainerStyle={{ ...ScreenContent, gap: 16, paddingBottom: 40 + insets.bottom }}
         showsVerticalScrollIndicator={false}>
         <AppText variant="headlineXl">Support</AppText>
         <AppText variant="bodyMd" color="on-surface-variant">

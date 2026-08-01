@@ -10,7 +10,7 @@ import { Icon } from '@/components/icon';
 import { MODES, ModePill } from '@/components/mode-pill';
 import { TopAppBar } from '@/components/top-app-bar';
 import { api, type ContextDetect, type FocusContext, type Mode } from '@/lib/api';
-import { Palette } from '@/theme';
+import { Palette, ScreenContent } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
 export default function ContextsScreen() {
@@ -39,9 +39,18 @@ export default function ContextsScreen() {
   );
 
   const detectSignals = async (): Promise<ContextDetect | null> => {
-    // Use the last-known desktop signals as a hint; the extension pushes
-    // richer signals. Backend falls back to mock proposals when offline.
-    return api.detectContext({ title: 'Figma', domain: 'figma.com' }, ['figma.com', 'fonts.google.com']);
+    // Derive the signal from the most recent real session (logged by the
+    // desktop extension) so the mobile app reflects what is actually running.
+    const sessions = await api.getSessions();
+    const latest = sessions[0];
+    if (!latest) return null;
+    const recentDomains = Array.from(
+      new Set(sessions.map((s) => s.url || s.app_name).filter(Boolean)),
+    ).slice(0, 5);
+    return api.detectContext(
+      { title: latest.task_title || 'Active session', domain: latest.url || latest.app_name },
+      recentDomains,
+    );
   };
 
   const confirm = async () => {
@@ -67,11 +76,8 @@ export default function ContextsScreen() {
 
   const groupLastActivity = async (ctx: FocusContext) => {
     const last = ctx.activities[0];
-    await api.groupActivity(ctx.id, {
-      kind: last?.kind ?? 'tab',
-      label: last?.label ?? 'figma.com',
-      domain: last?.domain ?? 'figma.com',
-    });
+    if (!last) return;
+    await api.groupActivity(ctx.id, { kind: last.kind, label: last.label, domain: last.domain });
     load();
   };
 
@@ -82,7 +88,7 @@ export default function ContextsScreen() {
       <TopAppBar />
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, gap: 20, paddingBottom: 40 + insets.bottom }}
+        contentContainerStyle={{ ...ScreenContent, paddingBottom: 40 + insets.bottom }}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={load} tintColor={Palette.primary} />}
         showsVerticalScrollIndicator={false}>
         <AppText variant="headlineXl">Contexts</AppText>
@@ -176,12 +182,14 @@ export default function ContextsScreen() {
               ))}
             </View>
             <View className="flex-row gap-sm pt-sm">
-              <Pressable onPress={() => groupLastActivity(activeContext)} className="flex-row items-center gap-xs px-md py-xs rounded-full bg-white/20 active:opacity-85">
-                <Icon name="plus" size={16} color={Palette.onPrimaryContainer} />
-                <AppText variant="labelSm" color="on-primary-container">
-                  Group last activity
-                </AppText>
-              </Pressable>
+              {activeContext.activities.length > 0 ? (
+                <Pressable onPress={() => groupLastActivity(activeContext)} className="flex-row items-center gap-xs px-md py-xs rounded-full bg-white/20 active:opacity-85">
+                  <Icon name="plus" size={16} color={Palette.onPrimaryContainer} />
+                  <AppText variant="labelSm" color="on-primary-container">
+                    Group last activity
+                  </AppText>
+                </Pressable>
+              ) : null}
             </View>
           </Card>
         ) : null}
