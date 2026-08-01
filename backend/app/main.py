@@ -4,7 +4,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.database import Base, SessionLocal, resolve_engine
+from app.database import Base, SessionLocal, resolve_engine, run_simple_migrations
 from app.routers import (
     achievements,
     beast,
@@ -27,6 +27,7 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     engine = resolve_engine()
     Base.metadata.create_all(bind=engine)
+    run_simple_migrations(engine)
     with SessionLocal(bind=engine) as db:
         if seed_database(db):
             print("[seed] Mock data inserted (first run).")
@@ -38,6 +39,7 @@ app = FastAPI(title=settings.app_name, debug=settings.debug, lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origin_list,
+    allow_origin_regex=r".*" if settings.debug else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

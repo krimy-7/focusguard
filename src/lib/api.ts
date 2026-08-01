@@ -101,6 +101,7 @@ export type BeastMode = {
   duration_min: number;
   active: boolean;
   blocked_sites: string[];
+  blocked_apps: string[];
 };
 
 export type Achievement = {
@@ -124,13 +125,17 @@ async function apiFetch<T>(path: string, init?: RequestInit, timeoutMs = 6000): 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
+    const headers = {
+      'ngrok-skip-browser-warning': 'true',
+      ...(init?.headers ?? {}),
+    };
+    if (!(init?.body instanceof FormData)) {
+      (headers as Record<string, string>)['Content-Type'] = 'application/json';
+    }
+
     const res = await fetch(`${API_URL}${path}`, {
       ...init,
-      headers: {
-        'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
-        ...(init?.headers ?? {}),
-      },
+      headers,
       signal: controller.signal,
     });
     if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
@@ -153,7 +158,13 @@ export const api = {
   // --- Today / planning ---
   extractGoals: (text: string) =>
     fallback<Goal[]>(() => apiFetch('/api/planning/extract', { method: 'POST', body: JSON.stringify({ text }) }, 12000), MOCK.goals),
-  getGoals: () => fallback(() => apiFetch<Goal[]>('/api/planning/goals'), MOCK.goals),
+  extractGoalsFromAudio: (formData: FormData) =>
+    fallback<Goal[]>(() => apiFetch<Goal[]>('/api/planning/extract/audio', { method: 'POST', body: formData }, 18000), MOCK.goals),
+  getGoals: (day?: string) =>
+    fallback(
+      () => apiFetch<Goal[]>(`/api/planning/goals${day ? `?day=${encodeURIComponent(day)}` : ''}`),
+      MOCK.goals,
+    ),
   updateGoal: (id: number, status: string) =>
     fallback(() => apiFetch<Goal>(`/api/planning/goals/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }), () => MOCK.goals()[0]),
 
@@ -203,9 +214,9 @@ export const api = {
   logMood: (mood: string, note = '') =>
     fallback(() => apiFetch<MoodEntry>('/api/mood', { method: 'POST', body: JSON.stringify({ mood, note }) }), MOCK.mood),
   getBeast: () => fallback(() => apiFetch<BeastMode | null>('/api/beast'), MOCK.beast),
-  startBeast: (duration_min: number, blocked_sites: string[]) =>
+  startBeast: (duration_min: number, blocked_sites: string[], blocked_apps: string[] = []) =>
     fallback(
-      () => apiFetch<BeastMode>('/api/beast', { method: 'POST', body: JSON.stringify({ duration_min, blocked_sites }) }),
+      () => apiFetch<BeastMode>('/api/beast', { method: 'POST', body: JSON.stringify({ duration_min, blocked_sites, blocked_apps }) }),
       MOCK.beast,
     ),
   stopBeast: () => fallback(() => apiFetch<BeastMode | null>('/api/beast/stop', { method: 'POST' }), MOCK.beast),

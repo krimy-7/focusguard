@@ -180,6 +180,7 @@ class MoodOut(BaseModel):
 class BeastModeIn(BaseModel):
     duration_min: int = Field(ge=5, le=480)
     blocked_sites: list[str] = []
+    blocked_apps: list[str] = []
 
 
 class BeastModeOut(BaseModel):
@@ -191,6 +192,7 @@ class BeastModeOut(BaseModel):
     duration_min: int
     active: bool
     blocked_sites: list[str]
+    blocked_apps: list[str]
 
 
 class InterventionIn(BaseModel):

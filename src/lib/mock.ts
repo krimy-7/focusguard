@@ -132,6 +132,7 @@ export const MOCK = {
     duration_min: 60,
     active: false,
     blocked_sites: [],
+    blocked_apps: [],
   }),
 
   achievements: (): Achievement[] => [

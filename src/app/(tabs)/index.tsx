@@ -1,3 +1,5 @@
+import * as DocumentPicker from 'expo-document-picker';
+import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
@@ -7,7 +9,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { router, useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
@@ -101,16 +102,16 @@ export default function TodayScreen() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [insight, setInsight] = useState<Insight | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const [planningText, setPlanningText] = useState('');
+  const [captureText, setCaptureText] = useState('');
   const [extracting, setExtracting] = useState(false);
-  const [planned, setPlanned] = useState(false);
+  const [audioBusy, setAudioBusy] = useState(false);
+  const [captureError, setCaptureError] = useState<string | null>(null);
 
   const activeContext = contexts.find((c) => c.active) ?? null;
 
   const load = useCallback(async () => {
     const [gs, cs, bs, iv, st, inInsight] = await Promise.all([
-      api.getGoals(),
+      api.getGoals(todayKey()),
       api.getContexts(),
       api.getBreak(),
       api.getCurrentIntervention(),
@@ -123,7 +124,6 @@ export default function TodayScreen() {
     setIntervention(iv);
     setStats(st);
     setInsight(inInsight);
-    setPlanned(gs.some((g) => g.day === todayKey()));
     setLoading(false);
   }, []);
 
@@ -132,16 +132,6 @@ export default function TodayScreen() {
       load();
     }, [load]),
   );
-
-  const handleExtract = async () => {
-    if (!planningText.trim()) return;
-    setExtracting(true);
-    const extracted = await api.extractGoals(planningText);
-    setGoals(extracted);
-    setPlanned(true);
-    setExtracting(false);
-    setPlanningText('');
-  };
 
   const toggleGoal = async (goal: Goal) => {
     const next = goal.status === 'done' ? 'open' : 'done';
@@ -163,6 +153,44 @@ export default function TodayScreen() {
       setBreakState(bs);
     }
     load();
+  };
+
+  const extractGoalsFromText = async () => {
+    const text = captureText.trim();
+    if (!text) return;
+    setCaptureError(null);
+    setExtracting(true);
+    try {
+      const newGoals = await api.extractGoals(text);
+      setGoals((prev) => [...newGoals, ...prev]);
+      setCaptureText('');
+    } catch {
+      setCaptureError('Unable to extract goals from text. Please try again.');
+    } finally {
+      setExtracting(false);
+    }
+  };
+
+  const extractGoalsFromVoice = async () => {
+    setCaptureError(null);
+    setAudioBusy(true);
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: 'audio/*' });
+      if (result.canceled || !result.assets?.length) return;
+      const asset = result.assets[0];
+      const formData = new FormData();
+      formData.append('file', {
+        uri: asset.uri,
+        name: asset.name || 'voice-note.wav',
+        type: asset.mimeType || 'audio/wav',
+      } as any);
+      const newGoals = await api.extractGoalsFromAudio(formData);
+      setGoals((prev) => [...newGoals, ...prev]);
+    } catch {
+      setCaptureError('Unable to extract goals from audio. Please try a different recording or use text.');
+    } finally {
+      setAudioBusy(false);
+    }
   };
 
   const plannedToday = goals.filter((g) => g.day === todayKey());
@@ -196,36 +224,64 @@ export default function TodayScreen() {
           </View>
         ) : (
           <>
-            {/* Morning planning */}
+            <Card surface="surface-container-low" radius={24} className="p-lg gap-sm border border-primary/10">
+              <AppText variant="headlineLgMobile">Plan your day</AppText>
+              <AppText variant="bodyMd" color="on-surface-variant">
+                Type a morning intention or upload a voice note, and I’ll convert it into focused goals.
+              </AppText>
+              <TextInput
+                value={captureText}
+                onChangeText={setCaptureText}
+                placeholder="What do you want to accomplish today?"
+                placeholderTextColor={Palette.outline}
+                className="bg-surface-container-lowest border border-outline-variant rounded-[14px] px-md py-sm font-body text-body-md text-on-surface"
+              />
+              {captureError ? (
+                <AppText variant="labelSm" color="error">
+                  {captureError}
+                </AppText>
+              ) : null}
+              <View className="flex-row gap-sm">
+                <Pressable
+                  onPress={extractGoalsFromText}
+                  disabled={extracting || !captureText.trim()}
+                  className={cn(
+                    'flex-1 rounded-full px-lg py-sm items-center',
+                    extracting || !captureText.trim()
+                      ? 'bg-surface-container-high text-on-surface-variant'
+                      : 'bg-primary',
+                  )}>
+                  <AppText variant="labelLg" color={extracting || !captureText.trim() ? 'on-surface-variant' : 'on-primary'}>
+                    {extracting ? 'Extracting…' : 'Convert text'}
+                  </AppText>
+                </Pressable>
+                <Pressable
+                  onPress={extractGoalsFromVoice}
+                  disabled={audioBusy}
+                  className={cn(
+                    'rounded-full px-lg py-sm items-center',
+                    audioBusy ? 'bg-surface-container-high' : 'bg-secondary-container',
+                  )}>
+                  <AppText variant="labelLg" color={audioBusy ? 'on-surface-variant' : 'on-secondary-container'}>
+                    {audioBusy ? 'Uploading…' : 'Voice note'}
+                  </AppText>
+                </Pressable>
+              </View>
+            </Card>
             {!plannedToday.length ? (
               <Card surface="surface-container-low" radius={24} className="p-lg gap-sm border border-primary/10">
-                <AppText variant="headlineLgMobile">Plan your day</AppText>
+                <AppText variant="headlineLgMobile">No goals for today yet</AppText>
                 <AppText variant="bodyMd" color="on-surface-variant">
-                  Tell FocusGuard what matters today. Say it like you'd think it:
+                  FocusGuard can show goals already created in your dashboard once they exist.
                 </AppText>
-                <TextInput
-                  value={planningText}
-                  onChangeText={setPlanningText}
-                  placeholder="Finish the landing page, study React for an hour, prepare the presentation…"
-                  placeholderTextColor={Palette.outline}
-                  multiline
-                  className="min-h-[88px] bg-surface-container-lowest border border-outline-variant rounded-[14px] p-md font-body text-body-md text-on-surface"
-                />
-                <Pressable
-                  onPress={handleExtract}
-                  disabled={extracting || !planningText.trim()}
-                  className="bg-primary rounded-full px-lg py-sm items-center active:opacity-85 disabled:opacity-50">
-                  {extracting ? (
-                    <ActivityIndicator color={Palette.onPrimary} />
-                  ) : (
-                    <AppText variant="labelLg" color="on-primary">
-                      Create my plan
-                    </AppText>
-                  )}
-                </Pressable>
                 <AppText variant="labelSm" color="on-surface-variant" className="text-center">
-                  Your plan can be edited before the day begins.
+                  If you'd like, open the desktop dashboard to add a goal or confirm a detected context.
                 </AppText>
+                <Pressable onPress={() => router.push('/contexts')} className="bg-primary rounded-full px-lg py-sm items-center active:opacity-85">
+                  <AppText variant="labelLg" color="on-primary">
+                    Manage contexts
+                  </AppText>
+                </Pressable>
               </Card>
             ) : (
               <View className="gap-sm">

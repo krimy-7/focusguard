@@ -3,7 +3,7 @@ import platform
 import subprocess
 import time
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.config import get_settings
@@ -118,6 +118,21 @@ def ensure_postgres_running(url: str) -> bool:
 
 
 engine = _engine_for(settings.database_url or DEFAULT_SQLITE_URL)
+
+
+def run_simple_migrations(engine) -> None:
+    """Add new columns to existing tables without dropping data.
+    Kept intentionally small — new model columns get an idempotent ADD COLUMN here."""
+    try:
+        inspector = inspect(engine)
+        with engine.begin() as conn:
+            if "beast_mode_sessions" in inspector.get_table_names():
+                columns = {c["name"] for c in inspector.get_columns("beast_mode_sessions")}
+                if "blocked_apps" not in columns:
+                    conn.execute(text("ALTER TABLE beast_mode_sessions ADD COLUMN blocked_apps TEXT DEFAULT '[]'"))
+                    logger.info("Added beast_mode_sessions.blocked_apps column")
+    except Exception as exc:
+        logger.warning("Schema migration skipped (%s)", exc)
 
 
 class Base(DeclarativeBase):

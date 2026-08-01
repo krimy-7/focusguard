@@ -23,14 +23,15 @@ class AIService:
     def generate_insight(self, context: dict) -> dict:
         """Return {message, suggestion}. Falls back to mock data on any failure."""
         try:
-            if self.provider == "mock" or not self._credentials_ok():
+            provider = self._effective_provider()
+            if provider == "mock":
                 return self._mock_insight(context)
-            if self.provider in {"deepseek", "openai", "ollama"}:
+            if provider in {"deepseek", "openai", "ollama"}:
                 result = self._openai_compatible(context)
                 return result if self._insight_ok(result) else self._mock_insight(context)
-            if self.provider == "claude":
+            if provider == "claude":
                 return self._anthropic(context)
-            if self.provider == "gemini":
+            if provider == "gemini":
                 return self._gemini(context)
         except Exception:
             return self._mock_insight(context)
@@ -46,7 +47,8 @@ class AIService:
     def extract_goals(self, text: str) -> list[dict]:
         """Turn a free-form morning intention into structured goals."""
         try:
-            if self.provider == "mock" or not self._credentials_ok():
+            provider = self._effective_provider()
+            if provider == "mock":
                 return self._mock_goals(text)
 
             prompt = (
@@ -55,9 +57,9 @@ class AIService:
                 "per item, no commentary.\n"
                 f"User: {text}"
             )
-            if self.provider in {"deepseek", "openai", "ollama"}:
+            if provider in {"deepseek", "openai", "ollama"}:
                 content = self._chat(prompt)
-            elif self.provider == "claude":
+            elif provider == "claude":
                 content = self._anthropic_raw(prompt)
             else:
                 content = self._gemini_raw(prompt)
@@ -71,7 +73,8 @@ class AIService:
     def propose_context(self, signals: dict, recent_domains: list[str]) -> dict:
         """Propose a focus context (title + mode) from observed desktop signals."""
         try:
-            if self.provider == "mock" or not self._credentials_ok():
+            provider = self._effective_provider()
+            if provider == "mock":
                 return self._mock_context(signals, recent_domains)
 
             prompt = (
@@ -81,7 +84,7 @@ class AIService:
                 "'reason' (one short sentence).\n"
                 f"Signals: {signals}\nRecent domains: {recent_domains}"
             )
-            content = self._chat(prompt) if self.provider != "claude" else self._anthropic_raw(prompt)
+            content = self._chat(prompt) if provider != "claude" else self._anthropic_raw(prompt)
             data = self._parse_json_object(content)
             if data and data.get("title"):
                 return {
@@ -105,13 +108,15 @@ class AIService:
             return bool(settings.claude_api_key)
         if self.provider == "gemini":
             return bool(settings.gemini_api_key)
+        if self.provider == "ollama":
+            return self._ollama_ok()
         return True
 
     def _openai_endpoints(self) -> list[dict]:
         """One endpoint dict per configured key, so we can fall back to the
         next key (e.g. a second OpenRouter account for free-tier quota)."""
-        base = settings.openai_base_url or "https://openrouter.ai/api/v1"
-        model = settings.openai_model or "openrouter/free"
+        base = settings.openai_base_url or "https://api.openai.com/v1"
+        model = settings.openai_model or "gpt-4o-mini"
         keys = [settings.openai_api_key_first, settings.openai_api_key_second]
         if settings.openai_api_key:
             keys.append(settings.openai_api_key)
@@ -120,7 +125,21 @@ class AIService:
             for k in keys
             if k and k.strip()
         ]
-        return endpoints or [{"base_url": base, "model": model, "key": ""}]
+        return endpoints
+
+    def _ollama_ok(self) -> bool:
+        return bool(settings.ollama_base_url and settings.ollama_model)
+
+    def _effective_provider(self) -> str:
+        if self.provider == "mock":
+            return "mock"
+        if self.provider == "ollama":
+            return "ollama"
+        if self._credentials_ok():
+            return self.provider
+        if self._ollama_ok():
+            return "ollama"
+        return "mock"
 
     # -- Providers --------------------------------------------------------
 
@@ -128,13 +147,14 @@ class AIService:
         """Generic chat completion via the current OpenAI-compatible provider.
         Tries each configured endpoint in order, falling back to the next key
         on failure (rate limits, quota, etc.)."""
-        if self.provider == "deepseek":
+        provider = self._effective_provider()
+        if provider == "deepseek":
             endpoints = [{
                 "base_url": "https://api.deepseek.com/v1",
                 "model": settings.ai_model or "deepseek-chat",
                 "key": settings.deepseek_api_key,
             }]
-        elif self.provider == "ollama":
+        elif provider == "ollama":
             endpoints = [{
                 "base_url": settings.ollama_base_url,
                 "model": settings.ollama_model or "qwen3:0.6b",
@@ -286,6 +306,51 @@ class AIService:
             return json.loads(content[start : end + 1])
         except Exception:
             return None
+
+    def transcribe_audio(self, audio_bytes: bytes, filename: str, content_type: str) -> str:
+        provider = self._effective_provider()
+        if provider == "mock":
+            return self._mock_transcribe_audio()
+        if provider in {"openai", "ollama"}:
+            try:
+                return self._openai_compatible_audio(audio_bytes, filename, content_type)
+            except Exception:
+                pass
+        return self._mock_transcribe_audio()
+
+    def _openai_compatible_audio(self, audio_bytes: bytes, filename: str, content_type: str) -> str:
+        provider = self._effective_provider()
+        if provider == "ollama":
+            base_url = settings.ollama_base_url
+            model = settings.ollama_model or "qwen3:0.6b"
+        else:
+            base_url = settings.openai_base_url or "https://api.openai.com/v1"
+            model = settings.openai_audio_model or "whisper-1"
+
+        if provider == "openai":
+            endpoints = self._openai_endpoints()
+        else:
+            endpoints = [{"base_url": base_url, "model": model, "key": ""}]
+
+        last_exc: Exception | None = None
+        for ep in endpoints:
+            try:
+                with httpx.Client(timeout=httpx.Timeout(connect=3.0, read=30.0, write=30.0, pool=3.0)) as client:
+                    files = {
+                        "file": (filename, audio_bytes, content_type),
+                    }
+                    data = {"model": ep["model"]}
+                    headers = {"Authorization": f"Bearer {ep['key']}"} if ep.get("key") else {}
+                    resp = client.post(f"{ep['base_url']}/audio/transcriptions", data=data, files=files, headers=headers)
+                    resp.raise_for_status()
+                    result = resp.json()
+                    return result.get("text") or result.get("transcript") or ""
+            except Exception as exc:
+                last_exc = exc
+        raise last_exc or RuntimeError("Audio transcription failed.")
+
+    def _mock_transcribe_audio(self) -> str:
+        return "Review my day and turn it into 2-5 actionable goals."
 
     def _mock_insight(self, context: dict) -> dict:
         stats = context.get("stats", {})

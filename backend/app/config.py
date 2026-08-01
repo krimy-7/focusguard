@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     openai_api_key_second: str = ""
     openai_base_url: str = "https://api.openai.com/v1"
     openai_model: str = "gpt-4o-mini"
+    openai_audio_model: str = "whisper-1"
 
     claude_api_key: str = ""
     claude_model: str = "claude-3-5-sonnet-latest"

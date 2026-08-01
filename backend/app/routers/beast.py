@@ -24,6 +24,7 @@ def start_beast_mode(payload: BeastModeIn, db: Session = Depends(get_db)):
     session = BeastModeSession(
         duration_min=payload.duration_min,
         blocked_sites=json.dumps(payload.blocked_sites),
+        blocked_apps=json.dumps(payload.blocked_apps),
         started_at=now,
         ends_at=now + timedelta(minutes=payload.duration_min),
         active=True,
@@ -56,4 +57,5 @@ def _out(session: BeastModeSession | None) -> BeastModeOut | None:
         duration_min=session.duration_min,
         active=session.active,
         blocked_sites=json.loads(session.blocked_sites or "[]"),
+        blocked_apps=json.loads(session.blocked_apps or "[]"),
     )

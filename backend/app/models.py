@@ -121,6 +121,7 @@ class BeastModeSession(Base):
     duration_min: Mapped[int] = mapped_column(Integer, default=60)
     active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
     blocked_sites: Mapped[str] = mapped_column(Text, default="[]")  # JSON list of domains
+    blocked_apps: Mapped[str] = mapped_column(Text, default="[]")  # JSON list of Android package names
 
 
 class InterventionLog(Base):

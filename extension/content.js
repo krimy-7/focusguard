@@ -13,17 +13,21 @@
   }
 
   function report(type, detail, durationS) {
-    chrome.runtime.sendMessage(
-      {
-        type: "LOG_EVENT",
-        event: {
-          type,
-          detail: detail || hostnameOf(window.location.href) || "browser",
-          durationS: Math.round(durationS || 0),
+    try {
+      chrome.runtime.sendMessage(
+        {
+          type: "LOG_EVENT",
+          event: {
+            type,
+            detail: detail || hostnameOf(window.location.href) || "browser",
+            durationS: Math.round(durationS || 0),
+          },
         },
-      },
-      () => void chrome.runtime.lastError,
-    );
+        () => void chrome.runtime.lastError,
+      );
+    } catch {
+      // Extension was reloaded — this tab's content script context is stale.
+    }
   }
 
   let hiddenAt = null;

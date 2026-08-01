@@ -88,6 +88,20 @@ function post(path, body) {
 
 // ---- Backend sync --------------------------------------------------------
 
+async function syncBeast() {
+  // Refresh Beast Mode state. Only overwrites on a successful response so a
+  // temporary backend hiccup never silently disables blocking.
+  try {
+    const res = await fetch(`${CONFIG.BASE_URL}/api/beast`, {
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) return;
+    const beast = await res.json();
+    state.beast = beast && beast.active ? beast : null;
+    await saveState();
+  } catch {}
+}
+
 async function syncBackend() {
   const contexts = await api("/api/contexts");
   if (Array.isArray(contexts)) {
@@ -98,9 +112,9 @@ async function syncBackend() {
       ? Array.from(new Set((active.activities || []).map((a) => a.domain).filter(Boolean)))
       : [];
   }
-  const beast = await api("/api/beast");
-  state.beast = beast && beast.active ? beast : null;
+  await syncBeast();
   await saveState();
+  await enforceBlocking();
   return state;
 }
 
@@ -174,6 +188,7 @@ function isBlocked(domain) {
   const now = Date.now();
   if (beast.ends_at && new Date(beast.ends_at).getTime() < now) {
     state.beast = null;
+    saveState();
     return false;
   }
   return (beast.blocked_sites || []).some((s) => {
@@ -182,8 +197,21 @@ function isBlocked(domain) {
   });
 }
 
+async function enforceBlocking() {
+  // Re-check the currently active tab so Beast Mode engages immediately,
+  // even if the user is already sitting on a blocked site.
+  if (!state.beast || !state.beast.active) return;
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }).catch(() => []);
+  if (!tab || !tab.url) return;
+  const domain = hostnameOf(tab.url);
+  if (domain && isBlocked(domain)) {
+    chrome.tabs.update(tab.id, { url: chrome.runtime.getURL("blocked.html") });
+  }
+}
+
 function resetWatchdog() {
-  chrome.alarms.clear(["focusguard.grace", "focusguard.second"]);
+  chrome.alarms.clear("focusguard.grace");
+  chrome.alarms.clear("focusguard.second");
   state.awaySince = null;
   state.intervenedLevel = 0;
   saveState();
@@ -356,6 +384,8 @@ async function setActiveTab(tab) {
   const domain = hostnameOf(tab.url);
   if (!domain) return;
 
+  await syncBeast();
+
   if (isBlocked(domain)) {
     chrome.tabs.update(tab.id, { url: chrome.runtime.getURL("blocked.html") });
     return;
@@ -415,7 +445,8 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 
 // Service workers go idle — use an alarm (not setInterval) for periodic sync.
-chrome.alarms.create("focusguard.sync", { periodInMinutes: 5 });
+// 1 minute so Beast Mode / context changes picked up from the phone feel instant.
+chrome.alarms.create("focusguard.sync", { periodInMinutes: 1 });
 
 (async function init() {
   await loadState();
