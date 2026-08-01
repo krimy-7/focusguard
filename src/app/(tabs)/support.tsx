@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { AppState, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AppState, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from '@/components/app-text';
@@ -14,13 +14,13 @@ import { Palette, ScreenContent } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
 import {
-  getLaunchableApps,
-  hasUsageAccess,
-  isBeastGuardAvailable,
-  openUsageAccessSettings,
-  startBeastGuard,
-  stopBeastGuard,
-  type LaunchableApp,
+    getLaunchableApps,
+    hasUsageAccess,
+    isBeastGuardAvailable,
+    openUsageAccessSettings,
+    startBeastGuard,
+    stopBeastGuard,
+    type LaunchableApp,
 } from '../../../modules/focusguard-usage';
 
 type Tool = 'timer' | 'meditate' | 'mood' | 'beast';

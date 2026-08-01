@@ -74,6 +74,7 @@ function render() {
 }
 
 function startTicker() {
+  if (ticker) clearInterval(ticker);
   ticker = setInterval(() => {
     if (!paused) {
       focusSeconds += 1;
@@ -199,6 +200,7 @@ function renderContextCard(active, st) {
 
 async function loadFromBackend() {
   try {
+    const st = await chrome.runtime.sendMessage({ type: "GET_STATE" }).catch(() => null);
     const res = await fetch(`${CONFIG.BASE_URL}/api/stats`, { signal: AbortSignal.timeout(3000) });
     if (!res.ok) return false;
     const stats = await res.json();
@@ -206,10 +208,7 @@ async function loadFromBackend() {
     els.interrupts.textContent = stats.interrupts ?? 0;
     if (stats.current_focus) {
       els.currentFocus.textContent = stats.current_focus;
-    } else {
-      els.currentFocus.textContent = "No active context";
     }
-    startTicker();
 
     const insightRes = await fetch(`${CONFIG.BASE_URL}/api/insights`, { signal: AbortSignal.timeout(5000) });
     if (insightRes.ok) {
@@ -221,7 +220,6 @@ async function loadFromBackend() {
       }
     }
 
-    const st = await chrome.runtime.sendMessage({ type: "GET_STATE" }).catch(() => null);
     const ctxRes = await fetch(`${CONFIG.BASE_URL}/api/contexts`, { signal: AbortSignal.timeout(3000) });
     if (ctxRes.ok) {
       const contexts = await ctxRes.json();
@@ -356,10 +354,12 @@ async function pollBackgroundState() {
     els.contextPropose.hidden = true;
   });
 
+  // Render instantly from persisted local state (no waiting on the network),
+  // then overlay with fresh backend data when it arrives.
+  await loadLocalFallback();
   const ok = await loadFromBackend();
   if (!ok) {
     els.currentFocus.textContent = "Backend offline — local mode";
-    await loadLocalFallback();
   }
   
   // Start polling background state every 500ms to stay synced with real-time changes

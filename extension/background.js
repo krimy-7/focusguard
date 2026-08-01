@@ -15,8 +15,12 @@ importScripts("config.js");
 const CONFIG = typeof FOCUSGUARD_CONFIG !== "undefined" ? FOCUSGUARD_CONFIG : {};
 const STORAGE_KEY = "focusguard_state";
 
-const GRACE_MIN = Math.max(1, Number(CONFIG.GRACE_MINUTES) || 5);
-const SECOND_MIN = Math.max(1, Number(CONFIG.SECOND_MINUTES) || 5);
+// Raw configured durations (minutes) — may be fractional (e.g. 10/60 for 10s).
+// These are used for elapsed-time validation in the alarm handlers, NOT for the
+// alarm delay: Chrome enforces a 1-minute alarm minimum, so alarms always fire
+// at 1 min and the handlers re-check whether the configured time actually elapsed.
+const GRACE_MIN = Number(CONFIG.GRACE_MINUTES) || 5;
+const SECOND_MIN = Number(CONFIG.SECOND_MINUTES) || 5;
 
 const DEFAULT_STATE = {
   activeDomain: null,
@@ -330,14 +334,13 @@ async function startDistraction(domain) {
     
     const graceDurationMs = GRACE_MIN * 60 * 1000;
     console.log(`[DISTRACTION] Starting grace period of ${GRACE_MIN} minutes (${graceDurationMs}ms) for ${domain}`);
-    
-    // Chrome alarms have a 1-minute minimum. Always use alarms for reliability.
-    // For grace < 60s, set to 1 minute but the alarm handler will check actual elapsed time.
-    const delayMin = Math.max(1, GRACE_MIN);
-    chrome.alarms.create("focusguard.grace", { delayInMinutes: delayMin });
-    
+
+    // No Chrome alarms — the content script in the active tab times the grace
+    // period (sub-minute precision) and messages us when it elapses.
+    armWatchdog("grace", graceDurationMs);
+
     await saveState();
-    console.log(`[DISTRACTION] Grace alarm created (${delayMin}min) and state saved`);
+    console.log(`[DISTRACTION] Grace timer armed (${graceDurationMs}ms) and state saved`);
   }
 }
 
@@ -413,6 +416,51 @@ async function confirmContext(proposal, customTitle) {
 
 // ---- Watchdog ------------------------------------------------------------
 
+// Arm a sub-minute timer in the active tab's content script. The service worker
+// cannot use setTimeout reliably (it goes idle), and Chrome alarms have a
+// 1-minute floor, so the content script does the precise timing.
+async function armWatchdog(label, ms) {
+  // Prefer the tab for the current distraction/focus domain over the focused
+  // window — the intervention popup is itself a window and would otherwise
+  // swallow the message.
+  const target = state.distractionSite || state.activeDomain;
+  const tabs = await chrome.tabs.query({}).catch(() => []);
+  let tab = tabs.find((t) => {
+    const h = hostnameOf(t.url);
+    return h && (h === target || h.endsWith("." + target) || target.endsWith("." + h));
+  });
+  if (!tab) {
+    tab = tabs.find((t) => t.active) || tabs[0];
+  }
+  if (!tab || !tab.id) return;
+  try {
+    await chrome.tabs.sendMessage(tab.id, { type: "WATCHDOG_TIMER", label, ms });
+  } catch {
+    // No content script (chrome:// page, reloaded extension) — timer lost.
+  }
+}
+
+async function cancelWatchdog(label) {
+  const tabs = await chrome.tabs.query({}).catch(() => []);
+  for (const tab of tabs) {
+    if (!tab || !tab.id) continue;
+    try {
+      await chrome.tabs.sendMessage(tab.id, { type: "WATCHDOG_CANCEL", label });
+    } catch {}
+  }
+}
+
+async function handleWatchdogElapsed(label) {
+  await loadState();
+  if (label === "grace") {
+    if (!(state.awaySince && state.awaySince > 0 && state.distractionState === "grace")) return;
+    await triggerLevel1();
+  } else if (label === "second") {
+    if (!(state.awaySince && state.intervenedLevel === 1 && state.distractionState === "first")) return;
+    await triggerLevel2();
+  }
+}
+
 function isContextDomain(domain) {
   if (!domain) return false;
   const currentTopic = domainTopic(domain);
@@ -463,8 +511,8 @@ async function enforceBlocking() {
 }
 
 function resetWatchdog() {
-  chrome.alarms.clear("focusguard.grace");
-  chrome.alarms.clear("focusguard.second");
+  cancelWatchdog("grace");
+  cancelWatchdog("second");
   state.awaySince = null;
   state.intervenedLevel = 0;
   state.distractionState = state.contextTitle ? "active" : "none";
@@ -510,11 +558,11 @@ async function triggerLevel1() {
   console.log("[TRIGGER LEVEL 1] State saved, posting intervention...");
   await post("/api/interventions", { level: 1, message, context_id: state.contextId });
   console.log("[TRIGGER LEVEL 1] Intervention posted, scheduling Level 2...");
-  
-  // Chrome alarms have a 1-minute minimum. Always use alarms for reliability.
-  const delayMin = Math.max(1, SECOND_MIN);
-  chrome.alarms.create("focusguard.second", { delayInMinutes: delayMin });
-  
+
+  // Content-script timer for the second (playful) intervention.
+  const secondMs = SECOND_MIN * 60 * 1000;
+  armWatchdog("second", secondMs);
+
   await notify(1, message);
 }
 
@@ -531,32 +579,24 @@ async function triggerLevel2() {
   await notify(2, message);
 }
 
-function notify(level, message) {
-  const context = state.contextTitle || 'your focus';
-  const url = chrome.runtime.getURL('intervention.html') + 
-    `?level=${level}&message=${encodeURIComponent(message)}&context=${encodeURIComponent(context)}`;
-  
-  console.log(`[NOTIFICATION] Opening intervention popup (Level ${level})`);
-  
-  chrome.windows.create({
-    url: url,
-    type: 'popup',
-    width: 540,
-    height: 680,
-    left: 100,
-    top: 100,
-    focused: true,
-  }).then((window) => {
-    console.log(`[NOTIFICATION] Intervention window created:`, window.id);
-    // Close the popup after 30 seconds if user doesn't interact
-    setTimeout(() => {
-      if (window && window.id) {
-        chrome.windows.remove(window.id).catch(() => {});
-      }
-    }, 30000);
-  }).catch((err) => {
-    console.error(`[NOTIFICATION ERROR] Failed to create intervention window:`, err);
+// Inject a blurred intervention overlay into the distraction tab (5s), rather
+// than opening a separate popup window. The content script renders the UI and
+// messages back for the action buttons.
+async function notify(level, message) {
+  const context = state.contextTitle || "your focus";
+  const target = state.distractionSite || state.activeDomain;
+  const tabs = await chrome.tabs.query({}).catch(() => []);
+  const tab = tabs.find((t) => {
+    const h = hostnameOf(t.url);
+    return h && (h === target || h.endsWith("." + target) || target.endsWith("." + h));
   });
+  if (!tab || !tab.id) return;
+  try {
+    await chrome.tabs.sendMessage(tab.id, { type: "SHOW_INTERVENTION", level, message, context });
+    console.log(`[NOTIFICATION] Overlay sent to ${target} (Level ${level})`);
+  } catch {
+    console.error("[NOTIFICATION ERROR] No content script to receive overlay", target);
+  }
 }
 
 async function backToWork() {
@@ -590,59 +630,20 @@ async function takeBreak() {
 
 async function extendTimer() {
   state.awaySince = Date.now();
-  chrome.alarms.create("focusguard.grace", { delayInMinutes: GRACE_MIN });
+  state.gracePeriodStartedAt = Date.now();
+  armWatchdog("grace", (state.gracePeriodDurationMin || GRACE_MIN) * 60 * 1000);
   post("/api/sync", { platform: "extension", event: "intervention", payload: { detail: "extend_timer" } });
   saveState();
 }
 
-// ---- Alarms / notifications ----------------------------------------------
+// ---- Timers / notifications ----------------------------------------------
 
-chrome.alarms.onAlarm.addListener(async (alarm) => {
-  await loadState();
-  console.log(`[ALARM] ${alarm.name}`, { distractionState: state.distractionState, awaySince: state.awaySince, intervenedLevel: state.intervenedLevel });
-  
-  if (alarm.name === "focusguard.grace") {
-    // Check if distraction is still active AND enough actual time has passed
-    if (state.awaySince && state.awaySince > 0 && state.distractionState === "grace") {
-      const elapsedMs = Date.now() - (state.gracePeriodStartedAt || state.awaySince);
-      const expectedMs = (state.gracePeriodDurationMin || 5) * 60 * 1000;
-      
-      console.log(`[GRACE ALARM] Elapsed: ${elapsedMs}ms, Expected: ${expectedMs}ms`);
-      
-      // Only trigger if actual grace period has elapsed
-      // (Chrome enforces 1-minute minimum, so this handles grace < 60s)
-      if (elapsedMs >= expectedMs) {
-        console.log("[GRACE ALARM] Triggering Level 1 intervention");
-        await triggerLevel1();
-      } else {
-        console.log(`[GRACE ALARM] Too early, rescheduling (need ${expectedMs - elapsedMs}ms more)`);
-        // Reschedule for 1 minute later (alarm minimum), and check again
-        chrome.alarms.create("focusguard.grace", { delayInMinutes: 1 });
-      }
-    } else {
-      console.log("[GRACE ALARM] State check failed, skipping Level 1", { awaySince: state.awaySince, distractionState: state.distractionState });
-    }
-  } else if (alarm.name === "focusguard.second") {
-    // Check if Level 2 is due and enough time has passed
-    if (state.awaySince && state.intervenedLevel === 1 && state.distractionState === "first") {
-      const firstTriggeredAt = (state.gracePeriodStartedAt || state.awaySince) + (state.gracePeriodDurationMin || 5) * 60 * 1000;
-      const elapsedSinceFirst = Date.now() - firstTriggeredAt;
-      const expectedMs = (state.gracePeriodDurationMin || 5) * 60 * 1000; // Grace duration again before Level 2
-      
-      console.log(`[SECOND ALARM] Elapsed since Level 1: ${elapsedSinceFirst}ms, Expected: ${expectedMs}ms`);
-      
-      if (elapsedSinceFirst >= expectedMs) {
-        console.log("[SECOND ALARM] Triggering Level 2 intervention");
-        await triggerLevel2();
-      } else {
-        console.log(`[SECOND ALARM] Too early, rescheduling`);
-        chrome.alarms.create("focusguard.second", { delayInMinutes: 1 });
-      }
-    } else {
-      console.log("[SECOND ALARM] State check failed, skipping Level 2", { awaySince: state.awaySince, intervenedLevel: state.intervenedLevel, distractionState: state.distractionState });
-    }
-  } else if (alarm.name === "focusguard.sync") {
-    await syncBackend();
+// The content script in the active tab drives sub-minute watchdog timers
+// (no Chrome alarms — they have a 1-minute floor). It messages us on expiry.
+chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+  if (msg && msg.type === "WATCHDOG_ELAPSED") {
+    handleWatchdogElapsed(msg.label).then(() => sendResponse({ ok: true }));
+    return true;
   }
 });
 
@@ -909,8 +910,8 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   }
   if (msg && msg.type === "RESET") {
     state = { ...DEFAULT_STATE };
-    chrome.alarms.clear("focusguard.grace");
-    chrome.alarms.clear("focusguard.second");
+    cancelWatchdog("grace");
+    cancelWatchdog("second");
     syncBackend().then(async () => {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }).catch(() => []);
       if (tab) await setActiveTab(tab);
