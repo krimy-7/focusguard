@@ -37,6 +37,9 @@ yarn-error.*
 backend/.env
 backend/.env.example
 
+# extension local secrets
+extension/config.local.js
+
 # backend
 backend/.venv/
 backend/focusguard.db

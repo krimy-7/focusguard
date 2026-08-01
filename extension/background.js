@@ -10,6 +10,11 @@
 //     interventions with actionable buttons
 //   - Beast Mode: redirect blocked domains to a block page
 
+// Local, gitignored overrides (keys etc.) must load BEFORE config.js so the
+// merge at the bottom of config.js picks them up. Missing file is fine.
+try {
+  importScripts("config.local.js");
+} catch (e) {}
 importScripts("config.js");
 
 const CONFIG = typeof FOCUSGUARD_CONFIG !== "undefined" ? FOCUSGUARD_CONFIG : {};
@@ -550,7 +555,8 @@ async function evaluateWatchdog(domain) {
 async function triggerLevel1() {
   const title = state.contextTitle || "your focus";
   const awayMin = Math.max(1, Math.round(((Date.now() - state.awaySince) / 1000) / 60));
-  const message = `You've been away from ${title} for ${awayMin} minute${awayMin === 1 ? "" : "s"}.`;
+  const fallback = `You've been away from ${title} for ${awayMin} minute${awayMin === 1 ? "" : "s"}.`;
+  const message = await generateInterventionMessage(1, title, fallback);
   state.intervenedLevel = 1;
   state.distractionState = "first";
   state.firstInterventionShown = true;
@@ -568,7 +574,8 @@ async function triggerLevel1() {
 
 async function triggerLevel2() {
   const title = state.contextTitle || "your focus";
-  const message = `${title} is crying in the corner 😭`;
+  const fallback = `${title} is crying in the corner 😭`;
+  const message = await generateInterventionMessage(2, title, fallback);
   state.intervenedLevel = 2;
   state.distractionState = "second";
   state.secondInterventionShown = true;
@@ -577,6 +584,51 @@ async function triggerLevel2() {
   await post("/api/interventions", { level: 2, message, context_id: state.contextId });
   console.log("[TRIGGER LEVEL 2] Intervention posted, creating notification...");
   await notify(2, message);
+}
+
+// Generate an intervention message via OpenRouter, falling back to the mock
+// message when there are no keys, both requests fail, or nothing is returned.
+async function generateInterventionMessage(level, contextTitle, fallback) {
+  const keys = [(CONFIG.OPENROUTER_KEY_FIRST || "").trim(), (CONFIG.OPENROUTER_KEY_SECOND || "").trim()].filter(Boolean);
+  if (!keys.length) return fallback;
+
+  const site = state.distractionSite || state.activeDomain || "another website";
+  const isLevel2 = level === 2;
+  const prompt = isLevel2
+    ? `The user has been away from their "${contextTitle}" focus for a while and ignored a first reminder. Write ONE short playful sentence (max 12 words) nudging them back to "${contextTitle}". No quotes, no hashtags, no markdown.`
+    : `The user drifted from their "${contextTitle}" focus to ${site}. Write ONE short gentle sentence (max 12 words) reminding them to return to "${contextTitle}". No quotes, no hashtags, no markdown.`;
+
+  // Try each key in turn (second key covers rate limits / outages).
+  for (const key of keys) {
+    try {
+      const res = await fetch(CONFIG.OPENROUTER_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${key}`,
+        },
+        body: JSON.stringify({
+          model: CONFIG.OPENROUTER_MODEL || "openrouter/free",
+          messages: [
+            {
+              role: "system",
+              content: "You are FocusGuard, a friendly focus coach. Reply with exactly one short sentence.",
+            },
+            { role: "user", content: prompt },
+          ],
+          max_tokens: 40,
+          temperature: isLevel2 ? 0.9 : 0.6,
+        }),
+      });
+      if (!res.ok) continue; // try next key
+      const data = await res.json();
+      const text = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || "").trim();
+      if (text) return text.replace(/^["']|["']$/g, "");
+    } catch {
+      // network error — try next key
+    }
+  }
+  return fallback;
 }
 
 // Inject a blurred intervention overlay into the distraction tab (5s), rather
