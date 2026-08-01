@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "topic": "research",
+      "mode": "learning",
+      "domains": ["scholar.google.com", "researchgate.net", "semanticscholar.org", "arxiv.org", "pubmed.ncbi.nlm.nih.gov", "sciencedirect.com", "jstor.org"]
+    },
+    {
+      "topic": "code",
+      "mode": "work",
+      "domains": ["github.com", "gitlab.com", "bitbucket.org", "stackoverflow.com", "stackexchange.com", "codesandbox.io", "replit.com", "vscode.dev", "react.dev", "expo.dev", "developer.mozilla.org", "nodejs.org", "npmjs.com", "python.org"]
+    },
+    {
+      "topic": "design",
+      "mode": "work",
+      "domains": ["figma.com", "dribbble.com", "behance.net", "canva.com", "framer.com", "adobe.com", "fonts.google.com"]
+    },
+    {
+      "topic": "learning",
+      "mode": "learning",
+      "domains": ["youtube.com", "coursera.org", "udemy.com", "khanacademy.org", "duolingo.com", "medium.com", "dev.to", "wikipedia.org"]
+    },
+    {
+      "topic": "work",
+      "mode": "work",
+      "domains": ["trello.com", "linear.app", "asana.com", "atlassian.net", "todoist.com", "slack.com", "teams.microsoft.com", "discord.com", "mail.google.com", "outlook.office.com", "calendar.google.com", "linkedin.com", "upwork.com", "fiverr.com"]
+    },
+    {
+      "topic": "personal",
+      "mode": "personal",
+      "domains": ["reddit.com", "news.google.com", "cnn.com", "bbc.com", "nytimes.com", "netflix.com", "hulu.com", "primevideo.com", "amazon.com", "flipkart.com", "myntra.com", "ebay.com", "spotify.com", "soundcloud.com", "instagram.com", "facebook.com", "twitter.com", "x.com", "tiktok.com", "pinterest.com"]
+    }
+  ]
+}
