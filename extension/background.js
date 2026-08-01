@@ -186,10 +186,17 @@ function isBlocked(domain) {
   const beast = state.beast;
   if (!beast || !beast.active || !domain) return false;
   const now = Date.now();
-  if (beast.ends_at && new Date(beast.ends_at).getTime() < now) {
-    state.beast = null;
-    saveState();
-    return false;
+  if (beast.ends_at) {
+    // Backend stores naive UTC (no timezone marker) — treat it as UTC so a
+    // non-UTC machine doesn't misread the end time as already past.
+    const s = String(beast.ends_at).trim();
+    const hasTz = /Z$/i.test(s) || /[+-]\d{2}:?\d{2}$/.test(s);
+    const endMs = new Date(hasTz ? s : `${s}Z`).getTime();
+    if (!Number.isNaN(endMs) && endMs < now) {
+      state.beast = null;
+      saveState();
+      return false;
+    }
   }
   return (beast.blocked_sites || []).some((s) => {
     const site = s.trim().toLowerCase();

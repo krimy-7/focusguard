@@ -7,7 +7,7 @@ import { AppText } from '@/components/app-text';
 import { Card } from '@/components/card';
 import { Icon } from '@/components/icon';
 import { TopAppBar } from '@/components/top-app-bar';
-import { api, type BeastMode } from '@/lib/api';
+import { api, parseServerUtc, type BeastMode } from '@/lib/api';
 import { Palette, ScreenContent } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
@@ -179,7 +179,7 @@ export default function SupportScreen() {
       const created = await api.startBeast(beastMin, sites, blockedApps);
       setBeast(created);
       if (created && created.ends_at && blockedApps.length) {
-        await startBeastGuard(blockedApps, new Date(created.ends_at).getTime());
+        await startBeastGuard(blockedApps, parseServerUtc(created.ends_at));
       }
     } finally {
       setGuardBusy(false);
@@ -354,7 +354,7 @@ export default function SupportScreen() {
               <View className="gap-sm">
                 <Card surface="error-container" radius={16} className="p-md gap-xs">
                   <AppText variant="labelLg" color="on-error-container">
-                    Locked until {beast.ends_at ? new Date(beast.ends_at).toLocaleTimeString() : '…'}
+                    Locked until {beast.ends_at ? new Date(parseServerUtc(beast.ends_at)).toLocaleTimeString() : '…'}
                   </AppText>
                   <AppText variant="bodyMd" color="on-error-container">
                     {beast.blocked_apps.length

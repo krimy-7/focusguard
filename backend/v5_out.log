@@ -4621,3 +4621,760 @@ WHERE beast_mode_sessions.active IS true
 2026-08-01 16:21:52,410 INFO sqlalchemy.engine.Engine [cached since 2259s ago] {'param_1': 1}
 2026-08-01 16:21:52,414 INFO sqlalchemy.engine.Engine ROLLBACK
 INFO:     127.0.0.1:57642 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:22:27,246 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:22:27,247 INFO sqlalchemy.engine.Engine INSERT INTO focus_events (type, detail, duration_s, occurred_at) VALUES (%(type)s::VARCHAR, %(detail)s::VARCHAR, %(duration_s)s, %(occurred_at)s::TIMESTAMP WITHOUT TIME ZONE) RETURNING focus_events.id
+2026-08-01 16:22:27,247 INFO sqlalchemy.engine.Engine [cached since 1842s ago] {'type': 'context_switch', 'detail': '127.0.0.1', 'duration_s': 108.0, 'occurred_at': datetime.datetime(2026, 8, 1, 10, 37, 27, 245630)}
+2026-08-01 16:22:27,249 INFO sqlalchemy.engine.Engine COMMIT
+2026-08-01 16:22:27,251 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:22:27,255 INFO sqlalchemy.engine.Engine SELECT focus_events.id, focus_events.type, focus_events.detail, focus_events.duration_s, focus_events.occurred_at 
+FROM focus_events 
+WHERE focus_events.id = %(pk_1)s::INTEGER
+2026-08-01 16:22:27,256 INFO sqlalchemy.engine.Engine [cached since 1842s ago] {'pk_1': 284}
+2026-08-01 16:22:27,260 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57713 - "POST /api/events HTTP/1.1" 201 Created
+2026-08-01 16:22:29,145 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:22:29,146 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:22:29,147 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {}
+2026-08-01 16:22:29,151 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:29,152 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {'param_1': 4}
+2026-08-01 16:22:29,153 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:22:29,154 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:22:29,155 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:29,155 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {}
+2026-08-01 16:22:29,156 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {'param_1': 3}
+2026-08-01 16:22:29,159 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:29,160 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:29,160 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {'param_1': 2}
+2026-08-01 16:22:29,161 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {'param_1': 4}
+2026-08-01 16:22:29,163 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:29,164 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:29,164 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {'param_1': 1}
+2026-08-01 16:22:29,165 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {'param_1': 3}
+2026-08-01 16:22:29,169 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:29,169 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-08-01 16:22:29,169 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {'param_1': 2}
+INFO:     127.0.0.1:57713 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:22:29,173 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:29,174 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {'param_1': 1}
+2026-08-01 16:22:29,177 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57714 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:22:29,183 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:22:29,184 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:22:29,185 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {'param_1': 1}
+2026-08-01 16:22:29,190 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-08-01 16:22:29,190 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:22:29,191 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+INFO:     127.0.0.1:57713 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:22:29,192 INFO sqlalchemy.engine.Engine [cached since 2296s ago] {'param_1': 1}
+2026-08-01 16:22:29,197 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57714 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:22:30,277 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:22:30,278 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:22:30,279 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {}
+2026-08-01 16:22:30,283 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:30,283 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:22:30,284 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {'param_1': 4}
+2026-08-01 16:22:30,284 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:22:30,285 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {}
+2026-08-01 16:22:30,286 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:30,287 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {'param_1': 3}
+2026-08-01 16:22:30,290 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:30,291 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:30,291 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {'param_1': 4}
+2026-08-01 16:22:30,291 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {'param_1': 2}
+2026-08-01 16:22:30,293 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:30,294 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:30,294 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {'param_1': 3}
+2026-08-01 16:22:30,295 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {'param_1': 1}
+2026-08-01 16:22:30,297 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:30,298 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {'param_1': 2}
+2026-08-01 16:22:30,299 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-08-01 16:22:30,300 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:22:30,316 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {'param_1': 1}
+INFO:     127.0.0.1:57714 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:22:30,319 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57713 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:22:30,331 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:22:30,332 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:22:30,333 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {'param_1': 1}
+2026-08-01 16:22:30,335 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:22:30,336 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:22:30,337 INFO sqlalchemy.engine.Engine [cached since 2297s ago] {'param_1': 1}
+2026-08-01 16:22:30,338 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57713 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:22:30,342 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57714 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:24:21,011 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:21,012 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:24:21,013 INFO sqlalchemy.engine.Engine [cached since 2408s ago] {}
+2026-08-01 16:24:21,016 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:21,020 INFO sqlalchemy.engine.Engine [cached since 2407s ago] {'param_1': 4}
+2026-08-01 16:24:21,023 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:21,024 INFO sqlalchemy.engine.Engine [cached since 2408s ago] {'param_1': 3}
+2026-08-01 16:24:21,026 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:21,027 INFO sqlalchemy.engine.Engine [cached since 2408s ago] {'param_1': 2}
+2026-08-01 16:24:21,029 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:21,030 INFO sqlalchemy.engine.Engine [cached since 2408s ago] {'param_1': 1}
+2026-08-01 16:24:21,034 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57791 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:24:21,041 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:21,042 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:24:21,043 INFO sqlalchemy.engine.Engine [cached since 2408s ago] {}
+2026-08-01 16:24:21,047 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:21,048 INFO sqlalchemy.engine.Engine [cached since 2408s ago] {'param_1': 4}
+2026-08-01 16:24:21,077 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:21,077 INFO sqlalchemy.engine.Engine [cached since 2408s ago] {'param_1': 3}
+2026-08-01 16:24:21,080 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:21,080 INFO sqlalchemy.engine.Engine [cached since 2408s ago] {'param_1': 2}
+2026-08-01 16:24:21,082 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:21,083 INFO sqlalchemy.engine.Engine [cached since 2408s ago] {'param_1': 1}
+2026-08-01 16:24:21,085 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57791 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:24:21,091 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:21,092 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:24:21,093 INFO sqlalchemy.engine.Engine [cached since 2408s ago] {'param_1': 1}
+2026-08-01 16:24:21,096 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57791 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:24:21,101 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:21,103 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:24:21,103 INFO sqlalchemy.engine.Engine [cached since 2408s ago] {'param_1': 1}
+2026-08-01 16:24:21,106 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57791 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:24:23,429 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:23,430 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:24:23,431 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {}
+2026-08-01 16:24:23,436 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:23,437 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {'param_1': 4}
+2026-08-01 16:24:23,439 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:23,440 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {'param_1': 3}
+2026-08-01 16:24:23,441 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:23,442 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {'param_1': 2}
+2026-08-01 16:24:23,444 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:23,450 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {'param_1': 1}
+2026-08-01 16:24:23,453 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57791 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:24:23,458 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:23,459 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:24:23,461 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {}
+2026-08-01 16:24:23,462 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:23,463 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:24:23,465 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:23,465 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {'param_1': 1}
+2026-08-01 16:24:23,466 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {'param_1': 4}
+2026-08-01 16:24:23,469 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:23,470 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {'param_1': 3}
+2026-08-01 16:24:23,471 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-08-01 16:24:23,472 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:23,473 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {'param_1': 2}
+INFO:     127.0.0.1:57793 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:24:23,476 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:24:23,477 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {'param_1': 1}
+2026-08-01 16:24:23,480 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57791 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:24:23,489 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:23,490 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:24:23,490 INFO sqlalchemy.engine.Engine [cached since 2410s ago] {'param_1': 1}
+2026-08-01 16:24:23,493 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57791 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:24:36,318 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:36,320 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:24:36,321 INFO sqlalchemy.engine.Engine [cached since 2423s ago] {'param_1': 1}
+2026-08-01 16:24:36,325 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57794 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:24:42,378 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:42,609 INFO sqlalchemy.engine.Engine INSERT INTO focus_events (type, detail, duration_s, occurred_at) VALUES (%(type)s::VARCHAR, %(detail)s::VARCHAR, %(duration_s)s, %(occurred_at)s::TIMESTAMP WITHOUT TIME ZONE) RETURNING focus_events.id
+2026-08-01 16:24:42,610 INFO sqlalchemy.engine.Engine [cached since 1978s ago] {'type': 'interruption', 'detail': 'Focus shifted away', 'duration_s': 0.0, 'occurred_at': datetime.datetime(2026, 8, 1, 10, 39, 42, 378134)}
+2026-08-01 16:24:42,614 INFO sqlalchemy.engine.Engine COMMIT
+2026-08-01 16:24:42,982 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:42,990 INFO sqlalchemy.engine.Engine SELECT focus_events.id, focus_events.type, focus_events.detail, focus_events.duration_s, focus_events.occurred_at 
+FROM focus_events 
+WHERE focus_events.id = %(pk_1)s::INTEGER
+2026-08-01 16:24:42,994 INFO sqlalchemy.engine.Engine [cached since 1978s ago] {'pk_1': 285}
+2026-08-01 16:24:43,000 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57840 - "POST /api/events HTTP/1.1" 201 Created
+2026-08-01 16:24:43,223 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:43,225 INFO sqlalchemy.engine.Engine INSERT INTO focus_events (type, detail, duration_s, occurred_at) VALUES (%(type)s::VARCHAR, %(detail)s::VARCHAR, %(duration_s)s, %(occurred_at)s::TIMESTAMP WITHOUT TIME ZONE) RETURNING focus_events.id
+2026-08-01 16:24:43,226 INFO sqlalchemy.engine.Engine [cached since 1978s ago] {'type': 'interruption', 'detail': 'Focus shifted away', 'duration_s': 0.0, 'occurred_at': datetime.datetime(2026, 8, 1, 10, 39, 43, 223239)}
+2026-08-01 16:24:43,229 INFO sqlalchemy.engine.Engine COMMIT
+2026-08-01 16:24:43,558 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:43,574 INFO sqlalchemy.engine.Engine SELECT focus_events.id, focus_events.type, focus_events.detail, focus_events.duration_s, focus_events.occurred_at 
+FROM focus_events 
+WHERE focus_events.id = %(pk_1)s::INTEGER
+2026-08-01 16:24:43,589 INFO sqlalchemy.engine.Engine [cached since 1979s ago] {'pk_1': 286}
+2026-08-01 16:24:43,607 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57840 - "POST /api/events HTTP/1.1" 201 Created
+2026-08-01 16:24:44,725 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:44,745 INFO sqlalchemy.engine.Engine SELECT focus_sessions.id AS focus_sessions_id, focus_sessions.task_title AS focus_sessions_task_title, focus_sessions.app_name AS focus_sessions_app_name, focus_sessions.url AS focus_sessions_url, focus_sessions.started_at AS focus_sessions_started_at, focus_sessions.ended_at AS focus_sessions_ended_at, focus_sessions.duration_s AS focus_sessions_duration_s, focus_sessions.score AS focus_sessions_score 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:44,767 INFO sqlalchemy.engine.Engine [cached since 1787s ago] {'started_at_1': datetime.datetime(2026, 8, 1, 0, 0)}
+2026-08-01 16:24:44,789 INFO sqlalchemy.engine.Engine SELECT focus_events.id AS focus_events_id, focus_events.type AS focus_events_type, focus_events.detail AS focus_events_detail, focus_events.duration_s AS focus_events_duration_s, focus_events.occurred_at AS focus_events_occurred_at 
+FROM focus_events 
+WHERE focus_events.occurred_at >= %(occurred_at_1)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:44,805 INFO sqlalchemy.engine.Engine [cached since 1787s ago] {'occurred_at_1': datetime.datetime(2026, 8, 1, 0, 0)}
+2026-08-01 16:24:44,841 INFO sqlalchemy.engine.Engine SELECT max(focus_sessions.started_at) AS max_1 
+FROM focus_sessions
+2026-08-01 16:24:44,860 INFO sqlalchemy.engine.Engine [cached since 1787s ago] {}
+2026-08-01 16:24:44,880 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:44,900 INFO sqlalchemy.engine.Engine [cached since 1787s ago] {'started_at_1': datetime.datetime(2026, 8, 1, 0, 0), 'started_at_2': datetime.datetime(2026, 8, 2, 0, 0)}
+2026-08-01 16:24:44,936 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:44,969 INFO sqlalchemy.engine.Engine [cached since 1787s ago] {'started_at_1': datetime.datetime(2026, 7, 31, 0, 0), 'started_at_2': datetime.datetime(2026, 8, 1, 0, 0)}
+2026-08-01 16:24:44,990 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,011 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 30, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 31, 0, 0)}
+2026-08-01 16:24:45,050 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,067 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 29, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 30, 0, 0)}
+2026-08-01 16:24:45,162 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,163 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 28, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 29, 0, 0)}
+2026-08-01 16:24:45,166 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,167 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 27, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 28, 0, 0)}
+2026-08-01 16:24:45,172 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,173 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 26, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 27, 0, 0)}
+2026-08-01 16:24:45,176 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,177 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 25, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 26, 0, 0)}
+2026-08-01 16:24:45,183 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,184 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 24, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 25, 0, 0)}
+2026-08-01 16:24:45,186 INFO sqlalchemy.engine.Engine SELECT focus_sessions.id AS focus_sessions_id, focus_sessions.task_title AS focus_sessions_task_title, focus_sessions.app_name AS focus_sessions_app_name, focus_sessions.url AS focus_sessions_url, focus_sessions.started_at AS focus_sessions_started_at, focus_sessions.ended_at AS focus_sessions_ended_at, focus_sessions.duration_s AS focus_sessions_duration_s, focus_sessions.score AS focus_sessions_score 
+FROM focus_sessions 
+WHERE focus_sessions.ended_at IS NULL ORDER BY focus_sessions.started_at DESC 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:24:45,187 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'param_1': 1}
+2026-08-01 16:24:45,200 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-08-01 16:24:45,201 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+INFO:     127.0.0.1:57840 - "GET /api/stats HTTP/1.1" 200 OK
+2026-08-01 16:24:45,203 INFO sqlalchemy.engine.Engine INSERT INTO focus_events (type, detail, duration_s, occurred_at) VALUES (%(type)s::VARCHAR, %(detail)s::VARCHAR, %(duration_s)s, %(occurred_at)s::TIMESTAMP WITHOUT TIME ZONE) RETURNING focus_events.id
+2026-08-01 16:24:45,204 INFO sqlalchemy.engine.Engine [cached since 1980s ago] {'type': 'interruption', 'detail': 'Focus shifted away', 'duration_s': 0.0, 'occurred_at': datetime.datetime(2026, 8, 1, 10, 39, 45, 200705)}
+2026-08-01 16:24:45,206 INFO sqlalchemy.engine.Engine COMMIT
+2026-08-01 16:24:45,214 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:45,215 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:45,216 INFO sqlalchemy.engine.Engine SELECT focus_sessions.id AS focus_sessions_id, focus_sessions.task_title AS focus_sessions_task_title, focus_sessions.app_name AS focus_sessions_app_name, focus_sessions.url AS focus_sessions_url, focus_sessions.started_at AS focus_sessions_started_at, focus_sessions.ended_at AS focus_sessions_ended_at, focus_sessions.duration_s AS focus_sessions_duration_s, focus_sessions.score AS focus_sessions_score 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,217 INFO sqlalchemy.engine.Engine SELECT focus_events.id, focus_events.type, focus_events.detail, focus_events.duration_s, focus_events.occurred_at 
+FROM focus_events 
+WHERE focus_events.id = %(pk_1)s::INTEGER
+2026-08-01 16:24:45,217 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 8, 1, 0, 0)}
+2026-08-01 16:24:45,218 INFO sqlalchemy.engine.Engine [cached since 1980s ago] {'pk_1': 287}
+2026-08-01 16:24:45,221 INFO sqlalchemy.engine.Engine SELECT focus_events.id AS focus_events_id, focus_events.type AS focus_events_type, focus_events.detail AS focus_events_detail, focus_events.duration_s AS focus_events_duration_s, focus_events.occurred_at AS focus_events_occurred_at 
+FROM focus_events 
+WHERE focus_events.occurred_at >= %(occurred_at_1)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,222 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'occurred_at_1': datetime.datetime(2026, 8, 1, 0, 0)}
+2026-08-01 16:24:45,224 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-08-01 16:24:45,230 INFO sqlalchemy.engine.Engine SELECT max(focus_sessions.started_at) AS max_1 
+FROM focus_sessions
+2026-08-01 16:24:45,232 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {}
+INFO:     127.0.0.1:57841 - "POST /api/events HTTP/1.1" 201 Created
+2026-08-01 16:24:45,235 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,237 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 8, 1, 0, 0), 'started_at_2': datetime.datetime(2026, 8, 2, 0, 0)}
+2026-08-01 16:24:45,241 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,242 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 31, 0, 0), 'started_at_2': datetime.datetime(2026, 8, 1, 0, 0)}
+2026-08-01 16:24:45,245 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,246 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 30, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 31, 0, 0)}
+2026-08-01 16:24:45,249 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,250 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 29, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 30, 0, 0)}
+2026-08-01 16:24:45,253 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,254 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 28, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 29, 0, 0)}
+2026-08-01 16:24:45,256 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,257 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 27, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 28, 0, 0)}
+2026-08-01 16:24:45,260 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,262 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 26, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 27, 0, 0)}
+2026-08-01 16:24:45,264 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,265 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 25, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 26, 0, 0)}
+2026-08-01 16:24:45,268 INFO sqlalchemy.engine.Engine SELECT count(focus_sessions.id) AS count_1 
+FROM focus_sessions 
+WHERE focus_sessions.started_at >= %(started_at_1)s::TIMESTAMP WITHOUT TIME ZONE AND focus_sessions.started_at < %(started_at_2)s::TIMESTAMP WITHOUT TIME ZONE
+2026-08-01 16:24:45,269 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'started_at_1': datetime.datetime(2026, 7, 24, 0, 0), 'started_at_2': datetime.datetime(2026, 7, 25, 0, 0)}
+2026-08-01 16:24:45,272 INFO sqlalchemy.engine.Engine SELECT focus_sessions.id AS focus_sessions_id, focus_sessions.task_title AS focus_sessions_task_title, focus_sessions.app_name AS focus_sessions_app_name, focus_sessions.url AS focus_sessions_url, focus_sessions.started_at AS focus_sessions_started_at, focus_sessions.ended_at AS focus_sessions_ended_at, focus_sessions.duration_s AS focus_sessions_duration_s, focus_sessions.score AS focus_sessions_score 
+FROM focus_sessions 
+WHERE focus_sessions.ended_at IS NULL ORDER BY focus_sessions.started_at DESC 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:24:45,272 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'param_1': 1}
+2026-08-01 16:24:45,276 INFO sqlalchemy.engine.Engine SELECT focus_events.id AS focus_events_id, focus_events.type AS focus_events_type, focus_events.detail AS focus_events_detail, focus_events.duration_s AS focus_events_duration_s, focus_events.occurred_at AS focus_events_occurred_at 
+FROM focus_events ORDER BY focus_events.occurred_at DESC 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:24:45,277 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'param_1': 8}
+2026-08-01 16:24:45,280 INFO sqlalchemy.engine.Engine SELECT tasks.id AS tasks_id, tasks.title AS tasks_title, tasks.category AS tasks_category, tasks.tag AS tasks_tag, tasks.status AS tasks_status, tasks.created_at AS tasks_created_at, tasks.completed_at AS tasks_completed_at 
+FROM tasks 
+WHERE tasks.status != %(status_1)s::VARCHAR 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:24:45,280 INFO sqlalchemy.engine.Engine [cached since 1788s ago] {'status_1': 'done', 'param_1': 5}
+2026-08-01 16:24:48,456 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57840 - "GET /api/insights HTTP/1.1" 200 OK
+2026-08-01 16:24:51,506 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:51,585 INFO sqlalchemy.engine.Engine INSERT INTO focus_events (type, detail, duration_s, occurred_at) VALUES (%(type)s::VARCHAR, %(detail)s::VARCHAR, %(duration_s)s, %(occurred_at)s::TIMESTAMP WITHOUT TIME ZONE) RETURNING focus_events.id
+2026-08-01 16:24:51,585 INFO sqlalchemy.engine.Engine [cached since 1987s ago] {'type': 'interruption', 'detail': 'Logged from popup', 'duration_s': 0.0, 'occurred_at': datetime.datetime(2026, 8, 1, 10, 39, 51, 506225)}
+2026-08-01 16:24:51,587 INFO sqlalchemy.engine.Engine COMMIT
+2026-08-01 16:24:51,589 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:24:51,590 INFO sqlalchemy.engine.Engine SELECT focus_events.id, focus_events.type, focus_events.detail, focus_events.duration_s, focus_events.occurred_at 
+FROM focus_events 
+WHERE focus_events.id = %(pk_1)s::INTEGER
+2026-08-01 16:24:51,591 INFO sqlalchemy.engine.Engine [cached since 1987s ago] {'pk_1': 288}
+2026-08-01 16:24:51,594 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57840 - "POST /api/events HTTP/1.1" 201 Created
+2026-08-01 16:25:02,851 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:25:02,852 INFO sqlalchemy.engine.Engine INSERT INTO focus_events (type, detail, duration_s, occurred_at) VALUES (%(type)s::VARCHAR, %(detail)s::VARCHAR, %(duration_s)s, %(occurred_at)s::TIMESTAMP WITHOUT TIME ZONE) RETURNING focus_events.id
+2026-08-01 16:25:02,853 INFO sqlalchemy.engine.Engine [cached since 1998s ago] {'type': 'interruption', 'detail': 'Focus shifted away', 'duration_s': 0.0, 'occurred_at': datetime.datetime(2026, 8, 1, 10, 40, 2, 850828)}
+2026-08-01 16:25:02,856 INFO sqlalchemy.engine.Engine COMMIT
+2026-08-01 16:25:02,861 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:25:02,862 INFO sqlalchemy.engine.Engine SELECT focus_events.id, focus_events.type, focus_events.detail, focus_events.duration_s, focus_events.occurred_at 
+FROM focus_events 
+WHERE focus_events.id = %(pk_1)s::INTEGER
+2026-08-01 16:25:02,863 INFO sqlalchemy.engine.Engine [cached since 1998s ago] {'pk_1': 289}
+2026-08-01 16:25:02,867 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57866 - "POST /api/events HTTP/1.1" 201 Created
+2026-08-01 16:25:07,887 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:25:07,888 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:25:07,889 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {}
+2026-08-01 16:25:07,893 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:25:07,895 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {'param_1': 4}
+2026-08-01 16:25:07,898 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:25:07,899 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {'param_1': 3}
+2026-08-01 16:25:07,910 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:25:07,910 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {'param_1': 2}
+2026-08-01 16:25:07,912 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:25:07,913 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {'param_1': 1}
+2026-08-01 16:25:07,917 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57867 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:25:07,923 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:25:07,924 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:25:07,924 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {}
+2026-08-01 16:25:07,927 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:25:07,928 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {'param_1': 4}
+2026-08-01 16:25:07,929 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:25:07,930 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {'param_1': 3}
+2026-08-01 16:25:07,933 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:25:07,934 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {'param_1': 2}
+2026-08-01 16:25:07,936 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:25:07,936 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {'param_1': 1}
+2026-08-01 16:25:07,939 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57867 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:25:07,944 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:25:07,945 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:25:07,946 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {'param_1': 1}
+2026-08-01 16:25:07,949 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57867 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:25:07,956 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:25:07,957 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:25:07,958 INFO sqlalchemy.engine.Engine [cached since 2454s ago] {'param_1': 1}
+2026-08-01 16:25:07,961 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57867 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:25:17,782 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:25:17,783 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:25:17,784 INFO sqlalchemy.engine.Engine [cached since 2464s ago] {'param_1': 1}
+2026-08-01 16:25:17,789 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57871 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:25:46,172 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:25:46,174 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:25:46,174 INFO sqlalchemy.engine.Engine [cached since 2493s ago] {'param_1': 1}
+2026-08-01 16:25:46,178 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57914 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:25:46,838 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:25:46,839 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:25:46,840 INFO sqlalchemy.engine.Engine [cached since 2493s ago] {'param_1': 1}
+2026-08-01 16:25:46,845 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57914 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:26:08,203 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:26:08,204 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:26:08,204 INFO sqlalchemy.engine.Engine [cached since 2515s ago] {}
+2026-08-01 16:26:08,207 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:26:08,211 INFO sqlalchemy.engine.Engine [cached since 2515s ago] {'param_1': 4}
+2026-08-01 16:26:08,214 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:26:08,215 INFO sqlalchemy.engine.Engine [cached since 2515s ago] {'param_1': 3}
+2026-08-01 16:26:08,218 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:26:08,218 INFO sqlalchemy.engine.Engine [cached since 2515s ago] {'param_1': 2}
+2026-08-01 16:26:08,221 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:26:08,222 INFO sqlalchemy.engine.Engine [cached since 2515s ago] {'param_1': 1}
+2026-08-01 16:26:08,224 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57936 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:26:08,236 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:26:08,237 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:26:08,237 INFO sqlalchemy.engine.Engine [cached since 2515s ago] {'param_1': 1}
+2026-08-01 16:26:08,240 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57936 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:27:01,352 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:27:01,353 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:27:01,354 INFO sqlalchemy.engine.Engine [cached since 2568s ago] {'param_1': 1}
+2026-08-01 16:27:01,358 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57938 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:27:08,207 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:27:08,208 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:27:08,208 INFO sqlalchemy.engine.Engine [cached since 2575s ago] {}
+2026-08-01 16:27:08,211 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:27:08,211 INFO sqlalchemy.engine.Engine [cached since 2575s ago] {'param_1': 4}
+2026-08-01 16:27:08,217 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:27:08,218 INFO sqlalchemy.engine.Engine [cached since 2575s ago] {'param_1': 3}
+2026-08-01 16:27:08,230 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:27:08,231 INFO sqlalchemy.engine.Engine [cached since 2575s ago] {'param_1': 2}
+2026-08-01 16:27:08,232 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:27:08,233 INFO sqlalchemy.engine.Engine [cached since 2575s ago] {'param_1': 1}
+2026-08-01 16:27:08,235 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57975 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:27:08,245 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:27:08,247 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:27:08,247 INFO sqlalchemy.engine.Engine [cached since 2575s ago] {'param_1': 1}
+2026-08-01 16:27:08,251 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57975 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:27:27,628 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:27:27,630 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:27:27,630 INFO sqlalchemy.engine.Engine [cached since 2594s ago] {'param_1': 1}
+2026-08-01 16:27:27,635 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57993 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:28:07,906 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:28:07,908 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:28:07,910 INFO sqlalchemy.engine.Engine [cached since 2634s ago] {}
+2026-08-01 16:28:07,931 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:28:07,932 INFO sqlalchemy.engine.Engine [cached since 2634s ago] {'param_1': 4}
+2026-08-01 16:28:07,935 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:28:07,936 INFO sqlalchemy.engine.Engine [cached since 2634s ago] {'param_1': 3}
+2026-08-01 16:28:07,939 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:28:07,940 INFO sqlalchemy.engine.Engine [cached since 2634s ago] {'param_1': 2}
+2026-08-01 16:28:07,943 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:28:07,944 INFO sqlalchemy.engine.Engine [cached since 2634s ago] {'param_1': 1}
+2026-08-01 16:28:07,947 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57976 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:28:08,038 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:28:08,039 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:28:08,040 INFO sqlalchemy.engine.Engine [cached since 2634s ago] {'param_1': 1}
+2026-08-01 16:28:08,044 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:57976 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:28:54,491 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:28:54,492 INFO sqlalchemy.engine.Engine INSERT INTO focus_events (type, detail, duration_s, occurred_at) VALUES (%(type)s::VARCHAR, %(detail)s::VARCHAR, %(duration_s)s, %(occurred_at)s::TIMESTAMP WITHOUT TIME ZONE) RETURNING focus_events.id
+2026-08-01 16:28:54,493 INFO sqlalchemy.engine.Engine [cached since 2230s ago] {'type': 'focus_lost', 'detail': 'Browser window focus', 'duration_s': 113.0, 'occurred_at': datetime.datetime(2026, 8, 1, 10, 43, 54, 489682)}
+2026-08-01 16:28:54,496 INFO sqlalchemy.engine.Engine COMMIT
+2026-08-01 16:28:54,501 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:28:54,503 INFO sqlalchemy.engine.Engine SELECT focus_events.id, focus_events.type, focus_events.detail, focus_events.duration_s, focus_events.occurred_at 
+FROM focus_events 
+WHERE focus_events.id = %(pk_1)s::INTEGER
+2026-08-01 16:28:54,503 INFO sqlalchemy.engine.Engine [cached since 2229s ago] {'pk_1': 290}
+2026-08-01 16:28:54,508 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58049 - "POST /api/events HTTP/1.1" 201 Created
+2026-08-01 16:29:07,913 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:29:07,915 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:29:07,917 INFO sqlalchemy.engine.Engine [cached since 2694s ago] {}
+2026-08-01 16:29:07,926 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:29:07,926 INFO sqlalchemy.engine.Engine [cached since 2694s ago] {'param_1': 4}
+2026-08-01 16:29:07,929 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:29:07,930 INFO sqlalchemy.engine.Engine [cached since 2694s ago] {'param_1': 3}
+2026-08-01 16:29:07,932 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:29:07,933 INFO sqlalchemy.engine.Engine [cached since 2694s ago] {'param_1': 2}
+2026-08-01 16:29:07,936 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:29:07,937 INFO sqlalchemy.engine.Engine [cached since 2694s ago] {'param_1': 1}
+2026-08-01 16:29:07,941 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58050 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:29:08,026 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:29:08,027 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:29:08,028 INFO sqlalchemy.engine.Engine [cached since 2694s ago] {'param_1': 1}
+2026-08-01 16:29:08,031 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58050 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:30:10,126 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:30:10,127 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:30:10,128 INFO sqlalchemy.engine.Engine [cached since 2757s ago] {}
+2026-08-01 16:30:10,131 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:30:10,132 INFO sqlalchemy.engine.Engine [cached since 2757s ago] {'param_1': 4}
+2026-08-01 16:30:10,135 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:30:10,136 INFO sqlalchemy.engine.Engine [cached since 2757s ago] {'param_1': 3}
+2026-08-01 16:30:10,139 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:30:10,140 INFO sqlalchemy.engine.Engine [cached since 2757s ago] {'param_1': 2}
+2026-08-01 16:30:10,143 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:30:10,143 INFO sqlalchemy.engine.Engine [cached since 2757s ago] {'param_1': 1}
+2026-08-01 16:30:10,147 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58101 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:30:10,164 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:30:10,165 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:30:10,166 INFO sqlalchemy.engine.Engine [cached since 2757s ago] {'param_1': 1}
+2026-08-01 16:30:10,170 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58101 - "GET /api/beast HTTP/1.1" 200 OK
+INFO:     103.254.186.26:0 - "OPTIONS /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:30:24,067 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:30:24,068 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:30:24,069 INFO sqlalchemy.engine.Engine [cached since 2770s ago] {'param_1': 1}
+2026-08-01 16:30:24,073 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     103.254.186.26:0 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:30:37,381 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:30:37,382 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:30:37,383 INFO sqlalchemy.engine.Engine [cached since 2784s ago] {'param_1': 1}
+2026-08-01 16:30:37,387 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     103.254.186.26:0 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:30:43,377 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:30:43,378 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:30:43,379 INFO sqlalchemy.engine.Engine [cached since 2790s ago] {'param_1': 1}
+2026-08-01 16:30:43,384 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     103.254.186.26:0 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:30:50,428 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:30:50,429 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:30:50,430 INFO sqlalchemy.engine.Engine [cached since 2797s ago] {'param_1': 1}
+2026-08-01 16:30:50,434 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     103.254.186.26:0 - "GET /api/beast HTTP/1.1" 200 OK
+2026-08-01 16:31:07,895 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:31:07,896 INFO sqlalchemy.engine.Engine SELECT contexts.id AS contexts_id, contexts.title AS contexts_title, contexts.mode AS contexts_mode, contexts.source AS contexts_source, contexts.active AS contexts_active, contexts.confirmed AS contexts_confirmed, contexts.note AS contexts_note, contexts.created_at AS contexts_created_at 
+FROM contexts ORDER BY contexts.active DESC, contexts.created_at DESC
+2026-08-01 16:31:07,897 INFO sqlalchemy.engine.Engine [cached since 2814s ago] {}
+2026-08-01 16:31:07,901 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:31:07,902 INFO sqlalchemy.engine.Engine [cached since 2814s ago] {'param_1': 4}
+2026-08-01 16:31:07,910 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:31:07,910 INFO sqlalchemy.engine.Engine [cached since 2814s ago] {'param_1': 3}
+2026-08-01 16:31:07,913 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:31:07,914 INFO sqlalchemy.engine.Engine [cached since 2814s ago] {'param_1': 2}
+2026-08-01 16:31:07,917 INFO sqlalchemy.engine.Engine SELECT context_activities.id AS context_activities_id, context_activities.context_id AS context_activities_context_id, context_activities.kind AS context_activities_kind, context_activities.label AS context_activities_label, context_activities.domain AS context_activities_domain, context_activities.duration_s AS context_activities_duration_s, context_activities.occurred_at AS context_activities_occurred_at 
+FROM context_activities 
+WHERE %(param_1)s::INTEGER = context_activities.context_id ORDER BY context_activities.occurred_at DESC
+2026-08-01 16:31:07,918 INFO sqlalchemy.engine.Engine [cached since 2814s ago] {'param_1': 1}
+2026-08-01 16:31:07,921 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58102 - "GET /api/contexts HTTP/1.1" 200 OK
+2026-08-01 16:31:07,933 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-08-01 16:31:07,934 INFO sqlalchemy.engine.Engine SELECT beast_mode_sessions.id AS beast_mode_sessions_id, beast_mode_sessions.started_at AS beast_mode_sessions_started_at, beast_mode_sessions.ends_at AS beast_mode_sessions_ends_at, beast_mode_sessions.duration_min AS beast_mode_sessions_duration_min, beast_mode_sessions.active AS beast_mode_sessions_active, beast_mode_sessions.blocked_sites AS beast_mode_sessions_blocked_sites, beast_mode_sessions.blocked_apps AS beast_mode_sessions_blocked_apps 
+FROM beast_mode_sessions 
+WHERE beast_mode_sessions.active IS true 
+ LIMIT %(param_1)s::INTEGER
+2026-08-01 16:31:07,936 INFO sqlalchemy.engine.Engine [cached since 2814s ago] {'param_1': 1}
+2026-08-01 16:31:07,939 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58102 - "GET /api/beast HTTP/1.1" 200 OK

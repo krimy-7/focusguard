@@ -104,6 +104,15 @@ export type BeastMode = {
   blocked_apps: string[];
 };
 
+// The backend stores naive UTC timestamps (no timezone marker). JS parses a
+// bare ISO string as LOCAL time, so append "Z" unless one is already present.
+export function parseServerUtc(value: string | null | undefined): number {
+  if (!value) return NaN;
+  const s = String(value).trim();
+  const hasTz = /Z$/i.test(s) || /[+-]\d{2}:?\d{2}$/.test(s);
+  return new Date(hasTz ? s : `${s}Z`).getTime();
+}
+
 export type Achievement = {
   code: string;
   title: string;
