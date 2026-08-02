@@ -4,20 +4,26 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FocusGuard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
   <header class="header">
     <div class="brand">
       <div class="brand-icon">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="#ffffff">
-          <path d="M13 2 4.5 13.5H11L9.5 22 19 9.5h-6.5L13 2z" />
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
         </svg>
       </div>
-      <h1>FocusGuard</h1>
+      <div class="brand-text">
+        <h1>FocusGuard</h1>
+        <span class="brand-badge">PRO</span>
+      </div>
     </div>
     <button class="icon-btn" id="settingsBtn" title="Settings">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="3" />
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
       </svg>
@@ -25,7 +31,10 @@
   </header>
 
   <section class="context-card" id="contextCard">
-    <p class="eyebrow">What are you working on?</p>
+    <div class="card-header-row">
+      <p class="eyebrow">Active Context</p>
+    </div>
+    
     <div id="contextActive" hidden>
       <div class="context-title-row">
         <h2 id="contextTitle">—</h2>
@@ -33,7 +42,7 @@
       </div>
       <p class="status-line" id="contextMeta"></p>
       <div class="context-actions" id="contextActions" hidden>
-        <button class="action-btn small" id="backToWorkBtn">
+        <button class="action-btn primary-btn" id="backToWorkBtn">
           <span class="action-icon">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
@@ -48,12 +57,13 @@
         </div>
       </div>
     </div>
+
     <div id="contextPropose" hidden>
       <p class="propose-note" id="proposeNote">Detected: —</p>
       <input class="propose-input" id="proposeTitle" type="text" maxlength="120" placeholder="What are you working on?" />
       <div class="propose-actions">
         <button class="action-btn small ghost" id="proposeCancelBtn">Cancel</button>
-        <button class="action-btn small confirm" id="proposeOkBtn">Okay</button>
+        <button class="action-btn small confirm" id="proposeOkBtn">Confirm Target</button>
       </div>
     </div>
   </section>
@@ -66,12 +76,12 @@
         <h2 id="currentFocus" style="display: none;">Detecting…</h2>
       </div>
       <div class="timer-pulse">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-          <path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61 1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42A8.96 8.96 0 0 0 12 4a9 9 0 0 0-9 9c0 4.97 4.02 9 9 9a8.94 8.94 0 0 0 6.59-2.83l-1.42-1.42A7 7 0 1 1 19 13h-2a5 5 0 1 0-5 5c1.54 0 2.92-.7 3.85-1.8L17.2 14.4A7 7 0 0 0 12 6a7 7 0 0 0-6.03 3.39H9V11H3V5h2v2.27A8.95 8.95 0 0 1 12 4c2.3 0 4.4.87 6.03 2.39z" />
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.59L8.71 12.3a1 1 0 1 1 1.41-1.41L12 12.59l4.88-4.88a1 1 0 0 1 1.41 1.41z" />
         </svg>
       </div>
     </div>
-    <!-- <div class="timer-row">
+    <div class="timer-row">
       <div class="progress-track">
         <div class="progress-fill" id="progressFill" style="width: 0%"></div>
       </div>
@@ -79,56 +89,64 @@
         <span id="elapsedLabel">00:00</span>
         <span id="goalLabel" class="goal-label">25:00 goal</span>
       </div>
-    </div> -->
+    </div>
     <button class="pause-btn" id="pauseBtn" title="Pause / Resume focus">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="#ffffff">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="#ffffff">
         <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
       </svg>
     </button>
   </section>
 
   <section class="actions">
-    <button class="action-btn" id="logInterrupt">
-      <span class="action-icon">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2a7.2 7.2 0 0 1-6-3.22c.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08a7.2 7.2 0 0 1-6 3.22z" />
+    <button class="action-btn secondary-action" id="logInterrupt">
+      <span class="action-icon alert-icon">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+          <line x1="12" y1="9" x2="12" y2="13" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
       </span>
-      <span>Log Interruption</span>
+      <span class="btn-label">Log Interruption</span>
       <span class="chevron">›</span>
     </button>
     <button class="action-btn teal" id="quickBreak">
-      <span class="action-icon">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-          <path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm-2 10H4V5h14v8zM2 21h18v-2H2v2z" />
+      <span class="action-icon break-icon">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
         </svg>
       </span>
-      <span>Quick Break</span>
+      <span class="btn-label">Quick Break (5m)</span>
       <span class="chevron">⚡</span>
     </button>
   </section>
 
   <section class="stats-section">
-    <h3>Stats at a Glance</h3>
+    <div class="section-title-row">
+      <h3>Stats at a Glance</h3>
+      <span class="today-tag">Today</span>
+    </div>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon mint">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
           </svg>
         </div>
-        <div>
+        <div class="stat-details">
           <p class="stat-label">Focus Time</p>
           <p class="stat-value" id="focusTime">0m</p>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon coral">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-            <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" />
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
         </div>
-        <div>
+        <div class="stat-details">
           <p class="stat-label">Interrupts</p>
           <p class="stat-value" id="interrupts">0</p>
         </div>
@@ -137,25 +155,33 @@
   </section>
 
   <section class="insight" id="insightCard" hidden>
+    <div class="insight-header">
+      <span class="insight-spark">✨</span>
+      <span class="insight-title">AI Focus Nudge</span>
+    </div>
     <p class="insight-text" id="insightText"></p>
     <p class="insight-suggestion" id="insightSuggestion"></p>
   </section>
 
   <footer class="footer">
     <a id="dashboardLink" href="#" target="_blank">
-      Go to Dashboard
+      <span>Dashboard</span>
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-        <path d="M15 3h6v6" />
-        <path d="M10 14 21 3" />
+        <polyline points="15 3 21 3 21 9" />
+        <line x1="10" y1="14" x2="21" y2="3" />
       </svg>
     </a>
-    <div class="mascot-pill" title="FocusGuard mascot">
-      <div class="mascot-orb"></div>
-      <span id="mascotHint">Stay hydrated!</span>
+    <div class="mascot-pill" title="FocusGuard Companion">
+      <div class="mascot-orb">
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="#0f766e">
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+        </svg>
+      </div>
+      <span id="mascotHint">Stay focused & hydrated!</span>
     </div>
   </footer>
-  <button class="reset-btn" id="resetBtn" title="Wipe the backend database and re-seed fresh data">Reset data</button>
+  <button class="reset-btn" id="resetBtn" title="Wipe the backend database and re-seed fresh data">Reset local data</button>
 
   <script src="../config.js"></script>
   <script src="popup.js"></script>
