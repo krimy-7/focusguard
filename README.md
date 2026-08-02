@@ -3,6 +3,10 @@
 Privacy-first focus coach. An Expo (SDK 57) mobile app + Chrome MV3 extension backed by a
 FastAPI/Postgres service with an AI-powered, mock-data-safe layer.
 
+**Video Link** : [https://drive.google.com/drive/folders/1VXo8Ef5RP5yP-meIAylOmpQDT4So32Gd](https://drive.google.com/drive/folders/1VXo8Ef5RP5yP-meIAylOmpQDT4So32Gd)
+---
+**PPT Link** : [https://docs.google.com/presentation/d/1e4w2Zpk2WKPfBDMRw7UYcJ0bxZNbkudF/edit?usp=sharing&ouid=109556622737543211140&rtpof=true&sd=true](https://docs.google.com/presentation/d/1e4w2Zpk2WKPfBDMRw7UYcJ0bxZNbkudF/edit?usp=sharing&ouid=109556622737543211140&rtpof=true&sd=true)
+
 **The loop:** morning planning → automatic context detection/confirmation/grouping → a watchdog
 that gives you **grace**, then **gentle interventions** → breaks that preserve your progress →
 progress/achievements → support tools (Pomodoro, meditation, mood, Beast Mode) → cross-device sync.
