@@ -9,8 +9,9 @@ import { AppText } from '@/components/app-text';
 import { Card } from '@/components/card';
 import { Icon } from '@/components/icon';
 import { TopAppBar } from '@/components/top-app-bar';
+import { useDashboardLayout } from '@/hooks/use-dashboard-layout';
 import { api, parseServerUtc, type BeastMode } from '@/lib/api';
-import { Palette, ScreenContent } from '@/theme';
+import { Palette } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
 import {
@@ -38,6 +39,8 @@ const TIMER_STORAGE_PREFIX = 'focusguard:countdown:';
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),
@@ -247,6 +250,7 @@ function ToolShell({ children }: { children: React.ReactNode }) {
 
 export default function SupportScreen() {
   const insets = useSafeAreaInsets();
+  const { contentStyle } = useDashboardLayout();
   const [tool, setTool] = useState<Tool>('timer');
 
   // Pomodoro
@@ -345,21 +349,21 @@ const pickFocus = async (min: number) => {
       <TopAppBar />
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ ...ScreenContent, gap: 16, paddingBottom: 40 + insets.bottom }}
+        contentContainerStyle={{ ...contentStyle, gap: 16, paddingBottom: 40 + insets.bottom }}
         showsVerticalScrollIndicator={false}>
         <AppText variant="headlineXl">Support</AppText>
         <AppText variant="bodyMd" color="on-surface-variant">
           Gentle tools for the moments in between.
         </AppText>
 
-        <View className="flex-row gap-xs">
+        <View className="flex-row gap-xs rounded-[22px] bg-surface-container-low p-xs">
           {TOOLS.map((t) => (
             <Pressable
               key={t.key}
               onPress={() => setTool(t.key)}
               className={cn(
-                'flex-1 items-center gap-xs py-sm rounded-full border active:opacity-85',
-                tool === t.key ? 'border-primary bg-primary-container' : 'border-outline-variant/50 bg-surface-container-lowest',
+                'flex-1 items-center gap-xs py-sm rounded-[18px] active:opacity-85',
+                tool === t.key ? 'bg-surface-container-lowest' : 'bg-transparent',
               )}>
               <Icon name={t.icon} size={18} color={tool === t.key ? Palette.primary : Palette.onSurfaceVariant} />
               <AppText variant="labelSm" color={tool === t.key ? 'primary' : 'on-surface-variant'}>
@@ -378,9 +382,9 @@ const pickFocus = async (min: number) => {
               </AppText>
             </View>
 
-            <View className="items-center py-md">
-              <View className="w-44 h-44 rounded-full border-4 items-center justify-center"
-                style={{ borderColor: onBreak ? Palette.secondary : Palette.primary }}>
+            <View className="items-center py-lg rounded-[24px] bg-primary-container">
+              <View className="w-44 h-44 rounded-full border-4 bg-surface-container-lowest items-center justify-center"
+                style={{ borderColor: Palette.primary }}>
                 <AppText variant="headlineXl" className="text-[44px]">
                   {fmt(timer.remaining)}
                 </AppText>

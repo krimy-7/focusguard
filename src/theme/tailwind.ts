@@ -62,6 +62,6 @@ export const BORDER_COLORS = Object.fromEntries(
   PALETTE_NAMES.map((name) => [name, `border-${name}`]),
 ) as Record<TwColorName, string>;
 
-export function cn(...classes: Array<string | false | null | undefined>) {
+export function cn(...classes: (string | false | null | undefined)[]) {
   return classes.filter(Boolean).join(' ');
 }

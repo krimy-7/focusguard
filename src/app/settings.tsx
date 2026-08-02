@@ -6,8 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppText } from '@/components/app-text';
 import { Icon } from '@/components/icon';
 import { TopAppBar } from '@/components/top-app-bar';
+import { useDashboardLayout } from '@/hooks/use-dashboard-layout';
 import { API_URL, api, type FocusContext } from '@/lib/api';
-import { Palette, ScreenContent } from '@/theme';
+import { Palette } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
 type ToggleRowProps = {
@@ -58,6 +59,7 @@ function Section({ title, children, danger }: SectionProps) {
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
+  const { contentStyle } = useDashboardLayout();
 
   const [syncStatus, setSyncStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [graceMin, setGraceMin] = useState(5);
@@ -98,7 +100,7 @@ export default function SettingsScreen() {
       <TopAppBar />
       <ScrollView
         className="flex-1"
-        contentContainerStyle={{ ...ScreenContent, paddingBottom: 40 + insets.bottom }}
+        contentContainerStyle={{ ...contentStyle, paddingBottom: 40 + insets.bottom }}
         showsVerticalScrollIndicator={false}>
         <View className="items-center gap-sm pt-sm">
           <View className="w-20 h-20 rounded-[28px] bg-primary-container items-center justify-center">
