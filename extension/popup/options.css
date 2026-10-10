@@ -1,0 +1,28 @@
+/* FocusGuard settings page (popup/options.html). Tokens, fonts and the window mark come from ../styles/tokens.css. */
+.head { padding: 0 max(16px, calc((100vw - 640px) / 2)); }
+
+.page { max-width: 640px; margin: 0 auto; padding: 32px 16px 64px; }
+.page h1 { font-size: 28px; line-height: 1.2; font-weight: 700; margin-bottom: 8px; }
+.sect { padding: 28px 0; border-top: 1px solid var(--line); }
+.sect:first-of-type { border-top: 0; }
+.sect h2 { font-size: 22px; line-height: 1.25; font-weight: 700; }
+.sect h2:focus { outline: none; }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack.tight { gap: 6px; }
+.muted { max-width: 65ch; }
+
+fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+legend { padding: 0; margin-bottom: 6px; font-weight: 600; }
+.quiet-row { display: flex; gap: 12px; }
+.quiet-row label { flex: 1; display: flex; align-items: center; gap: 8px; font-weight: 400; }
+.quiet-row input { min-width: 0; }
+.radio { display: flex; align-items: center; gap: 12px; min-height: 44px; font-weight: 400; cursor: pointer; }
+
+.disclosure { padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink-2); max-width: 65ch; }
+.save { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+.list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+.list li:first-child { border-top: 1px solid var(--line); }
+.list .btn { flex: none; white-space: nowrap; }
+.add { display: flex; gap: 8px; }
+.add input { flex: 1; }

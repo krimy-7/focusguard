@@ -1,6 +1,6 @@
 // @ts-check
-// Settings view: grace + quiet hours (server, via PATCH /me), AI option, related-site rules,
-// extra sensitive sites (device only), sign out.
+// Settings (options.html): grace + quiet hours (server, via PATCH /me), AI option, related-site rules,
+// extra sensitive sites (device only), sign out. Each message appears beside the form that caused it.
 import { apiFetch, signOut } from '../auth/session.js';
 import { endpointFor } from '../ai/providers.js';
 import { normalizeSites } from '../beast/beast.js';
@@ -8,8 +8,8 @@ import { GRACE_OPTIONS_S, validQuietHours, aiDisclosure, hostPattern, stored } f
 
 /** @param {string} id */
 const $ = (id) => /** @type {any} */ (document.getElementById(id));
-/** @param {string} msg */
-const say = (msg) => { $('status').textContent = msg; };
+/** @param {string} id @param {string} msg */
+const say = (id, msg) => { $(id).textContent = msg; };
 const changed = () => chrome.runtime.sendMessage({ type: 'settings_changed' }).catch(() => {});
 const quietInputs = () => /** @type {NodeListOf<HTMLInputElement>} */ (document.querySelectorAll('#nudgeForm input[type="time"]'));
 let wired = false;
@@ -18,13 +18,8 @@ let savedKey = ''; // the stored API key is never put back into the DOM
 let savedAi = { mode: 'off' }; // restored if Chrome's permission prompt is refused
 let nudgesKnown = false; // false = the form shows defaults, not the user's settings: never PATCH them
 
-/** @param {() => void} onClose */
-export async function openSettings(onClose) {
-  for (const v of ['consentView', 'signedOutView', 'mainView']) $(v).hidden = true;
-  $('settingsView').hidden = false;
-  $('openSettings').hidden = true;
-  $('settingsView').querySelector('h2').focus();
-  if (!wired) { wire(onClose); wired = true; }
+export async function openSettings() {
+  if (!wired) { wire(); wired = true; }
   await Promise.all([loadNudges(), loadAi(), loadRules(), loadSensitive(), loadAccount()]);
 }
 
@@ -41,7 +36,7 @@ async function loadNudges() {
     const cached = (await stored('fg_settings_cache'))?.profile?.settings;
     s = cached ?? {};
     nudgesKnown = !!cached;
-    say(cached ? 'Showing your last saved settings. FocusGuard AI is offline right now.'
+    say('nudgeFb', cached ? 'Showing your last saved settings. FocusGuard AI is offline right now.'
       : 'Couldn’t load your settings. FocusGuard AI is offline right now.');
   }
   const grace = s.grace_s ?? 300;
@@ -104,13 +99,11 @@ async function checkNano() {
   nanoSay('This device can’t run it (it needs a strong graphics card, or 16 GB of memory).');
 }
 
-function wire(/** @type {() => void} */ onClose) {
-  $('closeSettings').addEventListener('click', () => { $('settingsView').hidden = true; onClose(); });
-
+function wire() {
   $('nudgeForm').addEventListener('submit', async (/** @type {Event} */ e) => {
     e.preventDefault();
     // The form holds defaults, not the user's settings: saving would wipe their quiet hours (R4: [] clears).
-    if (!nudgesKnown) { await loadNudges(); if (nudgesKnown) say('Loaded your current settings. Check them, then save again.'); return; }
+    if (!nudgesKnown) { await loadNudges(); if (nudgesKnown) say('nudgeFb', 'Loaded your current settings. Check them, then save again.'); return; }
     const rows = [0, 1, 2].map((i) => ({
       from: /** @type {HTMLInputElement} */ (document.querySelector(`#nudgeForm input[data-q="${i}"][data-k="from"]`)).value,
       to: /** @type {HTMLInputElement} */ (document.querySelector(`#nudgeForm input[data-q="${i}"][data-k="to"]`)).value }));
@@ -120,9 +113,9 @@ function wire(/** @type {() => void} */ onClose) {
       const res = await apiFetch('/me', { method: 'PATCH', body: JSON.stringify({ settings: { grace_s: Number($('grace').value), quiet_hours: quiet } }) });
       if (!res.ok) throw new Error(res.status === 422 ? 'Those settings weren’t accepted.' : `Couldn’t save (error ${res.status}).`);
       await changed();
-      say(started > quiet.length ? 'Saved. Incomplete quiet-hour rows were skipped.' : 'Saved.');
+      say('nudgeFb', started > quiet.length ? 'Saved. Incomplete quiet-hour rows were skipped.' : 'Saved.');
     } catch (err) {
-      say(err instanceof Error && !/fetch/i.test(err.message) ? err.message : 'Couldn’t reach FocusGuard AI. Try again when you’re online.');
+      say('nudgeFb', err instanceof Error && !/fetch/i.test(err.message) ? err.message : 'Couldn’t reach FocusGuard AI. Try again when you’re online.');
     }
   });
 
@@ -141,36 +134,36 @@ function wire(/** @type {() => void} */ onClose) {
   $('aiForm').addEventListener('submit', (/** @type {Event} */ e) => {
     e.preventDefault();
     const opt = readAi();
-    if (opt.mode === 'local' && (!opt.baseUrl || !opt.model)) return say('Enter the address and model name.');
-    if (opt.mode === 'key' && (!opt.model || !opt.apiKey)) return say('Enter the model name and your API key.');
+    if (opt.mode === 'local' && (!opt.baseUrl || !opt.model)) return say('aiFb', 'Enter the address and model name.');
+    if (opt.mode === 'key' && (!opt.model || !opt.apiKey)) return say('aiFb', 'Enter the model name and your API key.');
     const url = endpointFor(opt);
     let pattern = null;
-    try { pattern = url ? hostPattern(url) : null; } catch { return say('That address doesn’t look right.'); }
+    try { pattern = url ? hostPattern(url) : null; } catch { return say('aiFb', 'That address doesn’t look right.'); }
     // permissions.request needs the click's user gesture: call it before any await. Chrome's prompt can
     // close the popup, so save now (calls without access just return null) and undo on an explicit "no".
     const ask = pattern ? chrome.permissions.request({ origins: [pattern] }) : Promise.resolve(true);
     chrome.storage.local.set({ fg_ai: opt }).then(async () => {
       if (!(await ask)) {
         await chrome.storage.local.set({ fg_ai: savedAi });
-        return say('FocusGuard AI needs permission to reach that address.');
+        return say('aiFb', 'FocusGuard AI needs permission to reach that address.');
       }
       savedAi = opt;
       if (opt.mode === 'key') { savedKey = opt.apiKey || ''; $('apiKey').value = ''; $('apiKey').placeholder = 'Saved. Leave blank to keep it.'; }
       await changed();
-      say('AI choice saved.');
-    }).catch((/** @type {Error} */ err) => say(err.message));
+      say('aiFb', 'AI choice saved.');
+    }).catch((/** @type {Error} */ err) => say('aiFb', err.message));
   });
 
   $('sensForm').addEventListener('submit', async (/** @type {Event} */ e) => {
     e.preventDefault();
     const add = normalizeSites($('sensInput').value);
-    if (!add.length) return say('Enter a site like example.com.');
+    if (!add.length) return say('sensFb', 'Enter a site like example.com.');
     const cur = (await stored('fg_extra_sensitive')) || [];
     await chrome.storage.local.set({ fg_extra_sensitive: [...new Set([...cur, ...add])] });
     $('sensInput').value = '';
     await changed();
     await loadSensitive();
-    say(`FocusGuard AI will skip ${add.join(', ')}.`);
+    say('sensFb', `FocusGuard AI will skip ${add.join(', ')}.`);
   });
 
   $('signOutBtn').addEventListener('click', async () => {
@@ -205,7 +198,7 @@ async function loadRules() {
     await chrome.storage.local.set({ fg_rules: cur.filter((/** @type {any} */ x) => !(x.host === r.host && x.contextId === r.contextId)) });
     await changed(); // R14: D unrelates the host from the live context
     await loadRules();
-    say(`Removed the rule for ${r.host}.`);
+    say('rulesFb', `Removed the rule for ${r.host}.`);
   })));
 }
 

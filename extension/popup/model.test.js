@@ -1,7 +1,7 @@
 // @ts-check
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { pauseUntil, PAUSE_OFF, fmtMinutes, phaseLabel, recentSites, validQuietHours, driftDomains, aiDisclosure, hostPattern } from './model.js';
+import { pauseUntil, PAUSE_OFF, fmtMinutes, phaseLabel, windowState, graceLine, recentSites, validQuietHours, driftDomains, aiDisclosure, hostPattern } from './model.js';
 
 const NOW = new Date(2026, 9, 10, 23, 30).getTime(); // 23:30 local
 
@@ -17,9 +17,27 @@ test('pauseUntil: 30 min, next local midnight, off', () => {
 test('fmtMinutes and phaseLabel', () => {
   assert.equal(fmtMinutes(42.4), '42 min');
   assert.equal(fmtMinutes(65), '1 h 5 min');
-  assert.equal(phaseLabel('grace', null, NOW), 'Taking a detour');
+  assert.equal(phaseLabel('grace', null, NOW), 'Waiting');
   assert.equal(phaseLabel('active', NOW + 1, NOW), 'Paused');
-  assert.equal(phaseLabel('active', NOW - 1, NOW), 'Focused');
+  assert.equal(phaseLabel('active', NOW - 1, NOW), 'On task');
+});
+
+test('windowState: the lattice leaf is open on task, half shut while waiting, closed otherwise', () => {
+  assert.equal(windowState('active', null, NOW), 'open');
+  assert.equal(windowState('grace', null, NOW), 'wait');
+  assert.equal(windowState('intervened_l1', null, NOW), 'wait');
+  assert.equal(windowState('escalated_l2', null, NOW), 'wait');
+  assert.equal(windowState('on_break', null, NOW), 'paused');
+  assert.equal(windowState('idle', null, NOW), 'paused');
+  assert.equal(windowState('active', NOW + 1, NOW), 'paused'); // paused wins over the phase
+  assert.equal(windowState('grace', NOW - 1, NOW), 'wait'); // a pause that already ended no longer counts
+});
+
+test('graceLine rounds up to whole minutes and never goes negative', () => {
+  assert.equal(graceLine(NOW + 3 * 60_000, NOW), '3 min before a check-in');
+  assert.equal(graceLine(NOW + 61_000, NOW), '2 min before a check-in');
+  assert.equal(graceLine(NOW + 5_000, NOW), '1 min before a check-in');
+  assert.equal(graceLine(NOW - 5_000, NOW), 'A check-in is coming up');
 });
 
 test('recentSites: hostnames only, most recent first, unique, at most 3', () => {

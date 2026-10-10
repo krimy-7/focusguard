@@ -1,12 +1,14 @@
 // @ts-check
-// Page shown by Beast Mode's redirect rule: calm copy, "Back to {context}", and
-// "Continue anyway" after a 10 s wait (a 10-minute allow rule for this tab only).
+// Page shown by Beast Mode's redirect rule: calm copy, "Back to {task}", and
+// "Open for 10 min" after a 10 s wait (a 10-minute allow rule for this tab only).
 import { getBeast, allowOnce, normalizeSites } from './beast.js';
 
 /** @param {string} id */
 const $ = (id) => /** @type {any} */ (document.getElementById(id));
 export const WAIT_S = 10;
 const site = normalizeSites(new URLSearchParams(location.search).get('site') || '')[0] || '';
+/** The countdown is shown, but only announced twice (start, ready): a live region ticking every second is noise. @param {string} msg */
+const announce = (msg) => { $('announce').textContent = msg; };
 const clock = (/** @type {number} */ ms) => new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 
 chrome.runtime.sendMessage({ type: 'get_view' })
@@ -28,12 +30,16 @@ async function init() {
   $('site').textContent = site;
   $('why').textContent = `You asked FocusGuard AI to keep it closed until ${clock(st.until)}. It'll still be here later.`;
   let left = WAIT_S;
+  const soon = (/** @type {number} */ n) => `Open for 10 min is available in ${n} second${n === 1 ? '' : 's'}.`;
+  $('wait').textContent = soon(left);
+  announce(soon(left));
   const timer = setInterval(() => {
     left -= 1;
-    if (left > 0) { $('wait').textContent = `Continue anyway is available in ${left} seconds.`; return; }
+    if (left > 0) { $('wait').textContent = soon(left); return; }
     clearInterval(timer);
     $('cont').disabled = false;
-    $('wait').textContent = 'You can continue for 10 minutes in this tab.';
+    $('wait').textContent = 'Open for 10 min lets you in for 10 minutes, in this tab only.';
+    announce('Open for 10 min is now available.');
   }, 1000);
 }
 

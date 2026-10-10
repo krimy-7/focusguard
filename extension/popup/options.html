@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Settings · FocusGuard AI</title>
+  <link rel="stylesheet" href="../styles/tokens.css" />
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <header class="brick head">
+    <span class="win win--mark" data-state="open" aria-hidden="true"><span class="win__leaf"></span><span class="win__pane"><span class="yeti"></span></span></span>
+    <p class="name">FocusGuard AI</p>
+  </header>
+
+  <main class="page">
+    <h1>Settings</h1>
+
+    <!-- Not set up or not signed in: settings need both -->
+    <section class="sect" id="gateView" hidden>
+      <h2 tabindex="-1" id="gateTitle"></h2>
+      <p class="muted" id="gateText"></p>
+      <button class="btn primary" id="gateBtn" type="button"></button>
+    </section>
+
+    <div id="settingsView" hidden>
+      <form class="sect stack" id="nudgeForm">
+        <h2>Check-ins</h2>
+        <div class="stack tight">
+          <label for="grace">How long to wait before a check-in</label>
+          <select id="grace"></select>
+        </div>
+        <fieldset class="stack tight">
+          <legend>Quiet hours (no check-ins)</legend>
+          <div class="quiet-row"><label>From <input type="time" data-q="0" data-k="from" /></label><label>to <input type="time" data-q="0" data-k="to" /></label></div>
+          <div class="quiet-row"><label>From <input type="time" data-q="1" data-k="from" /></label><label>to <input type="time" data-q="1" data-k="to" /></label></div>
+          <div class="quiet-row"><label>From <input type="time" data-q="2" data-k="from" /></label><label>to <input type="time" data-q="2" data-k="to" /></label></div>
+        </fieldset>
+        <div class="save">
+          <button class="btn primary" type="submit">Save</button>
+          <p class="fb" id="nudgeFb" role="status"></p>
+        </div>
+      </form>
+
+      <form class="sect stack" id="aiForm">
+        <h2>AI help</h2>
+        <fieldset class="stack tight">
+          <legend>Optional. Off unless you turn it on.</legend>
+          <label class="radio"><input type="radio" name="aiMode" value="off" /> Off</label>
+          <label class="radio"><input type="radio" name="aiMode" value="nano" /> On-device (Chrome's built-in model)</label>
+          <label class="radio"><input type="radio" name="aiMode" value="local" /> Local model on this computer</label>
+          <label class="radio"><input type="radio" name="aiMode" value="key" /> My own API key</label>
+        </fieldset>
+        <div class="stack" id="aiNano" hidden>
+          <p class="muted" id="nanoStatus"></p>
+          <button class="btn" id="nanoDownload" type="button" hidden>Download on-device model</button>
+        </div>
+        <div class="stack" id="aiLocal" hidden>
+          <div class="stack tight"><label for="localUrl">Address</label><input id="localUrl" type="url" placeholder="http://localhost:11434" /></div>
+          <div class="stack tight"><label for="localModel">Model name</label><input id="localModel" type="text" placeholder="llama3.2" /></div>
+        </div>
+        <div class="stack" id="aiKey" hidden>
+          <div class="stack tight">
+            <label for="provider">Provider</label>
+            <select id="provider">
+              <option value="openai">OpenAI-compatible</option>
+              <option value="anthropic">Anthropic</option>
+              <option value="gemini">Google Gemini</option>
+            </select>
+          </div>
+          <div class="stack tight" id="baseUrlRow"><label for="baseUrl">Base URL</label><input id="baseUrl" type="url" placeholder="https://api.openai.com" /></div>
+          <div class="stack tight"><label for="keyModel">Model name</label><input id="keyModel" type="text" /></div>
+          <div class="stack tight"><label for="apiKey">API key</label><input id="apiKey" type="password" autocomplete="off" spellcheck="false" /></div>
+        </div>
+        <p class="disclosure" id="aiDisclosure" aria-live="polite"></p>
+        <div class="save">
+          <button class="btn primary" type="submit">Save AI choice</button>
+          <p class="fb" id="aiFb" role="status"></p>
+        </div>
+      </form>
+
+      <section class="sect stack" aria-labelledby="rulesHeading">
+        <h2 id="rulesHeading">Sites you marked as part of a task</h2>
+        <ul class="list" id="rulesList"></ul>
+        <p class="muted" id="rulesEmpty">None yet. They appear when you tell a check-in that a site is part of your task.</p>
+        <p class="fb" id="rulesFb" role="status"></p>
+      </section>
+
+      <section class="sect stack" aria-labelledby="sensHeading">
+        <h2 id="sensHeading">Never look at these sites</h2>
+        <p class="muted">Banking, health and password sites are already skipped. Add any others here.</p>
+        <ul class="list" id="sensList"></ul>
+        <form class="add" id="sensForm">
+          <label class="sr-only" for="sensInput">Site to skip</label>
+          <input id="sensInput" type="text" placeholder="example.com" />
+          <button class="btn" type="submit">Add</button>
+        </form>
+        <p class="fb" id="sensFb" role="status"></p>
+      </section>
+
+      <section class="sect stack" aria-labelledby="accountHeading">
+        <h2 id="accountHeading">Account</h2>
+        <p class="muted" id="accountText"></p>
+        <button class="btn" id="signOutBtn" type="button">Sign out</button>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="options.js"></script>
+</body>
+</html>

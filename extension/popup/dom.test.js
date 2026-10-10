@@ -11,7 +11,8 @@ const read = (/** @type {string} */ p) => readFileSync(new URL(p, ext), 'utf8');
 
 /** [page, scripts that query it with $('id')] — paths relative to extension/ */
 const PAGES = [
-  ['popup/popup.html', ['popup/popup.js', 'popup/settings.js']],
+  ['popup/popup.html', ['popup/popup.js']],
+  ['popup/options.html', ['popup/options.js', 'popup/settings.js']], // Settings moved out of the popup into the options page
   ['auth/google.html', ['auth/google.js']],
   ['onboarding/onboarding.html', ['onboarding/onboarding.js']],
   ['onboarding/privacy.html', []],
@@ -32,6 +33,13 @@ for (const [page, scripts] of PAGES) {
     for (const [, src] of html.matchAll(/<script[^>]*\bsrc="([^"]+)"/g)) assert.ok(existsSync(new URL(src, new URL(page, ext))), `missing ${src}`);
   });
 }
+
+test('every page uses the shared tokens, and every bundled font and brand asset they reference exists (no remote fonts)', () => {
+  const css = read('styles/tokens.css');
+  for (const [, f] of css.matchAll(/url\("\.\.\/([^")]+\.(?:woff2|svg))"\)/g)) assert.ok(existsSync(new URL(f, ext)), `tokens.css references missing ${f}`);
+  assert.doesNotMatch(css, /(?:url\(|@import)\s*["']?https?:/, 'no remote URLs in tokens.css');
+  for (const [page] of PAGES) assert.match(read(page), /<link rel="stylesheet" href="(\.\.\/)?styles\/tokens\.css"/, `${page} must load styles/tokens.css`);
+});
 
 test('R40: "Continue with Google" is the first, primary sign-in button; "Email me a code" is the secondary option below it', () => {
   const html = read('popup/popup.html');

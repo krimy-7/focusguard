@@ -4,222 +4,148 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>FocusGuard AI</title>
+  <link rel="stylesheet" href="../styles/tokens.css" />
   <link rel="stylesheet" href="popup.css" />
 </head>
-<body>
-  <header class="header">
-    <div class="brand">
-      <div class="brand-icon" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg>
-      </div>
-      <h1>FocusGuard AI</h1>
-    </div>
-    <button class="icon-btn" id="openSettings" type="button" hidden>Settings</button>
+<body class="popup">
+  <header class="brick head">
+    <span class="win win--mark" data-state="open" aria-hidden="true"><span class="win__leaf"></span><span class="win__pane"><span class="yeti"></span></span></span>
+    <h1>FocusGuard AI</h1>
+    <a class="iconbtn" id="openSettings" href="options.html" target="_blank" rel="noopener" aria-label="Settings" hidden>
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h8M16 6h4M4 12h4M12 12h8M4 18h10M18 18h2"/><circle cx="14" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="16" cy="18" r="2"/></svg>
+    </a>
   </header>
 
-  <p class="status" id="status" role="status" aria-live="polite"></p>
+  <div class="body">
+    <!-- Consent not given yet -->
+    <section class="stack" id="consentView" hidden>
+      <h2 tabindex="-1">Finish setting up</h2>
+      <p class="muted">FocusGuard AI doesn't look at any tabs until you've read what it does and clicked Start.</p>
+      <button class="btn primary" id="openOnboarding" type="button">Open setup</button>
+    </section>
 
-  <!-- Consent not given yet -->
-  <section class="card" id="consentView" hidden>
-    <h2 tabindex="-1">Finish setting up</h2>
-    <p class="muted">FocusGuard AI doesn't look at any tabs until you've read what it does and clicked Start.</p>
-    <button class="btn primary" id="openOnboarding" type="button">Open setup</button>
-  </section>
+    <!-- Signed out -->
+    <section class="stack" id="signedOutView" hidden>
+      <h2 tabindex="-1">Sign in</h2>
+      <!-- R40: Google is the primary, first button; the emailed code is the secondary option below it. -->
+      <button class="btn primary" id="googleBtn" type="button">Continue with Google</button>
+      <p class="divider" id="divider"><span>or</span></p>
+      <form id="emailForm" class="stack" novalidate>
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email" required />
+        <button class="btn" type="submit">Email me a code</button>
+      </form>
+      <form class="stack" id="codeForm" novalidate hidden>
+        <p class="muted" id="codeHint"></p>
+        <label for="code">6-digit code</label>
+        <input id="code" inputmode="numeric" autocomplete="one-time-code" pattern="\d{6}" maxlength="6" required />
+        <button class="btn primary" type="submit">Sign in</button>
+        <button class="btn ghost" id="differentEmail" type="button">Use a different email</button>
+      </form>
+      <p class="fb problem" id="signInError" role="alert"></p>
+    </section>
 
-  <!-- Signed out -->
-  <section class="card" id="signedOutView" hidden>
-    <h2 tabindex="-1">Sign in</h2>
-    <!-- R40: Google is the primary, first button; the emailed code is the secondary option below it. -->
-    <button class="btn primary" id="googleBtn" type="button">Continue with Google</button>
-    <p class="divider" id="divider"><span>or</span></p>
-    <form id="emailForm" novalidate>
-      <label for="email">Email</label>
-      <input id="email" type="email" autocomplete="email" required />
-      <button class="btn" type="submit">Email me a code</button>
-    </form>
-    <form id="codeForm" novalidate hidden>
-      <p class="muted" id="codeHint"></p>
-      <label for="code">6-digit code</label>
-      <input id="code" inputmode="numeric" autocomplete="one-time-code" pattern="\d{6}" maxlength="6" required />
-      <button class="btn primary" type="submit">Sign in</button>
-      <button class="btn ghost" id="differentEmail" type="button">Use a different email</button>
-    </form>
-    <p class="error" id="signInError" role="alert"></p>
-  </section>
-
-  <!-- Signed in -->
-  <main id="mainView" hidden>
-    <section class="card" aria-labelledby="ctxHeading">
-      <div class="row">
-        <p class="eyebrow" id="ctxHeading">Current context</p>
-        <span class="pill" id="phasePill"></span>
+    <!-- Signed in -->
+    <main class="stack" id="mainView" hidden>
+      <div class="win win--card" id="ctxWin" data-state="paused" role="group" aria-label="Current task">
+        <span class="win__leaf" aria-hidden="true"></span>
+        <div class="win__pane card">
+          <span class="pill" id="phasePill"></span>
+          <h2 id="ctxTitle" tabindex="-1"></h2>
+          <p class="muted" id="ctxMeta"></p>
+          <p class="hand note" id="welcomeNote"></p>
+          <p id="ctxDetail"></p>
+        </div>
       </div>
 
-      <div id="ctxBlock" hidden>
-        <h2 id="ctxTitle" tabindex="-1"></h2>
-        <p class="muted" id="ctxMeta"></p>
-        <button class="btn primary" id="backBtn" type="button" hidden>Back to it</button>
-      </div>
+      <!-- One primary at a time: Back (a check-in is showing), Resume (on a break), Turn back on (paused), or Yes, track it (a proposal). -->
+      <button class="btn back" id="backBtn" type="button" hidden>Back to it</button>
+      <button class="btn primary" id="resumeBtn" type="button" hidden>Resume</button>
+      <button class="btn primary" id="unpauseBtn" type="button" hidden>Turn check-ins back on</button>
 
-      <form id="proposalForm" hidden>
-        <label for="proposalTitle">Working on this?</label>
-        <input id="proposalTitle" type="text" maxlength="120" required />
-        <label for="proposalMode">Kind of work</label>
-        <select id="proposalMode">
-          <option value="work">Work</option>
-          <option value="learning">Learning</option>
-          <option value="personal">Personal</option>
-        </select>
-        <div class="row gap">
+      <form class="stack" id="proposalForm" hidden>
+        <div class="stack tight">
+          <label for="proposalTitle">Working on this?</label>
+          <input class="hand" id="proposalTitle" type="text" maxlength="120" required />
+        </div>
+        <div class="stack tight">
+          <label for="proposalMode">Kind of work</label>
+          <select id="proposalMode">
+            <option value="work">Work</option>
+            <option value="learning">Learning</option>
+            <option value="personal">Personal</option>
+          </select>
+        </div>
+        <div class="pair">
           <button class="btn primary" type="submit">Yes, track it</button>
           <button class="btn ghost" id="proposalCancel" type="button">Not now</button>
         </div>
+        <p class="fb" id="proposalFb" role="status"></p>
       </form>
 
-      <p class="muted" id="idleHint" hidden>Open the tab you're working on and FocusGuard AI will offer to track it.</p>
-
-      <!-- Welcome back (on a break) -->
-      <div id="welcomeBlock" hidden>
-        <p class="note" id="welcomeNote"></p>
-        <h2 id="welcomeCtx"></h2>
-        <p class="muted" id="welcomeSites"></p>
-        <button class="btn primary" id="resumeBtn" type="button">Resume</button>
-      </div>
-
-      <div id="pausedBlock" hidden>
-        <p class="muted" id="pausedText"></p>
-        <button class="btn primary" id="unpauseBtn" type="button">Turn nudges back on</button>
-      </div>
-    </section>
-
-    <section class="actions" id="ctxActions" aria-label="Context actions">
-      <button class="btn" id="newCtxBtn" type="button">New context</button>
-
-      <details id="pauseMenu">
-        <summary class="btn">Pause nudges</summary>
-        <div class="menu">
-          <button class="btn ghost" data-pause="30m" type="button">For 30 minutes</button>
-          <button class="btn ghost" data-pause="tomorrow" type="button">Until tomorrow</button>
-          <button class="btn ghost" data-pause="off" type="button">Until I turn them back on</button>
-        </div>
-      </details>
-
-      <details id="breakMenu">
-        <summary class="btn">Take a break</summary>
-        <form class="menu" id="breakForm">
-          <label for="breakNote">Leave yourself a note for next time? (optional)</label>
-          <input id="breakNote" type="text" maxlength="200" />
-          <button class="btn primary" type="submit">Start break</button>
+      <section class="stack" id="ctxActions" aria-label="Task actions">
+        <form class="stack tight" id="breakForm">
+          <label for="breakNote">Your note for when you’re back</label>
+          <input class="hand" id="breakNote" type="text" maxlength="200" autocomplete="off" placeholder="Optional" />
         </form>
-      </details>
-    </section>
-
-    <section class="card" aria-labelledby="beastHeading">
-      <h2 class="small" id="beastHeading">Beast Mode</h2>
-      <div id="beastOn" hidden>
-        <p class="muted" id="beastText"></p>
-        <button class="btn" id="beastStop" type="button">Stop Beast Mode</button>
-      </div>
-      <form id="beastForm" novalidate>
-        <p class="muted">Block chosen sites for a set time. You can always continue after a short wait.</p>
-        <label for="beastSites">Sites to block</label>
-        <textarea id="beastSites" rows="2" placeholder="reddit.com, youtube.com"></textarea>
-        <label for="beastMinutes">For how long</label>
-        <select id="beastMinutes" required>
-          <option value="">Choose…</option>
-          <option value="25">25 minutes</option>
-          <option value="50">50 minutes</option>
-          <option value="90">90 minutes</option>
-          <option value="180">3 hours</option>
-        </select>
-        <button class="btn primary" type="submit">Start Beast Mode</button>
-      </form>
-    </section>
-  </main>
-
-  <!-- Settings (rendered by settings.js) -->
-  <section id="settingsView" hidden>
-    <div class="row">
-      <h2 tabindex="-1">Settings</h2>
-      <button class="btn ghost small" id="closeSettings" type="button">Done</button>
-    </div>
-
-    <form class="card" id="nudgeForm">
-      <h3>Nudges</h3>
-      <label for="grace">Grace before a nudge</label>
-      <select id="grace"></select>
-      <fieldset>
-        <legend>Quiet hours (no nudges)</legend>
-        <div class="quiet-row"><label>From <input type="time" data-q="0" data-k="from" /></label><label>to <input type="time" data-q="0" data-k="to" /></label></div>
-        <div class="quiet-row"><label>From <input type="time" data-q="1" data-k="from" /></label><label>to <input type="time" data-q="1" data-k="to" /></label></div>
-        <div class="quiet-row"><label>From <input type="time" data-q="2" data-k="from" /></label><label>to <input type="time" data-q="2" data-k="to" /></label></div>
-      </fieldset>
-      <button class="btn primary" type="submit">Save</button>
-    </form>
-
-    <form class="card" id="aiForm">
-      <fieldset>
-        <legend>AI help (optional)</legend>
-        <label class="radio"><input type="radio" name="aiMode" value="off" /> Off</label>
-        <label class="radio"><input type="radio" name="aiMode" value="nano" /> On-device (Chrome's built-in model)</label>
-        <label class="radio"><input type="radio" name="aiMode" value="local" /> Local model on this computer</label>
-        <label class="radio"><input type="radio" name="aiMode" value="key" /> My own API key</label>
-      </fieldset>
-      <div id="aiNano" hidden>
-        <p class="muted" id="nanoStatus"></p>
-        <button class="btn" id="nanoDownload" type="button" hidden>Download on-device model</button>
-      </div>
-      <div id="aiLocal" hidden>
-        <label for="localUrl">Address</label>
-        <input id="localUrl" type="url" placeholder="http://localhost:11434" />
-        <label for="localModel">Model name</label>
-        <input id="localModel" type="text" placeholder="llama3.2" />
-      </div>
-      <div id="aiKey" hidden>
-        <label for="provider">Provider</label>
-        <select id="provider">
-          <option value="openai">OpenAI-compatible</option>
-          <option value="anthropic">Anthropic</option>
-          <option value="gemini">Google Gemini</option>
-        </select>
-        <div id="baseUrlRow">
-          <label for="baseUrl">Base URL</label>
-          <input id="baseUrl" type="url" placeholder="https://api.openai.com" />
+        <div class="actions">
+          <button class="btn" id="breakBtn" type="submit" form="breakForm">Take a break</button>
+          <details id="pauseMenu">
+            <summary class="btn">Pause</summary>
+            <div class="menu">
+              <button class="btn" data-pause="30m" type="button">For 30 minutes</button>
+              <button class="btn" data-pause="tomorrow" type="button">Until tomorrow</button>
+              <button class="btn" data-pause="off" type="button">Until I turn them back on</button>
+            </div>
+          </details>
         </div>
-        <label for="keyModel">Model name</label>
-        <input id="keyModel" type="text" />
-        <label for="apiKey">API key</label>
-        <input id="apiKey" type="password" autocomplete="off" spellcheck="false" />
-      </div>
-      <p class="disclosure" id="aiDisclosure" aria-live="polite"></p>
-      <button class="btn primary" type="submit">Save AI choice</button>
-    </form>
+        <p class="fb" id="actionFb" role="status"></p>
+        <div class="newtask">
+          <button class="btn ghost" id="newCtxBtn" type="button">Start something new</button>
+          <div class="undo" id="undoRow" hidden>
+            <p id="taskFb" role="status"></p>
+            <button class="btn" id="undoEndBtn" type="button">Undo</button>
+          </div>
+          <p class="fb" id="endedFb" role="status"></p>
+        </div>
+      </section>
 
-    <section class="card" aria-labelledby="rulesHeading">
-      <h3 id="rulesHeading">"This is related" rules</h3>
-      <ul class="list" id="rulesList"></ul>
-      <p class="muted" id="rulesEmpty">No rules yet. They appear when you mark a site as part of a context.</p>
-    </section>
+      <!-- Beast Mode: quiet until asked for -->
+      <details class="beast" id="beastBox">
+        <summary>
+          <span>Beast Mode</span>
+          <span class="val" id="beastState">Off</span>
+          <svg class="ico chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </summary>
+        <div class="stack panel">
+          <div class="stack" id="beastOn" hidden>
+            <p id="beastText"></p>
+            <button class="btn" id="beastStop" type="button">Stop Beast Mode</button>
+          </div>
+          <form class="stack" id="beastForm" novalidate>
+            <p class="muted">Closes the sites you choose for a set time. You can always open one for 10 minutes.</p>
+            <label for="beastSites">Sites to close</label>
+            <textarea id="beastSites" rows="2" placeholder="reddit.com, youtube.com"></textarea>
+            <label for="beastMinutes">For how long</label>
+            <select id="beastMinutes" required>
+              <option value="">Choose…</option>
+              <option value="25">25 minutes</option>
+              <option value="50">50 minutes</option>
+              <option value="90">90 minutes</option>
+              <option value="180">3 hours</option>
+            </select>
+            <button class="btn" id="beastStart" type="submit">Start Beast Mode</button>
+          </form>
+          <p class="fb" id="beastFb" role="status"></p>
+        </div>
+      </details>
+    </main>
+  </div>
 
-    <section class="card" aria-labelledby="sensHeading">
-      <h3 id="sensHeading">Never look at these sites</h3>
-      <p class="muted">Banking, health and password sites are already skipped. Add any others here.</p>
-      <ul class="list" id="sensList"></ul>
-      <form class="row gap" id="sensForm">
-        <label class="sr-only" for="sensInput">Site to skip</label>
-        <input id="sensInput" type="text" placeholder="example.com" />
-        <button class="btn small" type="submit">Add</button>
-      </form>
-    </section>
-
-    <section class="card">
-      <p class="muted" id="accountText"></p>
-      <button class="btn" id="signOutBtn" type="button">Sign out</button>
-    </section>
-  </section>
-
-  <footer class="footer">
-    <a id="dashboardLink" href="#" target="_blank" rel="noopener">Open dashboard</a>
+  <footer class="foot">
+    <a class="btn block" id="dashboardLink" href="#" target="_blank" rel="noopener">Open dashboard
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </a>
   </footer>
 
   <script type="module" src="popup.js"></script>

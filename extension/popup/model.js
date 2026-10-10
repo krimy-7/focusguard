@@ -28,8 +28,24 @@ export function fmtMinutes(min) {
 /** Plain-language phase label for the state pill. @param {string} phase @param {number|null} pausedUntil @param {number} now */
 export function phaseLabel(phase, pausedUntil, now) {
   if (pausedUntil && pausedUntil > now) return 'Paused';
-  return ({ idle: 'Not tracking', detected: 'Just noticed', active: 'Focused', grace: 'Taking a detour',
-    intervened_l1: 'Checking in', escalated_l2: 'Checking in', on_break: 'On a break' })[phase] ?? 'Focused';
+  return ({ idle: 'Not tracking', detected: 'Just noticed', active: 'On task', grace: 'Waiting',
+    intervened_l1: 'Checking in', escalated_l2: 'Checking in', on_break: 'On a break' })[phase] ?? 'On task';
+}
+
+/** Which way the lattice leaf sits: open (on task), wait (grace or a check-in showing), paused (closed: paused, on a break,
+ *  nothing tracked). Never red. @param {string} phase @param {number|null} pausedUntil @param {number} now
+ *  @returns {'open'|'wait'|'paused'} */
+export function windowState(phase, pausedUntil, now) {
+  if (pausedUntil && pausedUntil > now) return 'paused';
+  if (phase === 'active') return 'open';
+  if (phase === 'grace' || phase === 'intervened_l1' || phase === 'escalated_l2') return 'wait';
+  return 'paused';
+}
+
+/** "3 min before a check-in" for the grace window. @param {number} deadline @param {number} now */
+export function graceLine(deadline, now) {
+  const m = Math.ceil((deadline - now) / 60_000);
+  return m <= 0 ? 'A check-in is coming up' : `${m} min before a check-in`;
 }
 
 /** Last ≤3 site names of a resume target (`fg_resume:<ctxId>`), most recent first. Hostnames only.
