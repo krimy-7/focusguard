@@ -6,18 +6,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
 
 
-class Task(Base):
-    __tablename__ = "tasks"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(300), nullable=False)
-    category: Mapped[str] = mapped_column(String(20), default="should", index=True)
-    tag: Mapped[str] = mapped_column(String(40), default="")
-    status: Mapped[str] = mapped_column(String(20), default="open", index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-
-
 class FocusSession(Base):
     __tablename__ = "focus_sessions"
 
@@ -39,16 +27,6 @@ class FocusEvent(Base):
     detail: Mapped[str] = mapped_column(String(300), default="")
     duration_s: Mapped[float] = mapped_column(Float, default=0.0)
     occurred_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
-
-
-class Milestone(Base):
-    __tablename__ = "milestones"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(120), nullable=False)
-    description: Mapped[str] = mapped_column(Text, default="")
-    achieved: Mapped[bool] = mapped_column(Boolean, default=False)
-    achieved_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class Context(Base):

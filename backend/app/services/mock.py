@@ -2,52 +2,24 @@ from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.models import (
     Achievement,
-    BreakSession,
     Context,
     ContextActivity,
     DailyGoal,
     FocusEvent,
     FocusSession,
-    Milestone,
     MoodEntry,
-    Task,
 )
-
-SEED_TASKS = [
-    {"title": "Morning workout", "category": "must", "tag": "Personal"},
-    {"title": "Check emails", "category": "must", "tag": "Work"},
-    {"title": "Study the RAFT Paper", "category": "should", "tag": "Learning"},
-    {"title": "Drink water", "category": "should", "tag": "Health"},
-    {"title": "Validate Tokens", "category": "should", "tag": "Work"},
-]
-
-SEED_MILESTONES = [
-    {"title": "First Step", "description": "Your journey began. Welcome to the FocusGuard family.", "days_ago": 14},
-    {"title": "Consistency King", "description": "You maintained a 7-day streak for the first time!", "days_ago": 2},
-]
 
 
 def seed_database(db: Session) -> bool:
-    """Insert representative mock data when the database is empty. Returns True if seeded."""
-    if db.query(Task).count() > 0:
+    """Insert representative demo data (DEMO_MODE only) when the database is empty. Returns True if seeded."""
+    if not get_settings().demo_mode or db.query(FocusSession).count() > 0:
         return False
 
     now = datetime.utcnow()
-
-    for item in SEED_TASKS:
-        db.add(Task(title=item["title"], category=item["category"], tag=item["tag"], status="open"))
-
-    for idx, item in enumerate(SEED_MILESTONES):
-        db.add(
-            Milestone(
-                title=item["title"],
-                description=item["description"],
-                achieved=True,
-                achieved_at=now - timedelta(days=item["days_ago"], hours=idx),
-            )
-        )
 
     focus_minutes = [35, 50, 42, 60, 25, 40]
     for idx, minutes in enumerate(focus_minutes):
@@ -97,12 +69,12 @@ def seed_database(db: Session) -> bool:
 
     db.add(MoodEntry(mood="😄", note="Ready to ship", recorded_at=now - timedelta(hours=4)))
 
-    for code, title, description in [
+    for days_ago, (code, title, description) in enumerate([
         ("first_focus", "First Focus", "Complete your first focus session."),
         ("first_recovery", "First Context Recovery", "Returned to your context after drifting."),
         ("deep_work", "Deep Work", "Logged a 50+ minute deep focus session."),
-    ]:
-        db.add(Achievement(code=code, title=title, description=description, unlocked_at=now - timedelta(days=idx or 1)))
+    ], start=1):
+        db.add(Achievement(code=code, title=title, description=description, unlocked_at=now - timedelta(days=days_ago)))
 
     db.commit()
     return True

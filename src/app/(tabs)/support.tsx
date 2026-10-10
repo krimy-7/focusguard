@@ -14,16 +14,6 @@ import { api, parseServerUtc, type BeastMode } from '@/lib/api';
 import { Palette } from '@/theme';
 import { cn } from '@/theme/tailwind';
 
-import {
-    getLaunchableApps,
-    hasUsageAccess,
-    isBeastGuardAvailable,
-    openUsageAccessSettings,
-    startBeastGuard,
-    stopBeastGuard,
-    type LaunchableApp,
-} from '../../../modules/focusguard-usage';
-
 type Tool = 'timer' | 'meditate' | 'mood' | 'beast';
 
 const TOOLS: { key: Tool; label: string; icon: React.ComponentProps<typeof Icon>['name'] }[] = [
@@ -33,6 +23,7 @@ const TOOLS: { key: Tool; label: string; icon: React.ComponentProps<typeof Icon>
   { key: 'beast', label: 'Beast Mode', icon: 'fire' },
 ];
 
+const OFFLINE = "Can't reach FocusGuard right now. Try again in a moment.";
 const MOODS = ['😴', '😐', '🙂', '😄', '🔥'];
 const TIMER_STORAGE_PREFIX = 'focusguard:countdown:';
 
@@ -272,20 +263,18 @@ export default function SupportScreen() {
   const [beast, setBeast] = useState<BeastMode | null>(null);
   const [beastMin, setBeastMin] = useState(60);
   const [blockedInput, setBlockedInput] = useState('');
-  const [installedApps, setInstalledApps] = useState<LaunchableApp[]>([]);
-  const [blockedApps, setBlockedApps] = useState<string[]>([]);
-  const [usageGranted, setUsageGranted] = useState(false);
-  const [beastAvailable, setBeastAvailable] = useState(false);
   const [guardBusy, setGuardBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
-      api.getBeast().then(setBeast);
-      Promise.all([getLaunchableApps(), hasUsageAccess()]).then(([apps, granted]) => {
-        setInstalledApps(apps);
-        setUsageGranted(granted);
-        setBeastAvailable(isBeastGuardAvailable());
-      });
+      api.getBeast().then(
+        (b) => {
+          setBeast(b);
+          setError(null);
+        },
+        () => setError(OFFLINE),
+      );
     }, []),
   );
 
@@ -315,33 +304,37 @@ const pickFocus = async (min: number) => {
 
   const logMood = async () => {
     if (!mood) return;
-    await api.logMood(mood, moodNote);
-    setMood('');
-    setMoodNote('');
-  };
-
-  const toggleBlockedApp = (pkg: string) => {
-    setBlockedApps((prev) => (prev.includes(pkg) ? prev.filter((p) => p !== pkg) : [...prev, pkg]));
+    setError(null);
+    try {
+      await api.logMood(mood, moodNote);
+      setMood('');
+      setMoodNote('');
+    } catch {
+      setError(OFFLINE);
+    }
   };
 
   const startBeast = async () => {
     const sites = blockedInput.split(',').map((s) => s.trim()).filter(Boolean);
+    setError(null);
     setGuardBusy(true);
     try {
-      const created = await api.startBeast(beastMin, sites, blockedApps);
-      setBeast(created);
-      if (created && created.ends_at && blockedApps.length) {
-        await startBeastGuard(blockedApps, parseServerUtc(created.ends_at));
-      }
+      setBeast(await api.startBeast(beastMin, sites));
+    } catch {
+      setError(OFFLINE);
     } finally {
       setGuardBusy(false);
     }
   };
 
   const stopBeast = async () => {
-    await stopBeastGuard();
-    await api.stopBeast();
-    setBeast(null);
+    setError(null);
+    try {
+      await api.stopBeast();
+      setBeast(null);
+    } catch {
+      setError(OFFLINE);
+    }
   };
 
   return (
@@ -372,6 +365,12 @@ const pickFocus = async (min: number) => {
             </Pressable>
           ))}
         </View>
+
+        {error && (tool === 'mood' || tool === 'beast') ? (
+          <AppText variant="labelSm" color="error">
+            {error}
+          </AppText>
+        ) : null}
 
         {tool === 'timer' ? (
           <ToolShell>
@@ -509,10 +508,7 @@ const pickFocus = async (min: number) => {
                     Locked until {beast.ends_at ? new Date(parseServerUtc(beast.ends_at)).toLocaleTimeString() : '…'}
                   </AppText>
                   <AppText variant="bodyMd" color="on-error-container">
-                    {beast.blocked_apps.length
-                      ? `${beast.blocked_apps.length} app(s) blocked: ${beast.blocked_apps.join(', ')}`
-                      : 'No apps blocked.'}
-                    {beast.blocked_sites.length ? `  Sites: ${beast.blocked_sites.join(', ')}` : ''}
+                    {beast.blocked_sites.length ? `Sites blocked on desktop: ${beast.blocked_sites.join(', ')}` : 'No sites blocked.'}
                   </AppText>
                 </Card>
                 <Pressable onPress={stopBeast} className="bg-error rounded-full px-lg py-sm items-center active:opacity-85">
@@ -524,27 +520,8 @@ const pickFocus = async (min: number) => {
             ) : (
               <View className="gap-md">
                 <AppText variant="bodyMd" color="on-surface-variant">
-                  Pick a window and the apps to lock away while you grind. On Android, FocusGuard
-                  needs Usage Access to catch you opening a blocked app.
+                  Pick a window and the sites to block on your desktop while you grind.
                 </AppText>
-
-                {beastAvailable && !usageGranted && (
-                  <Card surface="error-container" radius={16} className="p-md gap-xs">
-                    <AppText variant="labelLg" color="on-error-container">
-                      Usage Access required
-                    </AppText>
-                    <AppText variant="bodyMd" color="on-error-container">
-                      Grant FocusGuard access to app usage so Beast Mode can block distracting apps.
-                    </AppText>
-                    <Pressable
-                      onPress={openUsageAccessSettings}
-                      className="bg-error rounded-full px-lg py-sm items-center self-start active:opacity-85">
-                      <AppText variant="labelLg" color="on-error">
-                        Grant access
-                      </AppText>
-                    </Pressable>
-                  </Card>
-                )}
 
                 <View className="flex-row gap-sm">
                   {[30, 60, 90].map((m) => (
@@ -555,47 +532,10 @@ const pickFocus = async (min: number) => {
                 <TextInput
                   value={blockedInput}
                   onChangeText={setBlockedInput}
-                  placeholder="Also block web sites, comma separated (e.g. youtube.com, instagram.com)"
+                  placeholder="Sites to block, comma separated (e.g. youtube.com, instagram.com)"
                   placeholderTextColor={Palette.outline}
                   className="bg-surface-container-lowest border border-outline-variant rounded-[14px] px-md py-sm font-body text-body-md text-on-surface"
                 />
-
-                {beastAvailable && installedApps.length > 0 && (
-                  <View className="gap-xs">
-                    <AppText variant="labelSm" color="on-surface-variant">
-                      Block these apps ({blockedApps.length} selected):
-                    </AppText>
-                    <ScrollView
-                      style={{ maxHeight: 240 }}
-                      nestedScrollEnabled
-                      showsVerticalScrollIndicator={false}
-                      className="gap-sm bg-surface-container-low rounded-[14px] p-sm">
-                      <View className="gap-xs">
-                        {installedApps.map((app) => {
-                          const selected = blockedApps.includes(app.package);
-                          return (
-                            <Pressable
-                              key={app.package}
-                              onPress={() => toggleBlockedApp(app.package)}
-                              className={cn(
-                                'flex-row items-center justify-between rounded-[12px] px-md py-sm border active:opacity-85',
-                                selected
-                                  ? 'border-primary bg-error-container'
-                                  : 'border-outline-variant bg-surface-container-lowest',
-                              )}>
-                              <AppText variant="bodyMd" numberOfLines={1} className="flex-1 pr-sm">
-                                {app.name}
-                              </AppText>
-                              <AppText variant="labelSm" color={selected ? 'error' : 'on-surface-variant'}>
-                                {selected ? 'Blocking' : 'Off'}
-                              </AppText>
-                            </Pressable>
-                          );
-                        })}
-                      </View>
-                    </ScrollView>
-                  </View>
-                )}
 
                 <Pressable
                   onPress={startBeast}

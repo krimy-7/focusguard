@@ -3,31 +3,6 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class TaskCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=300)
-    category: str = "should"
-    tag: str = ""
-
-
-class TaskUpdate(BaseModel):
-    title: str | None = None
-    category: str | None = None
-    tag: str | None = None
-    status: str | None = None
-
-
-class TaskOut(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    title: str
-    category: str
-    tag: str
-    status: str
-    created_at: datetime
-    completed_at: datetime | None
-
-
 class SessionCreate(BaseModel):
     task_title: str = ""
     app_name: str = ""

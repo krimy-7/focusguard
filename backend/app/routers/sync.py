@@ -14,7 +14,7 @@ def sync(payload: SyncIn, db: Session = Depends(get_db)):
     """Account synchronization endpoint. Mobile and desktop push lightweight
     state here; responses carry the snapshot needed to re-sync the other side."""
     if payload.event:
-        if payload.event in {"intervention", "break", "beast_mode", "context_switch"}:
+        if payload.event in {"intervention", "break", "beast_mode", "context_switch", "context_recovery"}:
             db.add(
                 FocusEvent(
                     type=payload.event,

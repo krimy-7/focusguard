@@ -46,7 +46,6 @@
   }
 
   document.addEventListener("visibilitychange", onVisibilityChange);
-  window.addEventListener("blur", () => report("interruption", "Focus shifted away"));
 
   // Sub-minute watchdog timers. The service worker can only schedule alarms at a
   // 1-minute minimum, so the grace/second popup is timed here (content scripts

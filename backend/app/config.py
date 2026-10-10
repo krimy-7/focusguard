@@ -8,7 +8,9 @@ class Settings(BaseSettings):
 
     app_name: str = "FocusGuard"
     app_env: str = "development"
-    debug: bool = True
+    debug: bool = False
+    demo_mode: bool = False
+    enable_dev_routes: bool = False
 
     database_url: str = ""
 

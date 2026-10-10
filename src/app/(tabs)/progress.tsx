@@ -6,6 +6,7 @@ import Svg, { Circle } from 'react-native-svg';
 
 import { AppText } from '@/components/app-text';
 import { Card } from '@/components/card';
+import { EmptyState } from '@/components/empty-state';
 import { Icon } from '@/components/icon';
 import { TopAppBar } from '@/components/top-app-bar';
 import { useDashboardLayout } from '@/hooks/use-dashboard-layout';
@@ -152,14 +153,21 @@ export default function ProgressScreen() {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   const load = useCallback(async () => {
-    const [st, gs, ach, ss] = await Promise.all([api.getStats(), api.getGoals(), api.getAchievements(), api.getSessions()]);
-    setStats(st);
-    setGoals(gs);
-    setAchievements(ach);
-    setSessions(ss);
-    setLoading(false);
+    try {
+      const [st, gs, ach, ss] = await Promise.all([api.getStats(), api.getGoals(), api.getAchievements(), api.getSessions()]);
+      setStats(st);
+      setGoals(gs);
+      setAchievements(ach);
+      setSessions(ss);
+      setLoadError(false);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useFocusEffect(
@@ -184,6 +192,8 @@ export default function ProgressScreen() {
           <View className="items-center py-xl">
             <ActivityIndicator color={Palette.primary} />
           </View>
+        ) : loadError ? (
+          <EmptyState title="Can't reach FocusGuard right now" subtitle="Check that the backend is running, then pull to refresh." />
         ) : (
           <>
             <View className="gap-xs">

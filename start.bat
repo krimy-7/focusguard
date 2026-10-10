@@ -38,7 +38,7 @@ if not exist "%VENV_PY%" (
 
 REM ---------- 2) Backend ----------
 echo  [start] FastAPI backend  ^(port 8000^)
-start "FocusGuard Backend" /D "%ROOT%\backend" cmd /k ""%ROOT%\backend\.venv\Scripts\python.exe" -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+start "FocusGuard Backend" /D "%ROOT%\backend" cmd /k ""%ROOT%\backend\.venv\Scripts\python.exe" -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000"
 
 REM ---------- 3) Expo ----------
 echo  [start] Expo dev server  ^(web + native^)

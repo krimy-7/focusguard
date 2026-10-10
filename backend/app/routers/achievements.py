@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Achievement, Context, FocusEvent, FocusSession
+from app.routers.insights import _streak_days
 from app.schemas import AchievementOut
 
 router = APIRouter(prefix="/achievements", tags=["achievements"])
@@ -49,11 +50,11 @@ def _unlock_earned(db: Session, existing: dict) -> None:
         _unlock(existing["first_focus"], now)
     if db.query(FocusSession).filter(FocusSession.duration_s >= 50 * 60).count() > 0:
         _unlock(existing["deep_work"], now)
-    if db.query(Context).count() >= 3:
+    if db.query(Context).filter(Context.confirmed.is_(True)).count() >= 5:
         _unlock(existing["context_master"], now)
     if db.query(FocusEvent).filter(FocusEvent.type == "interruption").count() > 0:
         _unlock(existing["comeback"], now)
-    if db.query(FocusSession).count() >= 7:
+    if _streak_days(db) >= 7:
         _unlock(existing["seven_day_streak"], now)
 
 

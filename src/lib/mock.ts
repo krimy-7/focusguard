@@ -11,11 +11,9 @@ import type {
   MoodEntry,
   Session,
   Stats,
-  Task,
 } from '@/lib/api';
 
-// Offline mock data. Mirrors the backend seed so the UI stays fully
-// navigable when the backend is unreachable.
+// Demo-mode mock data (EXPO_PUBLIC_DEMO_MODE=1). Mirrors the backend seed.
 
 export const MOCK = {
   goals: (): Goal[] => {
@@ -132,7 +130,6 @@ export const MOCK = {
     duration_min: 60,
     active: false,
     blocked_sites: [],
-    blocked_apps: [],
   }),
 
   achievements: (): Achievement[] => [
@@ -142,9 +139,5 @@ export const MOCK = {
     { code: 'context_master', title: 'Context Master', description: 'Confirmed 5 different contexts.', unlocked_at: null },
     { code: 'comeback', title: 'Comeback', description: 'Recovered from a distraction the same day.', unlocked_at: '2026-07-27T00:00:00Z' },
     { code: 'beast_mode', title: 'Beast Mode', description: 'Completed a Beast Mode session.', unlocked_at: null },
-  ],
-
-  tasks: (): Task[] => [
-    { id: 1, title: 'Validate Tokens', category: 'should', tag: 'Work', status: 'open', created_at: '2026-07-31T00:00:00Z', completed_at: null },
   ],
 };

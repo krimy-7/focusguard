@@ -1,6 +1,0 @@
-INFO:     Started server process [4384]
-INFO:     Waiting for application startup.
-Configured database unavailable ((psycopg.OperationalError) connection failed: connection to server at "127.0.0.1", port 5432 failed: FATAL:  database "focusguard" does not exist
-(Background on this error at: https://sqlalche.me/e/20/e3q8)) — falling back to SQLite.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://127.0.0.1:8004 (Press CTRL+C to quit)

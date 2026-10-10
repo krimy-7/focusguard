@@ -19,7 +19,6 @@ const els = {
   logInterrupt: document.getElementById("logInterrupt"),
   quickBreak: document.getElementById("quickBreak"),
   mascotHint: document.getElementById("mascotHint"),
-  resetBtn: document.getElementById("resetBtn"),
   contextActive: document.getElementById("contextActive"),
   contextTitle: document.getElementById("contextTitle"),
   contextStatePill: document.getElementById("contextStatePill"),
@@ -98,12 +97,12 @@ function showToast(message) {
 
 async function post(path, body) {
   try {
-    await fetch(`${CONFIG.BASE_URL}${path}`, {
+    const res = await fetch(`${CONFIG.BASE_URL}${path}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    return true;
+    return res.ok;
   } catch {
     return false;
   }
@@ -136,7 +135,7 @@ function renderContextCard(active, st) {
       els.contextStatePill.textContent = st.distractionState === "first" ? "First intervention" : "Second intervention";
       els.contextStatePill.className = "state-pill drift";
       const title = st.contextTitle || "your focus";
-      // Show the real (possibly AI-generated) message, mock text only as fallback.
+      // Show the message the worker sent, local text only as fallback.
       els.contextMeta.textContent =
         st.lastInterventionMessage ||
         (st.distractionState === "first"
@@ -309,8 +308,8 @@ async function pollBackgroundState() {
       detail: "Logged from popup",
       duration_s: 0,
     });
-    els.interrupts.textContent = Number(els.interrupts.textContent || 0) + 1;
-    showToast(ok ? "Interruption logged!" : "Saved locally (offline)");
+    if (ok) els.interrupts.textContent = Number(els.interrupts.textContent || 0) + 1;
+    showToast(ok ? "Interruption logged!" : "Couldn't reach FocusGuard — not saved");
   });
 
   els.quickBreak.addEventListener("click", async () => {
@@ -319,24 +318,7 @@ async function pollBackgroundState() {
       detail: "Quick break",
       duration_s: 300,
     });
-    showToast(ok ? "Break logged. Enjoy!" : "Saved locally (offline)");
-  });
-
-  els.resetBtn.addEventListener("click", async () => {
-    if (!confirm("Reset the FocusGuard database? This deletes all data and re-seeds fresh mock data.")) return;
-    els.resetBtn.disabled = true;
-    els.resetBtn.textContent = "Resetting…";
-    try {
-      const res = await fetch(`${CONFIG.BASE_URL}/api/dev/reset`, { method: "POST", signal: AbortSignal.timeout(10000) });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      await chrome.runtime.sendMessage({ type: "RESET" }).catch(() => {});
-      showToast("Database reset — fresh data loaded");
-      setTimeout(() => window.location.reload(), 900);
-    } catch {
-      showToast("Reset failed — is the backend running?");
-      els.resetBtn.disabled = false;
-      els.resetBtn.textContent = "Reset data";
-    }
+    showToast(ok ? "Break logged. Enjoy!" : "Couldn't reach FocusGuard — not saved");
   });
 
   els.proposeOkBtn.addEventListener("click", async () => {

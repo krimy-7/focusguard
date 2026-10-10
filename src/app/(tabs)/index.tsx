@@ -117,25 +117,33 @@ export default function TodayScreen() {
   const [extracting, setExtracting] = useState(false);
   const [audioBusy, setAudioBusy] = useState(false);
   const [captureError, setCaptureError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const activeContext = contexts.find((c) => c.active) ?? null;
 
   const load = useCallback(async () => {
-    const [gs, cs, bs, iv, st, inInsight] = await Promise.all([
-      api.getGoals(todayKey()),
-      api.getContexts(),
-      api.getBreak(),
-      api.getCurrentIntervention(),
-      api.getStats(),
-      api.getInsight(),
-    ]);
-    setGoals(gs);
-    setContexts(cs);
-    setBreakState(bs);
-    setIntervention(iv);
-    setStats(st);
-    setInsight(inInsight);
-    setLoading(false);
+    try {
+      const [gs, cs, bs, iv, st, inInsight] = await Promise.all([
+        api.getGoals(todayKey()),
+        api.getContexts(),
+        api.getBreak(),
+        api.getCurrentIntervention(),
+        api.getStats(),
+        api.getInsight().catch(() => null),
+      ]);
+      setGoals(gs);
+      setContexts(cs);
+      setBreakState(bs);
+      setIntervention(iv);
+      setStats(st);
+      setInsight(inInsight);
+      setLoadError(false);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useFocusEffect(
@@ -144,27 +152,40 @@ export default function TodayScreen() {
     }, [load]),
   );
 
-  const toggleGoal = async (goal: Goal) => {
-    const next = goal.status === 'done' ? 'open' : 'done';
-    setGoals((prev) => prev.map((g) => (g.id === goal.id ? { ...g, status: next } : g)));
-    await api.updateGoal(goal.id, next);
-  };
-
-  const handleResume = async () => {
-    await api.resumeBreak();
-    setBreakState({ on_break: false, context: null, saved_progress: '', next_step: '', since: null });
-    load();
-  };
-
-  const resolve = async (action: string) => {
-    if (intervention) await api.resolveIntervention(intervention.id, action);
-    setIntervention(null);
-    if (action === 'take_break') {
-      const bs = await api.startBreak(activeContext?.title ?? '', 'Continue where you left off');
-      setBreakState(bs);
+  // Writes: only update local state after the server confirms.
+  const write = async (fn: () => Promise<void>) => {
+    setActionError(null);
+    try {
+      await fn();
+    } catch {
+      setActionError("Can't reach FocusGuard right now. Nothing was saved.");
     }
-    load();
   };
+
+  const toggleGoal = (goal: Goal) =>
+    write(async () => {
+      const next = goal.status === 'done' ? 'open' : 'done';
+      await api.updateGoal(goal.id, next);
+      setGoals((prev) => prev.map((g) => (g.id === goal.id ? { ...g, status: next } : g)));
+    });
+
+  const handleResume = () =>
+    write(async () => {
+      await api.resumeBreak();
+      setBreakState({ on_break: false, context: null, saved_progress: '', next_step: '', since: null });
+      load();
+    });
+
+  const resolve = (action: string) =>
+    write(async () => {
+      if (intervention) await api.resolveIntervention(intervention.id, action);
+      setIntervention(null);
+      if (action === 'take_break') {
+        const bs = await api.startBreak(activeContext?.title ?? '', 'Continue where you left off');
+        setBreakState(bs);
+      }
+      load();
+    });
 
   const extractGoalsFromText = async () => {
     const text = captureText.trim();
@@ -237,7 +258,7 @@ export default function TodayScreen() {
           </View>
         </View>
 
-        {!loading ? (
+        {!loading && !loadError ? (
           <View className="flex-row gap-sm">
             <DashboardMetric label="Focus score" value={`${stats?.score ?? 0}%`} accent />
             <DashboardMetric label="Today" value={`${completedToday}/${plannedToday.length}`} />
@@ -249,8 +270,15 @@ export default function TodayScreen() {
           <View className="items-center py-xl">
             <ActivityIndicator color={Palette.primary} />
           </View>
+        ) : loadError ? (
+          <EmptyState title="Can't reach FocusGuard right now" subtitle="Check that the backend is running, then pull to refresh." />
         ) : (
           <>
+            {actionError ? (
+              <AppText variant="labelSm" color="error">
+                {actionError}
+              </AppText>
+            ) : null}
               <Card surface="inverse-surface" radius={32} className={cn('p-lg gap-md border-0', isDesktop && 'p-xl')}>
               <View className="flex-row items-center justify-between">
                 <View className="gap-xs flex-1 pr-md">

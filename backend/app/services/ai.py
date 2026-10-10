@@ -13,6 +13,7 @@ SYSTEM_PROMPT = (
     "no raw browsing data). Respond in 2 sentences maximum, friendly and "
     "motivating, and end with a single short suggestion starting with 'Try: '."
 )
+JSON_SYSTEM_PROMPT = "You are FocusGuard's assistant. Reply with valid JSON only, no commentary or markdown."
 
 
 class AIService:
@@ -58,13 +59,7 @@ class AIService:
                 "per item, no commentary.\n"
                 f"User: {text}"
             )
-            if provider in {"deepseek", "openai", "ollama"}:
-                content = self._chat(prompt)
-            elif provider == "claude":
-                content = self._anthropic_raw(prompt)
-            else:
-                content = self._gemini_raw(prompt)
-            goals = self._parse_json_list(content)
+            goals = self._parse_json_list(self._raw(prompt, JSON_SYSTEM_PROMPT))
             if goals:
                 return [{"title": g, "source": "ai"} for g in goals]
         except Exception:
@@ -95,8 +90,7 @@ class AIService:
                 return base
 
             prompt = self._context_prompt(signals, recent_domains, active_context, existing_contexts or [])
-            content = self._chat(prompt) if provider != "claude" else self._anthropic_raw(prompt)
-            data = self._parse_json_object(content)
+            data = self._parse_json_object(self._raw(prompt, JSON_SYSTEM_PROMPT))
             if data and data.get("title"):
                 result = {
                     "proposed_title": str(data["title"])[:200],
@@ -201,19 +195,25 @@ class AIService:
         return bool(settings.ollama_base_url and settings.ollama_model)
 
     def _effective_provider(self) -> str:
-        if self.provider == "mock":
-            return "mock"
-        if self.provider == "ollama":
-            return "ollama"
-        if self._credentials_ok():
+        """The configured provider if it's usable, else mock. Ollama is only
+        used when explicitly configured (AI_PROVIDER=ollama)."""
+        known = {"deepseek", "openai", "claude", "gemini", "ollama"}
+        if self.provider in known and self._credentials_ok():
             return self.provider
-        if self._ollama_ok():
-            return "ollama"
         return "mock"
 
     # -- Providers --------------------------------------------------------
 
-    def _chat(self, prompt: str) -> str:
+    def _raw(self, prompt: str, system: str) -> str:
+        """Single completion via whichever provider is active."""
+        provider = self._effective_provider()
+        if provider == "claude":
+            return self._anthropic_raw(prompt, system)
+        if provider == "gemini":
+            return self._gemini_raw(prompt, system)
+        return self._chat(prompt, system)
+
+    def _chat(self, prompt: str, system: str = SYSTEM_PROMPT) -> str:
         """Generic chat completion via the current OpenAI-compatible provider.
         Tries each configured endpoint in order, falling back to the next key
         on failure (rate limits, quota, etc.)."""
@@ -235,7 +235,7 @@ class AIService:
 
         payload = {
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "system", "content": system},
                 {"role": "user", "content": prompt},
             ],
             "temperature": 0.7,
@@ -260,7 +260,7 @@ class AIService:
                 last_exc = exc
         raise last_exc or RuntimeError("No AI endpoints configured.")
 
-    def _anthropic_raw(self, prompt: str) -> str:
+    def _anthropic_raw(self, prompt: str, system: str = SYSTEM_PROMPT) -> str:
         with httpx.Client(timeout=7) as client:
             resp = client.post(
                 "https://api.anthropic.com/v1/messages",
@@ -271,23 +271,21 @@ class AIService:
                 json={
                     "model": settings.claude_model,
                     "max_tokens": 220,
-                    "system": SYSTEM_PROMPT,
+                    "system": system,
                     "messages": [{"role": "user", "content": prompt}],
                 },
             )
             resp.raise_for_status()
             return resp.json()["content"][0]["text"]
 
-    def _gemini_raw(self, prompt: str) -> str:
-        url = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/"
-            f"{settings.gemini_model}:generateContent?key={settings.gemini_api_key}"
-        )
+    def _gemini_raw(self, prompt: str, system: str = SYSTEM_PROMPT) -> str:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{settings.gemini_model}:generateContent"
         with httpx.Client(timeout=7) as client:
             resp = client.post(
                 url,
+                headers={"x-goog-api-key": settings.gemini_api_key},
                 json={
-                    "systemInstruction": {"parts": [{"text": SYSTEM_PROMPT}]},
+                    "systemInstruction": {"parts": [{"text": system}]},
                     "contents": [{"parts": [{"text": prompt}]}],
                 },
             )
@@ -356,15 +354,13 @@ class AIService:
             return None
 
     def transcribe_audio(self, audio_bytes: bytes, filename: str, content_type: str) -> str:
-        provider = self._effective_provider()
-        if provider == "mock":
-            return self._mock_transcribe_audio()
-        if provider in {"openai", "ollama"}:
+        """Return the transcript, or "" when transcription isn't available."""
+        if self._effective_provider() in {"openai", "ollama"}:
             try:
                 return self._openai_compatible_audio(audio_bytes, filename, content_type)
             except Exception:
                 pass
-        return self._mock_transcribe_audio()
+        return ""
 
     def _openai_compatible_audio(self, audio_bytes: bytes, filename: str, content_type: str) -> str:
         provider = self._effective_provider()
@@ -396,9 +392,6 @@ class AIService:
             except Exception as exc:
                 last_exc = exc
         raise last_exc or RuntimeError("Audio transcription failed.")
-
-    def _mock_transcribe_audio(self) -> str:
-        return "Review my day and turn it into 2-5 actionable goals."
 
     def _mock_insight(self, context: dict) -> dict:
         stats = context.get("stats", {})
