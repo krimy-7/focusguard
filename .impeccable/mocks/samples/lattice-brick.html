@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FocusGuard AI · Tikijhyal direction sample</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Mukta:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ---------- Tokens ---------- */
+:root{
+  color-scheme: light;
+  /* palette (committed) */
+  --sal:#2B1E17;          /* sal wood: ink, never pure black */
+  --sal-2:#5A4A40;        /* secondary text, 7:1 on lime-wash */
+  --brick:#9A3E24;        /* shell rail: earthy brown-red, never an alarm */
+  --brick-2:#7E3019;
+  --brass:#C8963E;        /* waiting / grace + highlights; a fill, never text */
+  --lime:#E8EBE4;         /* lime-wash ground (drifts cool -> warm) */
+  --cool:#E1E9E8;
+  --warm:#EFE9DB;
+  --moss:#4E6B3C;         /* you're back / on task */
+  --moss-2:#415C32;
+  /* surfaces + state tints */
+  --paper:#F6F7F1;
+  --field:#FBFBF7;
+  --cream:#FBF6EC;
+  --moss-tint:#E4ECDA;
+  --brass-tint:#F4E7C8;
+  --stone:#E7E4DA;
+  --line:rgba(43,30,23,.16);
+  /* type: one scale */
+  --t-s:14px; --t-m:16px; --t-l:18px; --t-xl:22px; --t-2xl:28px; --t-3xl:44px;
+  --sans:'Mukta', system-ui, 'Segoe UI', sans-serif;
+  --hand:'Kalam', 'Segoe Print', 'Bradley Hand', cursive;
+  --ground:linear-gradient(135deg, var(--cool) 0%, var(--lime) 46%, var(--warm) 100%);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100vh;background:linear-gradient(160deg, var(--cool) 0%, var(--lime) 44%, var(--warm) 100%);color:var(--sal);font:400 var(--t-m)/1.45 var(--sans)}
+button,input{font:inherit;color:inherit}
+h1,h2,h3,h4,p,ul{margin:0}
+ul{padding:0;list-style:none}
+:focus-visible{outline:3px solid var(--sal);outline-offset:2px}
+.rail :focus-visible,.popup__head :focus-visible{outline-color:var(--cream)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:8px;border:1.5px solid var(--sal);background:transparent;color:var(--sal);font-weight:700;font-size:var(--t-m);line-height:1;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background .15s,color .15s}
+.btn:hover{background:rgba(43,30,23,.08)}
+.btn--primary{background:var(--sal);color:var(--cream)}
+.btn--primary:hover{background:#45322A}
+.btn--back{background:var(--moss);border-color:var(--moss);color:var(--cream)}
+.btn--back:hover{background:var(--moss-2)}
+.btn--block{width:100%}
+.ico{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- The window: the lattice IS the state ---------- */
+.win{--jamb:28px;position:relative;overflow:hidden;isolation:isolate;background:var(--pane);border:5px solid var(--sal);border-bottom-width:8px;border-radius:4px;box-shadow:inset 0 0 0 1px rgba(200,150,62,.55);transition:background .5s}
+.win__pane{position:relative;z-index:1;height:100%;transition:opacity .35s;opacity:var(--pane-o,1)}
+.win__leaf{position:absolute;inset:0;z-index:2;display:block;transform:translateX(var(--x));transition:transform .6s cubic-bezier(.3,.7,.2,1),background .5s;background:var(--leaf-bg);border-left:5px solid var(--stile);pointer-events:none}
+.win__leaf svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.win__leaf .r2{display:none}
+.win[data-state=open]   {--pane:var(--moss-tint);--leaf-bg:#CFDDBF;--stile:var(--moss);--x:calc(100% - var(--jamb))}
+.win[data-state=wait]   {--pane:var(--brass-tint);--leaf-bg:#EBD6A0;--stile:var(--brass);--x:60%}
+.win[data-state=paused] {--pane:var(--stone);--leaf-bg:#D9D5C9;--stile:#8B7D70;--x:0%;--pane-o:0}
+.win[data-state=private]{--pane:var(--sal);--leaf-bg:var(--sal);--stile:var(--brass);--x:0%;--pane-o:0}
+.win[data-state=private] .r1{display:none}
+.win[data-state=private] .r2{display:block}
+.yeti{display:block;width:40px;height:40px}
+
+/* sizes */
+.win--mark{width:44px;height:44px;border-width:3px;border-bottom-width:5px;--jamb:11px;--pane:var(--cream);--leaf-bg:#E9D9B5;--stile:var(--brass)}
+.win--mark .win__leaf{border-left-width:3px}
+.win--mark .win__pane{display:grid;place-items:end start;padding-left:1px}
+.win--mark .yeti{width:34px;height:34px}
+.win--tab{width:84px;height:50px;--jamb:20px}
+.win--tab .win__pane{display:flex;align-items:flex-end;padding-left:6px}
+.win--tab .yeti{width:42px;height:42px;margin-bottom:-6px}
+.win--chip{width:100px;height:60px;flex:none;--jamb:20px}
+.win--chip .win__pane{display:flex;align-items:flex-end;padding-left:8px}
+.win--chip .yeti{width:44px;height:44px;margin-bottom:-6px}
+
+/* legend chips: hover / focus plays the lattice opening or closing */
+.legend{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.legend li{display:flex}
+.chip{display:flex;align-items:center;gap:14px;width:100%;min-height:92px;padding:12px;background:var(--paper);border:1px solid var(--line);border-radius:10px;text-align:left;cursor:pointer}
+.chip__txt{display:grid;gap:2px}
+.chip__txt b{font-weight:700;font-size:var(--t-m)}
+.chip__txt span{font-size:var(--t-s);line-height:1.35;color:var(--sal-2);text-wrap:balance}
+.chip[data-s=open]    .win{--x-alt:56%}
+.chip[data-s=wait]    .win{--x-alt:calc(100% - var(--jamb))}
+.chip[data-s=paused]  .win{--x-alt:calc(100% - var(--jamb))}
+.chip[data-s=private] .win{--x-alt:calc(100% - var(--jamb))}
+.chip:hover .win[data-state],.chip:focus-visible .win[data-state],.chip.is-flip .win[data-state]{--x:var(--x-alt);--pane-o:1}
+.chip:hover .win[data-state=private],.chip:focus-visible .win[data-state=private],.chip.is-flip .win[data-state=private]{--leaf-bg:#3B2A20}
+
+/* ---------- Presentation board ---------- */
+.board{max-width:1328px;margin:0 auto;padding:40px 24px 72px}
+.board__head{margin-bottom:40px}
+.board__head h1{font-size:var(--t-2xl);line-height:1.2;font-weight:700}
+.board__head p{margin-top:6px;font-size:var(--t-m);color:var(--sal-2);max-width:64ch}
+.frame{margin-bottom:56px}
+.frame__head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;margin-bottom:14px}
+.frame__head h2{font-size:var(--t-l);font-weight:700;line-height:1.3}
+.frame__head p{font-size:var(--t-s);color:var(--sal-2)}
+.row{display:flex;gap:48px;align-items:flex-start}
+.row>.frame:nth-child(1){flex:800 1 0;max-width:800px;min-width:0}
+.row>.frame:nth-child(2){flex:360 1 0;max-width:360px;min-width:0}
+.fit{position:relative;width:100%}
+.stage{transform-origin:0 0;position:relative}
+.stage--dash{width:1280px;height:800px}
+.stage--page{width:800px;height:500px}
+.stage--pop{width:360px;height:560px}
+@media (max-width:900px){.row{flex-direction:column;gap:56px}.row>.frame:nth-child(n){flex:none;width:100%;max-width:none}.legend{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.legend{grid-template-columns:1fr}}
+
+/* ---------- 1. Dashboard ---------- */
+.dash{display:grid;grid-template-columns:232px 1fr;background:var(--ground);border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px var(--line),0 18px 44px rgba(43,30,23,.16)}
+.rail{background:var(--brick);color:var(--cream);padding:24px 16px;display:flex;flex-direction:column;gap:32px}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:var(--t-l);line-height:1.2}
+.rail nav ul{display:grid;gap:4px}
+.rail nav a{display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;color:var(--cream);font-weight:600;font-size:var(--t-m);text-decoration:none;transition:background .15s}
+.rail nav a:hover{background:rgba(255,255,255,.14)}
+.rail nav a[aria-current=page]{background:var(--cream);color:var(--sal)}
+.rail__note{margin-top:auto;padding:16px 0 0;border-top:1px solid rgba(251,246,236,.3);font-size:var(--t-s);line-height:1.45}
+.dash__main{padding:40px 56px 32px;display:flex;flex-direction:column;min-width:0}
+.eyebrow{font-size:var(--t-s);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--sal-2);margin-bottom:12px}
+.story{font-size:var(--t-3xl);line-height:1.14;font-weight:700;letter-spacing:-.01em;max-width:800px;text-wrap:balance}
+.story em{font-style:normal;font-weight:500;color:var(--sal-2)}
+.story mark{background:none;color:var(--sal);font-weight:700;text-decoration:underline;text-decoration-color:rgba(200,150,62,.85);text-decoration-thickness:6px;text-underline-offset:5px;text-decoration-skip-ink:none}
+.win--lg{--jamb:56px;margin-top:28px;min-height:184px}
+.ctx{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:100%;padding:22px calc(100% - var(--x) + 16px) 22px 28px}
+.ctx__main{display:grid;gap:4px;min-width:0}
+.status{display:flex;align-items:center;gap:8px;font-size:var(--t-s);font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--moss)}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--moss);box-shadow:0 0 0 4px rgba(78,107,60,.2)}
+.ctx__name{font-size:var(--t-2xl);line-height:1.2;font-weight:700}
+.ctx__meta{color:var(--sal-2)}
+.sites{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.sites li{font-size:var(--t-s);line-height:1;padding:7px 10px;border-radius:6px;border:1px solid var(--line);background:rgba(255,255,255,.55)}
+.ctx__actions{display:grid;gap:10px;flex:none}
+.dash__quiet{margin-top:auto;padding-top:20px;font-size:var(--t-s);color:var(--sal-2)}
+.dash__grid{display:grid;grid-template-columns:1fr 320px;gap:40px;margin-top:36px}
+.sect-title{font-size:var(--t-xl);font-weight:700;line-height:1.2;margin-bottom:6px}
+.goals{border-top:1px solid var(--line)}
+.goals li{border-bottom:1px solid var(--line)}
+.goal{display:flex;align-items:center;gap:16px;min-height:60px;cursor:pointer}
+.goal input{appearance:none;-webkit-appearance:none;flex:none;width:26px;height:26px;margin:0;border:2px solid var(--sal);border-radius:6px;background:var(--field);display:grid;place-content:center;cursor:pointer;transition:background .15s,border-color .15s}
+.goal input::after{content:"";width:7px;height:13px;border:solid var(--cream);border-width:0 3px 3px 0;transform:translateY(-1px) rotate(45deg) scale(0);transition:transform .15s}
+.goal input:checked{background:var(--moss);border-color:var(--moss)}
+.goal input:checked::after{transform:translateY(-1px) rotate(45deg) scale(1)}
+.goal input:focus-visible{outline:3px solid var(--sal);outline-offset:3px}
+.goal__text{font-family:var(--hand);font-size:var(--t-xl);line-height:1.3;padding-top:2px}
+.goal input:checked+.goal__text{color:var(--sal-2);text-decoration:line-through;text-decoration-color:var(--moss);text-decoration-thickness:2px}
+.add{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:12px;align-content:start}
+.add__title{font-size:var(--t-xl);font-weight:700;line-height:1.2}
+.add__hint{font-size:var(--t-s);color:var(--sal-2);line-height:1.4;margin-top:-6px}
+.field{width:100%;min-height:48px;padding:0 14px;border:1.5px solid var(--sal);border-radius:8px;background:var(--field);font-family:var(--hand);font-size:var(--t-l)}
+.field::placeholder{font-family:var(--sans);font-size:var(--t-m);color:#6A5B51;opacity:1}
+.field:focus-visible{outline:3px solid var(--sal);outline-offset:2px}
+
+/* ---------- 2. Nudge card on a page ---------- */
+.page{background:#F2F3F1;border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px var(--line),0 18px 44px rgba(43,30,23,.16);font-family:var(--sans);color:#202124}
+.chrome{height:38px;background:#DADDE1;display:flex;align-items:flex-end;gap:2px;padding:0 10px;font-size:12px}
+.ctab{height:30px;display:flex;align-items:center;gap:6px;padding:0 12px;border-radius:8px 8px 0 0;color:#3C4043;white-space:nowrap}
+.ctab--on{background:#F2F3F1;color:#202124;font-weight:600}
+.cgroup{align-self:center;height:22px;display:flex;align-items:center;padding:0 9px;margin-right:2px;background:var(--brass);color:var(--sal);border-radius:6px;font-weight:700;white-space:nowrap}
+.urlbar{height:38px;background:#F2F3F1;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid #DADDE1}
+.urlbar span{flex:1;height:26px;border-radius:13px;background:#E6E8EB;display:flex;align-items:center;padding:0 14px;font-size:12px;color:#5F6368}
+.site{display:flex;align-items:center;gap:14px;height:46px;padding:0 24px;font-size:13px;color:#3C4043}
+.site b{font-size:16px;font-weight:700;color:#202124}
+.site i{flex:1;max-width:300px;height:28px;border-radius:14px;background:#E6E8EB;margin-left:auto;margin-right:auto}
+.watch{display:grid;grid-template-columns:440px 1fr;gap:24px;padding:6px 24px 0}
+.player{position:relative;aspect-ratio:16/9;background:linear-gradient(135deg,#B9BEC4,#9EA4AB);border-radius:10px;display:grid;place-items:center}
+.player::before{content:"";width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.9)}
+.player::after{content:"";position:absolute;left:calc(50% - 6px);top:calc(50% - 12px);border:12px solid transparent;border-left:19px solid #5F6368;border-right:0}
+.player__bar{position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(255,255,255,.45)}
+.player__bar::after{content:"";display:block;width:37%;height:100%;background:#5F6368}
+.vtitle{margin-top:12px;font-size:var(--t-xl);font-weight:700;line-height:1.25}
+.vmeta{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:14px;color:#5F6368}
+.vmeta::before{content:"";width:32px;height:32px;border-radius:50%;background:#C5C9CE}
+.next{display:grid;gap:10px;align-content:start}
+.next li{display:grid;grid-template-columns:132px 1fr;gap:10px;font-size:13px;line-height:1.3;color:#3C4043}
+.next li::before{content:"";aspect-ratio:16/9;border-radius:6px;background:#CDD1D6}
+.next b{display:block;font-weight:600;color:#202124;font-size:14px}
+.nudge{position:absolute;right:16px;bottom:16px;width:320px;height:140px;padding:16px 14px 6px;display:flex;flex-direction:column;background:var(--paper);border-radius:10px;box-shadow:0 0 0 1px rgba(43,30,23,.18),0 14px 34px rgba(43,30,23,.32);font-size:var(--t-m);line-height:1.35}
+.nudge *{font-size:1em}
+.nudge .win--tab{position:absolute;left:14px;top:-42px;z-index:2}
+.nudge__text{font-weight:400;line-height:21px;height:42px}
+.nudge__text b{font-weight:700}
+.nudge__row{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:8px;margin-top:6px}
+.nudge__row .btn{padding:0 8px}
+.nudge__link{position:relative;align-self:flex-start;margin-top:4px;line-height:22px;height:22px;color:var(--sal-2);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px;background:none;border:0;padding:0;cursor:pointer;font-weight:500}
+.nudge__link::after{content:"";position:absolute;inset:-4px -10px -18px}
+.nudge__link:hover{color:var(--sal)}
+
+/* ---------- 3. Popup ---------- */
+.popup{display:flex;flex-direction:column;background:var(--ground);border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px var(--line),0 18px 44px rgba(43,30,23,.2);font-size:var(--t-m);line-height:1.35}
+.popup *{font-size:1em}
+.popup__head{flex:none;height:60px;display:flex;align-items:center;gap:12px;padding:0 8px 0 16px;background:var(--brick);color:var(--cream);font-weight:700}
+.popup__head .brand-name{flex:1}
+.iconbtn{display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:8px;background:transparent;color:var(--cream);cursor:pointer}
+.iconbtn:hover{background:rgba(255,255,255,.14)}
+.popup__body{flex:1;min-height:0;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.win--pop{--jamb:28px;flex:none;min-height:140px}
+.pop-ctx{display:grid;gap:6px;align-content:center;min-height:100%;padding:14px calc(100% - var(--x) + 12px) 14px 16px}
+.pill{justify-self:start;display:inline-block;padding:3px 9px 2px;border-radius:5px;background:var(--brass);color:var(--sal);font-weight:700;letter-spacing:.06em;text-transform:uppercase;line-height:1.3}
+.pop-ctx b{font-weight:700;line-height:1.25}
+.pop-ctx span:last-child{color:var(--sal-2);text-wrap:balance}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.actions .btn--back{grid-column:1/-1}
+.note{display:grid;gap:4px}
+.note label{font-weight:700}
+.note .field{font-size:1em;min-height:44px}
+.beast{display:flex;align-items:center;gap:8px;width:100%;min-height:48px;padding:0 12px 0 14px;border:1px solid var(--line);border-radius:8px;background:var(--paper);font-weight:700;text-align:left;cursor:pointer}
+.beast:hover{background:#FFFFFB}
+.beast .val{margin-left:auto;font-weight:400;color:var(--sal-2)}
+.beast .ico{transition:transform .2s}
+.beast[aria-expanded=true] .ico{transform:rotate(90deg)}
+.beast-panel{padding:0 14px;color:var(--sal-2)}
+.popup__foot{flex:none;padding:12px 16px;border-top:1px solid var(--line)}
+
+/* ---------- Notes strip ---------- */
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin-top:8px}
+.notes h3{font-size:var(--t-m);font-weight:700;margin-bottom:12px}
+.swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.swatch{display:grid;gap:4px;align-content:start;font-size:var(--t-s);line-height:1.3}
+.swatch i{display:block;height:44px;border-radius:6px;box-shadow:inset 0 0 0 1px rgba(43,30,23,.2)}
+.swatch span{color:var(--sal-2)}
+.spec{display:grid;gap:6px;font-size:var(--t-s);line-height:1.4;color:var(--sal-2)}
+.spec b{color:var(--sal)}
+.sample-ui{font-size:var(--t-l);color:var(--sal);font-weight:600}
+.sample-hand{font-family:var(--hand);font-size:var(--t-xl);color:var(--sal)}
+.checks{display:grid;gap:4px;font-size:var(--t-s);line-height:1.4;color:var(--sal-2)}
+.checks li{display:flex;gap:10px}
+.checks b{flex:none;width:52px;color:var(--sal);font-variant-numeric:tabular-nums}
+@media (max-width:900px){.notes{grid-template-columns:1fr}}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
+
+/* textured fired brick (dachi apa) + plaster grain */
+.rail,.popup__head{background-color:#9A3E24;background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22180%22%20height%3D%22180%22%3E%3Cfilter%20id%3D%22n%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.9%22%20numOctaves%3D%222%22%20stitchTiles%3D%22stitch%22/%3E%3CfeColorMatrix%20values%3D%220%200%200%200%20.1%20%200%200%200%200%20.06%20%200%200%200%200%20.03%20%200%200%200%20.55%200%22/%3E%3C/filter%3E%3Crect%20width%3D%22180%22%20height%3D%22180%22%20filter%3D%22url%28%23n%29%22/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2296%22%20height%3D%2240%22%20viewBox%3D%220%200%2096%2040%22%3E%3Crect%20width%3D%2296%22%20height%3D%2240%22%20fill%3D%22%237E3019%22/%3E%3Crect%20x%3D%220.5%22%20y%3D%220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%239A3E24%22/%3E%3Crect%20x%3D%2232.5%22%20y%3D%220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23A3452A%22/%3E%3Crect%20x%3D%2264.5%22%20y%3D%220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23933A21%22/%3E%3Crect%20x%3D%22-15.5%22%20y%3D%2210.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%239F4227%22/%3E%3Crect%20x%3D%2216.5%22%20y%3D%2210.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23983D23%22/%3E%3Crect%20x%3D%2248.5%22%20y%3D%2210.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23A14328%22/%3E%3Crect%20x%3D%2280.5%22%20y%3D%2210.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23963C22%22/%3E%3Crect%20x%3D%220.5%22%20y%3D%2220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%239C4026%22/%3E%3Crect%20x%3D%2232.5%22%20y%3D%2220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%239A3E24%22/%3E%3Crect%20x%3D%2264.5%22%20y%3D%2220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23A3452A%22/%3E%3Crect%20x%3D%22-15.5%22%20y%3D%2230.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23933A21%22/%3E%3Crect%20x%3D%2216.5%22%20y%3D%2230.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%239F4227%22/%3E%3Crect%20x%3D%2248.5%22%20y%3D%2230.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23983D23%22/%3E%3Crect%20x%3D%2280.5%22%20y%3D%2230.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23A14328%22/%3E%3C/svg%3E");background-size:180px 180px,96px 40px;background-blend-mode:multiply,normal}
+.rail{box-shadow:inset -6px 0 10px -6px rgba(43,30,23,.55)}
+.rail nav a{text-shadow:0 1px 0 rgba(43,30,23,.35)}
+.rail nav a[aria-current=page]{text-shadow:none;box-shadow:0 1px 0 rgba(43,30,23,.4)}
+body,.dash__main,.main{background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22240%22%20height%3D%22240%22%3E%3Cfilter%20id%3D%22p%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.55%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22/%3E%3CfeColorMatrix%20values%3D%220%200%200%200%20.17%20%200%200%200%200%20.12%20%200%200%200%200%20.09%20%200%200%200%20.07%200%22/%3E%3C/filter%3E%3Crect%20width%3D%22240%22%20height%3D%22240%22%20filter%3D%22url%28%23p%29%22/%3E%3C/svg%3E"),var(--ground)}
+</style>
+</head>
+<body>
+
+<!-- Shared defs: lattice patterns, the Yeti, icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Tikijhyal-style criss-cross grille: carved slat, groove highlight, brass peg at alternate crossings -->
+    <pattern id="lat" width="16" height="16" patternUnits="userSpaceOnUse">
+      <path d="M0 0L16 16M16 0L0 16" stroke="#2B1E17" stroke-width="3.2" fill="none"/>
+      <path d="M0 0L16 16M16 0L0 16" stroke="#6E5445" stroke-width=".7" fill="none"/>
+      <rect x="6.3" y="6.3" width="3.4" height="3.4" transform="rotate(45 8 8)" fill="#C8963E" stroke="#2B1E17" stroke-width=".8"/>
+    </pattern>
+    <!-- finer closed grille for the private state -->
+    <pattern id="lat-fine" width="9" height="9" patternUnits="userSpaceOnUse">
+      <path d="M0 0L9 9M9 0L0 9" stroke="#C8963E" stroke-width="1.7" fill="none"/>
+    </pattern>
+
+    <!-- Yeti: calm companion, bust view -->
+    <symbol id="yeti" viewBox="0 0 64 64">
+  <defs>
+    <g id="yeti-fur">
+      <ellipse cx="32" cy="31" rx="19.5" ry="17.5"/>
+      <path d="M21 19Q19 12 25 8Q26.5 13 31 15Z"/>
+      <path d="M26 15Q27.5 8 32.5 4.5Q37.5 8 38 15Z"/>
+      <path d="M34 15Q37.5 10 42 8Q45 12 43 19Z"/>
+      <path d="M14.5 27Q8.5 36 10.5 49Q17 47 20 40Z"/>
+      <path d="M49.5 27Q55.5 36 53.5 49Q47 47 44 40Z"/>
+      <ellipse cx="32" cy="62" rx="26" ry="15"/>
+      <path d="M9 53Q3 59 5 67L18 67Z"/><path d="M55 53Q61 59 59 67L46 67Z"/>
+    </g>
+  </defs>
+  <use href="#yeti-fur" fill="#2B1E17" stroke="#2B1E17" stroke-width="3.4" stroke-linejoin="round"/>
+  <use href="#yeti-fur" fill="#F7F4EC" stroke="#F7F4EC" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M12.5 40q1 4 3 6.5M51.5 40q-1 4-3 6.5M28 8.5q1 2.5 3 4M37 8.5q-1 2.5-3 4M14 57q3 2 5 8M50 57q-3 2-5 8" fill="none" stroke="#CBC4B3" stroke-width="1.1" stroke-linecap="round"/>
+  <path d="M32 19.5C41.5 19.5 48 25.5 48 33.5C48 41.5 41.5 47.5 32 47.5C22.5 47.5 16 41.5 16 33.5C16 25.5 22.5 19.5 32 19.5Z" fill="#D9E4E4"/>
+  <path d="M19.5 28.5Q26 22.5 31.5 27M32.5 27Q38 22.5 44.5 28.5" fill="none" stroke="#F7F4EC" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M22 29.5q4.5-3 8.5-.5M33.5 29q4-2.5 8.5.5" fill="none" stroke="#2B1E17" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="26" cy="34" r="2.2" fill="#2B1E17"/><circle cx="38" cy="34" r="2.2" fill="#2B1E17"/>
+  <circle cx="26.8" cy="33.2" r=".75" fill="#fff"/><circle cx="38.8" cy="33.2" r=".75" fill="#fff"/>
+  <ellipse cx="21.5" cy="40" rx="3.2" ry="2.1" fill="#9A3E24" opacity=".2"/><ellipse cx="42.5" cy="40" rx="3.2" ry="2.1" fill="#9A3E24" opacity=".2"/>
+  <path d="M29.5 37.5q2.5-1.8 5 0-.4 2.5-2.5 2.5t-2.5-2.5z" fill="#6E4A3A"/>
+  <path d="M28.2 42.5q3.8 2.8 7.6 0" fill="none" stroke="#2B1E17" stroke-width="1.4" stroke-linecap="round"/>
+  <path d="M15.5 50q16.5 9.5 33 0l1.2 6q-17.7 8.5-35.4 0z" fill="#C8963E" stroke="#2B1E17" stroke-width="1.5" stroke-linejoin="round"/>
+  <path d="M16 54q16 8 32 0" fill="none" stroke="#9A3E24" stroke-width="1.5"/>
+</symbol>
+
+    <symbol id="i-today" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 6h8M16 6h4M4 12h4M12 12h8M4 18h10M18 18h2"/><circle cx="14" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="16" cy="18" r="2"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  </defs>
+</svg>
+
+<main class="board">
+  <header class="board__head">
+    <h1>FocusGuard AI — direction sample: Tikijhyal · textured fired brick</h1>
+    <p>A carved lattice window, as in the fired-brick facades of Patan and Bhaktapur. FocusGuard looks out through it: it notices your drift, and you are never seen. The lattice is the state.</p>
+  </header>
+
+  <!-- 1. Dashboard -->
+  <section class="frame" aria-labelledby="f1">
+    <div class="frame__head"><h2 id="f1">Dashboard · Today</h2><p>1280 × 800<span data-scale></span></p></div>
+    <div class="fit" data-w="1280" data-h="800">
+      <div class="stage stage--dash dash">
+        <aside class="rail">
+          <div class="brand">
+            <span class="win win--mark" data-state="open" aria-hidden="true">
+              <span class="win__leaf"><svg><rect class="r1" width="100%" height="100%" fill="url(#lat)"/><rect class="r2" width="100%" height="100%" fill="url(#lat-fine)"/></svg></span>
+              <span class="win__pane"><svg class="yeti"><use href="#yeti"/></svg></span>
+            </span>
+            <span>FocusGuard AI</span>
+          </div>
+          <nav aria-label="Main">
+            <ul>
+              <li><a href="#" aria-current="page"><svg class="ico"><use href="#i-today"/></svg>Today</a></li>
+              <li><a href="#"><svg class="ico"><use href="#i-history"/></svg>History</a></li>
+              <li><a href="#"><svg class="ico"><use href="#i-settings"/></svg>Settings</a></li>
+            </ul>
+          </nav>
+          <p class="rail__note">Page titles, URLs and tabs never leave this browser. Only your goals and settings sync.</p>
+        </aside>
+
+        <div class="dash__main">
+          <p class="eyebrow">Today · Saturday, 10 October</p>
+          <h3 class="story">A steady morning. <em>FocusGuard checked in once and you <mark>came right back.</mark></em></h3>
+
+          <div class="win win--lg" data-state="open" role="group" aria-label="Current context">
+            <span class="win__leaf" aria-hidden="true"><svg><rect class="r1" width="100%" height="100%" fill="url(#lat)"/><rect class="r2" width="100%" height="100%" fill="url(#lat-fine)"/></svg></span>
+            <div class="win__pane ctx">
+              <div class="ctx__main">
+                <p class="status"><span class="dot"></span>On task</p>
+                <h4 class="ctx__name">Landing page redesign</h4>
+                <p class="ctx__meta">Work · on task for 42 min</p>
+                <ul class="sites" aria-label="Sites in this context"><li>figma.com</li><li>github.com</li><li>docs.google.com</li></ul>
+              </div>
+              <div class="ctx__actions">
+                <button class="btn" type="button">Take a break</button>
+                <button class="btn" type="button">Pause check-ins</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="dash__grid">
+            <section aria-labelledby="goals-h">
+              <h4 class="sect-title" id="goals-h">Today’s goals</h4>
+              <ul class="goals">
+                <li><label class="goal"><input type="checkbox" checked><span class="goal__text">Finish hero section</span></label></li>
+                <li><label class="goal"><input type="checkbox"><span class="goal__text">Fix mobile spacing at 375px</span></label></li>
+                <li><label class="goal"><input type="checkbox"><span class="goal__text">Reply to Sita about the brief</span></label></li>
+              </ul>
+            </section>
+            <form class="add" onsubmit="return false">
+              <label class="add__title" for="newgoal">Add a goal</label>
+              <p class="add__hint">Write it your way. Nepali and Hindi work too.</p>
+              <input class="field" id="newgoal" type="text" placeholder="What would feel good to finish?">
+              <button class="btn btn--primary" type="submit">Add goal</button>
+            </form>
+          </div>
+          <p class="dash__quiet">Quiet hours start at 22:00. FocusGuard stays silent after that.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 + 3 -->
+  <div class="row">
+    <section class="frame" aria-labelledby="f2">
+      <div class="frame__head"><h2 id="f2">Nudge card on a page</h2><p>800 × 500<span data-scale></span></p></div>
+      <div class="fit" data-w="800" data-h="500">
+        <div class="stage stage--page page">
+          <div aria-hidden="true">
+            <div class="chrome">
+              <span class="cgroup">Landing page redesign</span>
+              <span class="ctab">Figma</span><span class="ctab">GitHub</span>
+              <span class="ctab ctab--on">10 hours lofi beats</span>
+            </div>
+            <div class="urlbar"><span>videos.example/watch</span></div>
+            <div class="site"><b>Videos</b><i></i></div>
+            <div class="watch">
+              <div>
+                <div class="player"><div class="player__bar"></div></div>
+                <h3 class="vtitle">10 hours lofi beats</h3>
+                <p class="vmeta">Chillroom</p>
+              </div>
+              <ul class="next">
+                <li><span><b>Rainy day piano</b>Chillroom</span></li>
+                <li><span><b>Deep focus synth mix</b>Late Signal</span></li>
+                <li><span><b>Study with me, 2 hours</b>Notebook Club</span></li>
+                <li><span><b>Night drive ambient</b>Late Signal</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="nudge one" role="region" aria-label="Check-in from FocusGuard">
+            <span class="win win--tab" data-state="wait" aria-hidden="true">
+              <span class="win__leaf"><svg><rect class="r1" width="100%" height="100%" fill="url(#lat)"/><rect class="r2" width="100%" height="100%" fill="url(#lat-fine)"/></svg></span>
+              <span class="win__pane"><svg class="yeti"><use href="#yeti"/></svg></span>
+            </span>
+            <p class="nudge__text"><b>Quick check-in:</b> Landing page redesign is right where you left it.</p>
+            <div class="nudge__row">
+              <button class="btn btn--back" type="button">Back</button>
+              <button class="btn" type="button">+5 min</button>
+              <button class="btn" type="button">Break</button>
+            </div>
+            <button class="nudge__link" type="button">This is part of my task</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="frame" aria-labelledby="f3">
+      <div class="frame__head"><h2 id="f3">Extension popup</h2><p>360 × 560<span data-scale></span></p></div>
+      <div class="fit" data-w="360" data-h="560">
+        <div class="stage stage--pop popup">
+          <header class="popup__head">
+            <span class="win win--mark" data-state="open" aria-hidden="true">
+              <span class="win__leaf"><svg><rect class="r1" width="100%" height="100%" fill="url(#lat)"/><rect class="r2" width="100%" height="100%" fill="url(#lat-fine)"/></svg></span>
+              <span class="win__pane"><svg class="yeti"><use href="#yeti"/></svg></span>
+            </span>
+            <span class="brand-name">FocusGuard AI</span>
+            <button class="iconbtn" type="button" aria-label="Settings"><svg class="ico"><use href="#i-settings"/></svg></button>
+          </header>
+
+          <div class="popup__body">
+            <div class="win win--pop" data-state="wait" role="group" aria-label="Current context: waiting">
+              <span class="win__leaf" aria-hidden="true"><svg><rect class="r1" width="100%" height="100%" fill="url(#lat)"/><rect class="r2" width="100%" height="100%" fill="url(#lat-fine)"/></svg></span>
+              <div class="win__pane pop-ctx">
+                <span class="pill">Waiting</span>
+                <b>Landing page redesign</b>
+                <span>3 min left before a check-in</span>
+              </div>
+            </div>
+
+            <div class="actions">
+              <button class="btn btn--back" type="button">Back to my task</button>
+              <button class="btn" type="button">Take a break</button>
+              <button class="btn" type="button">Pause</button>
+            </div>
+
+            <div class="note">
+              <label for="note">Your note for when you’re back</label>
+              <input class="field" id="note" type="text" value="Start with the nav at 375px">
+            </div>
+
+            <div>
+              <button class="beast" type="button" aria-expanded="false" aria-controls="beast-panel">Beast Mode<span class="val">Off</span><svg class="ico"><use href="#i-chev"/></svg></button>
+              <p class="beast-panel" id="beast-panel" hidden>Optional site blocking. You choose the sites, and you can always continue anyway.</p>
+            </div>
+          </div>
+
+          <footer class="popup__foot">
+            <a class="btn btn--block" href="#">Open dashboard<svg class="ico"><use href="#i-arrow"/></svg></a>
+          </footer>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Legend -->
+  <section class="frame" aria-labelledby="f4">
+    <div class="frame__head"><h2 id="f4">The lattice is the state</h2><p>Hover or focus a chip to see the lattice open or close.</p></div>
+    <ul class="legend">
+      <li><button class="chip" type="button" data-s="open">
+        <span class="win win--chip" data-state="open" aria-hidden="true"><span class="win__leaf"><svg><rect class="r1" width="100%" height="100%" fill="url(#lat)"/><rect class="r2" width="100%" height="100%" fill="url(#lat-fine)"/></svg></span><span class="win__pane"><svg class="yeti"><use href="#yeti"/></svg></span></span>
+        <span class="chip__txt"><b>On task</b><span>Window open. You’re in your context.</span></span></button></li>
+      <li><button class="chip" type="button" data-s="wait">
+        <span class="win win--chip" data-state="wait" aria-hidden="true"><span class="win__leaf"><svg><rect class="r1" width="100%" height="100%" fill="url(#lat)"/><rect class="r2" width="100%" height="100%" fill="url(#lat-fine)"/></svg></span><span class="win__pane"><svg class="yeti"><use href="#yeti"/></svg></span></span>
+        <span class="chip__txt"><b>Waiting</b><span>Half latticed. Grace period running.</span></span></button></li>
+      <li><button class="chip" type="button" data-s="paused">
+        <span class="win win--chip" data-state="paused" aria-hidden="true"><span class="win__leaf"><svg><rect class="r1" width="100%" height="100%" fill="url(#lat)"/><rect class="r2" width="100%" height="100%" fill="url(#lat-fine)"/></svg></span><span class="win__pane"><svg class="yeti"><use href="#yeti"/></svg></span></span>
+        <span class="chip__txt"><b>Paused</b><span>Closed. <span style="white-space:nowrap">Check-ins</span> are paused for now.</span></span></button></li>
+      <li><button class="chip" type="button" data-s="private">
+        <span class="win win--chip" data-state="private" aria-hidden="true"><span class="win__leaf"><svg><rect class="r1" width="100%" height="100%" fill="url(#lat)"/><rect class="r2" width="100%" height="100%" fill="url(#lat-fine)"/></svg></span><span class="win__pane"><svg class="yeti"><use href="#yeti"/></svg></span></span>
+        <span class="chip__txt"><b>Private</b><span>Closed, fine grille. Nothing is noted.</span></span></button></li>
+    </ul>
+  </section>
+
+  <!-- Notes -->
+  <section class="notes" aria-label="Palette, type and contrast">
+    <div>
+      <h3>Palette</h3>
+      <div class="swatches">
+        <div class="swatch"><i style="background:#2B1E17"></i><b>Sal wood</b><span>#2B1E17</span></div>
+        <div class="swatch"><i style="background:#9A3E24"></i><b>Brick</b><span>#9A3E24</span></div>
+        <div class="swatch"><i style="background:#C8963E"></i><b>Brass</b><span>#C8963E</span></div>
+        <div class="swatch"><i style="background:linear-gradient(90deg,#E1E9E8,#E8EBE4,#EFE9DB)"></i><b>Lime-wash</b><span>#E8EBE4</span></div>
+        <div class="swatch"><i style="background:#4E6B3C"></i><b>Moss</b><span>#4E6B3C</span></div>
+      </div>
+      <p class="spec" style="margin-top:12px">Wood is ink. Brick is the shell rail. Brass is waiting and highlights. Lime-wash is the ground. Moss is “you’re back”.</p>
+    </div>
+    <div>
+      <h3>Type</h3>
+      <div class="spec">
+        <p class="sample-ui">Mukta · FocusGuard’s words</p>
+        <p class="sample-hand">Kalam · only your words: goals, break note</p>
+        <p>Scale 14 / 16 / 18 / 22 / 28 / 44. Popup and nudge card use one size (16); rank is weight, case and reversal only.</p>
+      </div>
+    </div>
+    <div>
+      <h3>Contrast (WCAG)</h3>
+      <ul class="checks">
+        <li><b>13.4:1</b>Wood ink on lime-wash</li>
+        <li><b>7.0:1</b>Secondary wood on lime-wash</li>
+        <li><b>6.3:1</b>Cream on brick rail</li>
+        <li><b>5.6:1</b>Cream on moss (Back)</li>
+        <li><b>6.1:1</b>Wood on brass (Waiting label)</li>
+        <li><b>5.0:1</b>Moss on its tint (On task label)</li>
+        <li>Brass is only ever a fill or lattice; never text.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  // scale each fixed-size stage to its column, never above 1:1
+  var fits=[].slice.call(document.querySelectorAll('.fit'));
+  function fit(){
+    fits.forEach(function(el){
+      var w=+el.dataset.w,h=+el.dataset.h,s=Math.min(1,el.clientWidth/w);
+      el.firstElementChild.style.transform='scale('+s+')';
+      el.style.height=(h*s)+'px';
+      var tag=el.parentNode.querySelector('[data-scale]');
+      if(tag)tag.textContent=s<1?' · shown at '+Math.round(s*100)+'%':'';
+    });
+  }
+  fit();
+  window.addEventListener('resize',fit);
+  if(window.ResizeObserver)new ResizeObserver(fit).observe(document.body);
+  // legend chips: tap toggles on touch
+  [].forEach.call(document.querySelectorAll('.chip'),function(c){c.addEventListener('click',function(){c.classList.toggle('is-flip')})});
+  // Beast Mode disclosure
+  var b=document.querySelector('.beast'),p=document.getElementById('beast-panel');
+  b.addEventListener('click',function(){var o=b.getAttribute('aria-expanded')==='true';b.setAttribute('aria-expanded',String(!o));p.hidden=o});
+})();
+</script>
+</body>
+</html>

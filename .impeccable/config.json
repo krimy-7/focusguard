@@ -1,0 +1,26 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "tiny-text",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/samples/palettes.html"
+        ],
+        "createdAt": "2026-10-10T13:12:38.439Z",
+        "reason": "Claude: intentional scaled-down miniature previews on a throwaway palette comparison page; never ships"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/samples/palettes.html"
+        ],
+        "createdAt": "2026-10-10T13:13:05.173Z",
+        "reason": "Claude: the 3px edge is the lattice leaf's stile (signature move), on a throwaway comparison page"
+      }
+    ]
+  }
+}
