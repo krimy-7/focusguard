@@ -9,8 +9,8 @@
 /** @type {Readonly<Config>} */
 export const CONFIG = Object.freeze({
   API_URL: "http://localhost:8000",
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: "",
+  SUPABASE_URL: "https://dqhixmobqwdacfubazzc.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxaGl4bW9icXdkYWNmdWJhenpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1OTI5ODksImV4cCI6MjEwNzE2ODk4OX0.7CbFqd3ShoOWqQZgL9k5HPMgz_6Ny6X-ViMHXCnN51Q", // public by design: ships in every client
   DASHBOARD_URL: "http://localhost:8081",
 });
 

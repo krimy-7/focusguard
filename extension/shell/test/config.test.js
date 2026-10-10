@@ -23,7 +23,7 @@ const getURL = (/** @type {string} */ p) => `chrome-extension://x/${p}`;
 test("no override → defaults plus ENGINE {}", async () => {
   const store = memStore();
   assert.deepEqual(await getConfig(store), {
-    API_URL: "http://localhost:8000", SUPABASE_URL: "", SUPABASE_ANON_KEY: "", DASHBOARD_URL: "http://localhost:8081", ENGINE: {},
+    API_URL: "http://localhost:8000", SUPABASE_URL: "https://dqhixmobqwdacfubazzc.supabase.co", SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRxaGl4bW9icXdkYWNmdWJhenpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1OTI5ODksImV4cCI6MjEwNzE2ODk4OX0.7CbFqd3ShoOWqQZgL9k5HPMgz_6Ny6X-ViMHXCnN51Q", DASHBOARD_URL: "http://localhost:8081", ENGINE: {},
   });
 });
 
