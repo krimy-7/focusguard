@@ -1,0 +1,1 @@
+{"name":"pause_cancels_timers_no_guilt","until":2451,"events":["P",{"t":600,"tab":2,"url":"https://reddit.com"},{"t":650,"cmd":"pause","until":2450},{"t":1000,"tab":3,"url":"https://x.com"}],"expect":{"nudges":[],"has":[{"cancel_alarm":"grace","t":650}],"not":[{"show_recovery":"*"}],"alarm":{"grace":2750}}}

@@ -1,0 +1,1 @@
+{"name":"extend_restarts_grace_not_ignore","until":1221,"events":["P",{"t":600,"tab":2,"url":"https://reddit.com"},{"t":920,"cmd":"extend","n":300}],"expect":{"nudges":[[1,900],[1,1220]],"day.ignored":0,"has":[{"cancel_alarm":"escalate"},{"sync":"response","response":"extend"}]}}

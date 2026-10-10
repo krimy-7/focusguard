@@ -1,0 +1,1 @@
+{"name":"l1_min_gap_10min","until":801,"events":["P",{"t":100,"tab":2,"url":"https://reddit.com"},{"t":410,"cmd":"back"},{"t":411,"tab":1},{"t":500,"tab":2}],"expect":{"nudges":[[1,400]],"has":[{"sync":"intervention","suppressed":"min_gap","t":800}]}}

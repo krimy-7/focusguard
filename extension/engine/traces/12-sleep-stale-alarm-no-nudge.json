@@ -1,0 +1,1 @@
+{"name":"sleep_stale_alarm_no_nudge","until":4301,"events":["P",{"t":600,"tab":2,"url":"https://reddit.com"},{"t":700,"sleep_until":4300}],"expect":{"nudges":[],"has":[{"log":"sleep_gap"}],"alarm":{"grace":4600},"momentumS":0}}
