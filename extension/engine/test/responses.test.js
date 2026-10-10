@@ -36,19 +36,42 @@ test('a repeated command id is a no-op (double-click on the card)', () => {
   assert.equal(b.state, a.state);
 });
 
-test('L2 gets its own interventionId, so a dismiss on the L2 card is not deduped against the L1 dismiss', () => {
+// Escalation gets quieter, not louder (PRODUCT.md): an explicit dismiss on L1 means "not now", so no L2 follows it.
+// Old behaviour: dismiss only hid the card; the `escalate` alarm stayed armed and L2 appeared 5 min later anyway.
+test('dismiss on L1 cancels the pending escalation: no L2 afterwards, and the dismiss still counts as ignored', () => {
   const r = inL1();
-  const n1 = r.effects.find((x) => x.e.type === 'show_nudge')?.e.interventionId;
-  let s = step(r.state, { type: 'cmd', id: `${n1}:dismiss`, cmd: 'dismiss' }, at(905), r.cfg).state;
-  for (const t of [960, 1020, 1080, 1140]) s = step(s, { type: 'heartbeat', reason: 'tick' }, at(t), r.cfg).state;
-  const l2 = step(s, { type: 'alarm', kind: 'escalate', dueAt: at(1200) }, at(1200), r.cfg);
-  const n2 = l2.effects.find((e) => e.type === 'show_nudge')?.interventionId;
+  assert.equal(r.state.drift?.l2Due, T0 + 1200_000); // L1 at 900 arms L2 for 1200
+  const out = step(r.state, { type: 'cmd', cmd: 'dismiss' }, at(905), r.cfg);
+  assert.deepEqual(only(out.effects).filter((t) => t !== 'sync'), ['hide_nudge', 'cancel_alarm']);
+  assert.ok(out.effects.some((e) => e.type === 'cancel_alarm' && e.kind === 'escalate'));
+  assert.equal(out.state.drift?.l2Due, null);
+  assert.equal(out.state.day.ignored, 1);
+  let s = out.state;
+  for (const t of [960, 1020, 1080, 1140]) s = step(s, { type: 'heartbeat', reason: 'tick' }, at(t), r.cfg).state; // no sleep gap
+  const stale = step(s, { type: 'alarm', kind: 'escalate', dueAt: at(1200) }, at(1200), r.cfg); // a late delivery of the old alarm
+  assert.deepEqual(only(stale.effects), ['log']);
+  assert.equal(stale.state.phase, 'intervened_l1');
+});
+
+test('after an L1 dismiss the whole replay shows exactly one nudge (not two), and a return still recovers', () => {
+  const r = runTrace({ until: 1800, events: ['P', { t: 600, tab: 2, url: 'https://reddit.com' }, { t: 905, cmd: 'dismiss' }, { t: 1500, tab: 1 }] });
+  checkExpect(r, { nudges: [[1, 900]], phase: 'active', 'day.ignored': 1, has: [{ cancel_alarm: 'escalate', t: 905 }, { sync: 'recovery', trigger: 'intervention' }], not: [{ show_nudge: 'nudge_l2' }] });
+});
+
+// Rewritten for the same reason: it used to dismiss L1 and then force the escalate alarm. L2 is now reached only by leaving L1 open.
+test('L2 gets its own interventionId, so a dismiss on the L2 card is not deduped against an L1 response', () => {
+  const r = runTrace({ until: 1201, events: ['P', { t: 600, tab: 2, url: 'https://reddit.com' }] }); // L1 at 900, left open; L2 at 1200
+  const shown = r.effects.filter((x) => x.e.type === 'show_nudge').map((x) => x.e);
+  assert.deepEqual(shown.map((e) => e.level), [1, 2]);
+  const [n1, n2] = shown.map((e) => e.interventionId);
   assert.ok(n2 && n2 !== n1);
-  assert.ok(l2.effects.some((e) => e.type === 'sync' && e.rec.kind === 'intervention' && e.rec.level === 2 && e.rec.interventionId === n2));
-  const out = step(l2.state, { type: 'cmd', id: `${n2}:dismiss`, cmd: 'dismiss' }, at(1205), r.cfg);
+  assert.ok(r.effects.some((x) => x.e.type === 'sync' && x.e.rec.kind === 'intervention' && x.e.rec.level === 2 && x.e.rec.interventionId === n2));
+  assert.equal(r.state.day.ignored, 1); // L1 was left open: that is the one ignore
+  const out = step(r.state, { type: 'cmd', id: `${n2}:dismiss`, cmd: 'dismiss' }, at(1205), r.cfg);
   assert.ok(out.effects.some((e) => e.type === 'hide_nudge'));
   assert.ok(out.effects.some((e) => e.type === 'sync' && e.rec.kind === 'response' && e.rec.interventionId === n2));
-  assert.equal(out.state.day.ignored, 3); // L1 dismissed, L2 shown, L2 dismissed
+  assert.equal(out.state.day.ignored, 2); // L1 left open, L2 dismissed
+  assert.ok(!out.effects.some((e) => e.type === 'schedule_alarm')); // nothing follows L2
 });
 
 test('back records a recovery with trigger intervention (R24)', () => {

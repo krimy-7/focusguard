@@ -2,31 +2,34 @@
   "nudge_l1": [
     "Still taking a detour? You were working on {context}.",
     "Quick check-in: {context} is right where you left it.",
-    "Want a few more minutes, or are we heading back to {context}?"
+    "Want a few more minutes, or back to {context}?"
   ],
   "nudge_l2": [
-    "Your {context} is crying in the corner 😭",
-    "Bro, {context} is still waiting for you.",
-    "Plot twist: {context} didn't finish itself."
+    "Still here? Back to {context}, or take five?",
+    "No rush. Back to {context} whenever you're ready.",
+    "Take your time. {context} is right where you left it."
   ],
-  "recovered": ["You're back. Let's finish it."],
   "welcome_back": ["Welcome back. {context} is right where you left it."],
   "explainer": {
-    "1": "You're seeing this because you were away from {context} longer than your grace time.",
-    "2": "This second check-in only shows when the first one is still open a few minutes later."
+    "1": "You've been away from {context} for longer than your grace time. Dismiss this and FocusGuard AI won't ask again about this detour.",
+    "2": "This second check-in appears only when the first is left open for a few minutes. Dismiss it and that's the last one for this detour."
   },
   "ui": {
     "card_label": "FocusGuard AI check-in",
+    "brand": "FocusGuard AI",
     "back": "Back",
-    "this_is": "This is…",
-    "part_of": "Part of {context}",
+    "this_is": "This is part of my task",
+    "part_of": "Part of this task",
     "new_task": "A new task",
     "new_task_placeholder": "What are you working on?",
     "start": "Start",
     "extend": "+5 min",
     "break": "Break",
-    "break_note_placeholder": "Leave yourself a note for next time?",
+    "break_note_label": "Leave yourself a note for next time",
+    "break_note_placeholder": "A note for later?",
     "start_break": "Start break",
+    "cancel": "Cancel",
+    "why": "Why this?",
     "dismiss": "Dismiss",
     "settings": "Change this in Settings",
     "got_it": "Got it",

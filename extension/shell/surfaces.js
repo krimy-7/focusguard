@@ -46,19 +46,20 @@ export function createSurfaces({ chrome, copy, settingsUrl, log = console.warn }
   async function showNudge(fx, { state }) {
     await hideNudge(); // L2 replaces L1, possibly in another tab
     const { fg_seen_explainer = [] } = await chrome.storage.local.get("fg_seen_explainer");
-    const model = nudgeModel(fx, { copy, seenLevels: fg_seen_explainer, settingsUrl: settingsUrl() });
+    const model = nudgeModel(fx, { copy, settingsUrl: settingsUrl() });
+    const first = !fg_seen_explainer.includes(fx.level); // the card keeps its explainer behind "Why this?"; a notification has no such place, so it carries it once
     const tabId = state.current?.tabId ?? null;
     if (await inject(tabId, model)) {
       await chrome.storage.session.set({ fg_nudge: { tabId, interventionId: fx.interventionId } });
     } else {
       await chrome.notifications.create(`nudge:${fx.interventionId}`, {
         type: "basic", iconUrl: ICON, title: copy.notif.title, priority: 1,
-        message: [model.message, model.explainer].filter(Boolean).join("\n"),
+        message: [model.message, first ? model.explainer : null].filter(Boolean).join("\n"),
         buttons: NUDGE_BUTTONS.map((a) => ({ title: copy.notif[a] })),
       });
       await chrome.storage.session.set({ fg_nudge: { tabId: null, interventionId: fx.interventionId } });
     }
-    if (!fg_seen_explainer.includes(fx.level)) await chrome.storage.local.set({ fg_seen_explainer: [...fg_seen_explainer, fx.level] });
+    if (first) await chrome.storage.local.set({ fg_seen_explainer: [...fg_seen_explainer, fx.level] });
   }
 
   /** @param {any} fx @param {StepCtx} c */
@@ -67,8 +68,9 @@ export function createSurfaces({ chrome, copy, settingsUrl, log = console.warn }
     const model = welcomeModel(fx, { copy, sites });
     const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
     if (await inject(tab?.id, model)) return;
+    // Their own words first: the user's note is the title when there is one.
     await chrome.notifications.create("welcome", {
-      type: "basic", iconUrl: ICON, title: model.title, message: [model.note, model.message, model.sites].filter(Boolean).join("\n"),
+      type: "basic", iconUrl: ICON, title: model.note ?? model.title, message: [model.message, model.sites].filter(Boolean).join("\n"),
     });
   }
 

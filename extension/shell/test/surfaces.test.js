@@ -64,16 +64,22 @@ test("drift tab already closed → notification fallback", async () => {
   assert.equal(callsOf(chrome, "notifications.create").length, 1);
 });
 
-test("explainer appears only the first time each level is shown", async () => {
+// The card keeps its explainer behind "Why this?" every time; only a notification (no such place) carries it once per level.
+test("the card always carries its explainer; a notification carries it only the first time each level is shown", async () => {
   const { chrome, s, ctx } = setup({ hostAccess: true });
   await s.handlers.show_nudge(NUDGE, ctx);
   await s.handlers.show_nudge({ ...NUDGE, interventionId: "iv_2" }, ctx);
-  await s.handlers.show_nudge({ ...NUDGE, level: 2, copyKey: "nudge_l2", interventionId: "iv_3" }, ctx);
   const models = callsOf(chrome, "scripting.executeScript").filter((c) => c[1].func === renderCard).map((c) => c[1].args[0]);
-  assert.notEqual(models[0].explainer, null);
-  assert.equal(models[1].explainer, null);
-  assert.notEqual(models[2].explainer, null);
-  assert.deepEqual(chrome.storage.local.data.get("fg_seen_explainer"), [1, 2]);
+  assert.ok(models.every((m) => /Thesis/.test(m.explainer)));
+  assert.deepEqual(chrome.storage.local.data.get("fg_seen_explainer"), [1]);
+
+  const n = setup({ hostAccess: false });
+  await n.s.handlers.show_nudge(NUDGE, n.ctx);
+  await n.s.handlers.show_nudge({ ...NUDGE, interventionId: "iv_2" }, n.ctx);
+  await n.s.handlers.show_nudge({ ...NUDGE, level: 2, copyKey: "nudge_l2", interventionId: "iv_3" }, n.ctx);
+  const explained = callsOf(n.chrome, "notifications.create").map((c) => c[2].message.includes("\n"));
+  assert.deepEqual(explained, [true, false, true]);
+  assert.deepEqual(n.chrome.storage.local.data.get("fg_seen_explainer"), [1, 2]);
 });
 
 test("hide_nudge removes the card in its tab and clears the notification", async () => {
@@ -109,12 +115,20 @@ test("show_recovery: card on the active tab with the note first and the 3 most r
   assert.equal(model.sites, "You were on b.com, c.com, d.com");
 });
 
-test("show_recovery without host access → notification led by the note", async () => {
+test("show_recovery without host access → the user's note is the notification title (their words first), no buttons", async () => {
   const { chrome, s, ctx } = setup({ hostAccess: false });
   await s.handlers.show_recovery({ type: "show_recovery", copyKey: "welcome_back", vars: { context: "Thesis", note: "check 375px", awayMin: 40 } }, ctx);
   const [, id, opts] = callsOf(chrome, "notifications.create")[0];
   assert.equal(id, "welcome");
-  assert.ok(opts.message.startsWith("Your note: check 375px"));
+  assert.equal(opts.title, "Your note: check 375px");
+  assert.equal(opts.message, "Welcome back. Thesis is right where you left it.\nYou were on b.com, c.com, d.com");
+  assert.equal(opts.buttons, undefined);
+});
+
+test("show_recovery without a note → the notification title is Welcome back", async () => {
+  const { chrome, s, ctx } = setup({ hostAccess: false });
+  await s.handlers.show_recovery({ type: "show_recovery", copyKey: "welcome_back", vars: { context: "Thesis", note: null, awayMin: 40 } }, ctx);
+  assert.equal(callsOf(chrome, "notifications.create")[0][2].title, copy.ui.welcome_title);
 });
 
 test("propose_context → badge + 2-button notification; leaving detected clears both", async () => {

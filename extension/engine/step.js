@@ -534,6 +534,7 @@ function cmdDismiss(s, i, now, cfg, fx) {
   fx.push({ type: 'hide_nudge' });
   respond(s, now, fx, 'dismiss');
   s.day.ignored++;
+  /** @type {Drift} */ (s.drift).l2Due = null; // "not now" is final for this detour: escalation gets quieter, so no L2 (alarmsFor then cancels `escalate`)
 }
 
 /** @type {Handler} */
