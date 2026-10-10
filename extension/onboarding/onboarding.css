@@ -3,6 +3,11 @@
 @media (min-width: 960px) {
   .grid { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.1fr) minmax(0, .95fr); }
   .actions { grid-column: 1 / -1; }
+  /* the promise gets the full row; the preview starts the first column below it */
+  .lead { display: contents; }
+  .hero { grid-column: 1 / -1; }
+  .hero h1 { font-size: 36px; max-width: 26ch; }
+  .preview { margin-top: 12px; }
 }
 
 h1 { font-size: 28px; line-height: 1.2; font-weight: 700; text-wrap: balance; }
@@ -15,18 +20,31 @@ p { max-width: 65ch; }
 .hero { display: flex; align-items: center; gap: 20px; }
 
 /* A static copy of the real check-in card, so there are no surprises */
-.preview { margin-top: 52px; display: grid; gap: 14px; justify-items: start; }
+.preview { margin-top: 28px; display: grid; gap: 14px; justify-items: start; }
 .preview figcaption { color: var(--ink-2); max-width: 44ch; }
-.nudge { position: relative; width: 320px; max-width: 100%; padding: 16px 14px 8px; background: var(--surface); border-radius: 10px; box-shadow: 0 0 0 1px var(--line), 0 14px 30px var(--shadow); }
-.nudge .win--tab { position: absolute; left: 14px; top: -42px; z-index: 2; --jamb: 20px; width: 84px; height: 50px; }
-.nudge .win--tab .win__pane { display: flex; align-items: flex-end; height: 100%; padding-left: 6px; }
-.nudge .win--tab .yeti { width: 42px; height: 42px; margin-bottom: -6px; }
-.nudge__text { line-height: 1.35; min-height: 44px; }
-.nudge__row { display: grid; grid-template-columns: 1fr 1.1fr 1fr; gap: 8px; margin-top: 8px; }
-.nudge__row .btn { padding: 0 8px; cursor: default; }
+/* Same measurements, tokens and dark values as nudge/card.js (the card is injected into other sites, so it carries its own copy) */
+.nudge { --n-frame: #2B1E17; --n-leaf: #EBD6A0; --n-lift: rgba(43, 30, 23, .32);
+  position: relative; width: 320px; max-width: 100%; padding: 22px 14px 4px; background: var(--surface); border-radius: 10px; box-shadow: 0 0 0 1px var(--line), 0 14px 34px var(--n-lift); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .nudge { --n-frame: #C9BFB2; --n-leaf: #5B4524; --n-lift: rgba(0, 0, 0, .55); } }
+:root[data-theme="dark"] .nudge { --n-frame: #C9BFB2; --n-leaf: #5B4524; --n-lift: rgba(0, 0, 0, .55); }
+.nudge__tab { position: absolute; left: 14px; top: -20px; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 12px 0 4px; border-radius: 10px 10px 0 0; background: var(--surface); }
+.nudge__tab::before { content: ""; position: absolute; inset: 0 0 20px; border-radius: 10px 10px 0 0; box-shadow: -1px 0 0 var(--line), 1px 0 0 var(--line), 0 -1px 0 var(--line); pointer-events: none; }
+.nudge__name { font-weight: 700; line-height: 1.3; }
+.nudge__mark { display: block; flex: none; }
+.nudge__mark .pane { fill: var(--brass-tint); }
+.nudge__mark .frame { fill: none; stroke: var(--n-frame); stroke-width: 2; }
+.nudge__mark .leaf-bg { fill: var(--n-leaf); }
+.nudge__mark .stile { fill: var(--brass); }
+.nudge__mark .lat-line { fill: none; stroke: var(--n-frame); stroke-width: 1.4; }
+.nudge__text { line-height: 1.3; min-height: 40px; }
+.nudge__row { display: grid; grid-template-columns: 1fr 1.1fr 1fr; gap: 8px; margin-top: 6px; }
+.nudge__row .btn { padding: 0 8px; border-radius: 8px; cursor: default; white-space: nowrap; line-height: 1; }
+.nudge__row .btn:not(.back) { border-color: var(--ink); }
 .nudge__row .btn:hover { background: transparent; }
 .nudge__row .btn.back:hover { background: var(--moss); }
-.nudge__link { display: inline-block; margin-top: 10px; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; font-weight: 600; }
+.nudge__sub { display: flex; align-items: center; gap: 16px; margin-top: 2px; }
+.nudge__link { display: inline-flex; align-items: center; height: 22px; color: var(--ink-2); font-weight: 500; line-height: 1.3; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.nudge__x { position: absolute; top: -4px; right: 6px; display: grid; place-items: center; width: 28px; height: 28px; color: var(--ink-2); }
 
 /* Facts: three plain statements, no cards */
 .facts dl { display: grid; margin: 0; }

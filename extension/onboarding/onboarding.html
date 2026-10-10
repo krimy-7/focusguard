@@ -20,11 +20,27 @@
         <h1 id="heading" tabindex="-1">FocusGuard AI waits, then nudges you gently back to what you meant to do.</h1>
       </div>
       <figure class="preview">
+        <!-- Mirrors nudge/card.js: the tab with the window mark and name, the message, one row of actions, two quiet links, the × -->
         <div class="nudge" aria-hidden="true">
-          <span class="win win--tab" data-state="wait"><span class="win__leaf"></span><span class="win__pane"><span class="yeti"></span></span></span>
-          <p class="nudge__text"><b>Quick check-in:</b> Landing page redesign is right where you left it.</p>
+          <div class="nudge__tab">
+            <svg class="nudge__mark" width="44" height="32" viewBox="0 0 44 32" focusable="false">
+              <defs>
+                <clipPath id="nm-in"><rect x="2" y="2" width="40" height="28" rx="2"/></clipPath>
+                <pattern id="nm-lat" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 0L8 8M8 0L0 8" class="lat-line"/><rect x="3.1" y="3.1" width="1.8" height="1.8" transform="rotate(45 4 4)" fill="#C8963E"/></pattern>
+              </defs>
+              <rect x="1" y="1" width="42" height="30" rx="3" class="pane"/>
+              <g clip-path="url(#nm-in)">
+                <image href="../brand/yeti.svg" x="3" y="6" width="28" height="28"/>
+                <g class="leaf"><rect x="26" y="2" width="40" height="28" class="leaf-bg"/><rect x="26" y="2" width="40" height="28" fill="url(#nm-lat)"/><rect x="26" y="2" width="2" height="28" class="stile"/></g>
+              </g>
+              <rect x="1" y="1" width="42" height="30" rx="3" class="frame"/>
+            </svg>
+            <span class="nudge__name">FocusGuard AI</span>
+          </div>
+          <p class="nudge__text">Quick check-in: Landing page redesign is right where you left it.</p>
           <div class="nudge__row"><span class="btn back">Back</span><span class="btn">+5 min</span><span class="btn">Break</span></div>
-          <span class="nudge__link">This is part of my task</span>
+          <div class="nudge__sub"><span class="nudge__link">This is part of my task</span><span class="nudge__link">Why this?</span></div>
+          <span class="nudge__x"><svg width="14" height="14" viewBox="0 0 14 14" focusable="false"><path d="M3 3l8 8M11 3l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
         </div>
         <figcaption>A check-in looks like this. It sits in the corner of the page and never blocks it.</figcaption>
       </figure>

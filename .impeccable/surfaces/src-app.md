@@ -29,6 +29,11 @@ FORM: Tikijhyal lattice window, candidate 6 of 7 on the grounded list, seed key 
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
+## Adaptations (cited)
+- **Dashboard task window is read-only — no Take a break / Pause buttons.** The extension is authoritative for engine state and the backend is a mirror (DECISIONS D-12, D-15; v1 spec §2, REST only, no command channel). Those actions live in the popup and on the nudge card. A dashboard→extension command relay is v1.1 work.
+- **Date sits under the Today heading, not as an eyebrow above it** (craft-floor kicker ban).
+- **Blocked page is forced warm-dark** in both themes: it is seen mid-distraction, often late (comment in `extension/blocked.html`).
+
 ## Raises (from the declined challengers — binding)
 - One geometry drives art and state: the same lattice SVG frames the Yeti and encodes on task / waiting / paused / private.
 - Ground is never neutral: lime-wash drifts cool→warm; ink is sal-wood, never #000.

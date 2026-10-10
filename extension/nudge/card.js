@@ -81,6 +81,33 @@ export function renderCard(model) {
     ]);
   };
 
+  // Mukta and Kalam come from the extension's own files, under private family names so no page's CSS can collide with them.
+  // The card is built hidden and shown once they load, raced against 150ms: it never flashes system type and never waits on a slow load.
+  /** @type {Promise<unknown>[]} */ const loads = [];
+  /** @type {FontFace[]} */ const faces = []; // taken back out of the page's font set when the card closes
+  try {
+    if (typeof FontFace === "function") {
+      const LAT = "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD";
+      const DEV = "U+0900-097F,U+1CD0-1CF9,U+200C-200D,U+20A8,U+20B9,U+20F0,U+25CC,U+A830-A839,U+A8E0-A8FF,U+11B00-11B09";
+      for (const { family, file, weights } of [
+        { family: "FocusGuard Mukta", file: "mukta", weights: ["400", "600", "700"] },
+        { family: "FocusGuard Kalam", file: "kalam", weights: ["400"] },
+      ]) {
+        for (const weight of weights) {
+          for (const [subset, unicodeRange] of [["latin", LAT], ["devanagari", DEV]]) {
+            const face = new FontFace(family, `url(${chrome.runtime.getURL(`fonts/${file}-${subset}-${weight}-normal.woff2`)})`, { weight, unicodeRange });
+            document.fonts.add(face);
+            faces.push(face);
+            loads.push(face.load().catch(() => {})); // a face that fails leaves the system-ui fallback
+          }
+        }
+      }
+    }
+  } catch {
+    loads.length = 0; // no FontFace, or the extension was reloaded: show the card in the fallback face
+  }
+  let closed = false;
+
   const host = el("div");
   host.id = HOST_ID;
   const root = host.attachShadow({ mode: "closed" });
@@ -91,7 +118,7 @@ export function renderCard(model) {
     "*{box-sizing:border-box}",
     ".card{--ink:#2B1E17;--ink2:#5A4A40;--surface:#F6F7F1;--field:#FBFBF7;--moss:#4E6B3C;--moss2:#415C32;--on-moss:#FBF6EC;--brass:#C8963E;--pane:#F4E7C8;--leaf:#EBD6A0;--frame:#2B1E17;--line:rgba(43,30,23,.16);--lift:rgba(43,30,23,.32);--hover:rgba(43,30,23,.08);" +
       "position:fixed;right:16px;bottom:16px;z-index:2147483647;width:320px;max-width:calc(100vw - 32px);padding:22px 14px 4px;border-radius:10px;background:var(--surface);color:var(--ink);color-scheme:light dark;" +
-      "box-shadow:0 0 0 1px var(--line),0 14px 34px var(--lift);font:400 16px/20px system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans Devanagari','Nirmala UI',sans-serif;text-align:left}",
+      "box-shadow:0 0 0 1px var(--line),0 14px 34px var(--lift);font:400 16px/1.3 'FocusGuard Mukta',system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans Devanagari','Nirmala UI',sans-serif;text-align:left}",
     "p{margin:0}",
     ".sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}",
     ".tab{position:absolute;left:14px;top:-20px;height:40px;display:flex;align-items:center;gap:8px;padding:0 12px 0 4px;border-radius:10px 10px 0 0;background:var(--surface)}",
@@ -99,7 +126,7 @@ export function renderCard(model) {
     ".name{font-weight:700}",
     ".mark{display:block;flex:none}.mark .pane{fill:var(--pane)}.mark .frame{fill:none;stroke:var(--frame);stroke-width:2}.mark .leaf-bg{fill:var(--leaf)}.mark .stile{fill:var(--brass)}.mark .lat-line{fill:none;stroke:var(--frame);stroke-width:1.4}",
     ".msg{min-height:40px}",
-    ".note{margin-bottom:4px;font-family:Kalam,'Segoe Print','Bradley Hand',system-ui,cursive;font-weight:700}",
+    ".note{margin-bottom:4px;font-family:'FocusGuard Kalam','Segoe Print','Bradley Hand',system-ui,cursive}", // the user's own words; Kalam ships one weight
     ".sites{margin-top:4px;color:var(--ink2)}",
     ".row,.row2{display:grid;gap:8px;margin-top:6px}",
     ".row{grid-template-columns:1fr 1.1fr 1fr}.row.one{grid-template-columns:1fr}.row2{grid-template-columns:minmax(0,1fr) auto}",
@@ -107,7 +134,7 @@ export function renderCard(model) {
     ".btn{min-width:44px;min-height:44px;padding:0 8px;border-radius:8px;border:1.5px solid var(--ink);background:transparent;font-weight:700;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
     ".btn:hover{background:var(--hover)}",
     ".btn.primary{background:var(--moss);border-color:var(--moss);color:var(--on-moss)}.btn.primary:hover{background:var(--moss2);border-color:var(--moss2)}",
-    "input{min-width:0;min-height:44px;padding:0 12px;border-radius:8px;border:1.5px solid var(--ink);background:var(--field);color:var(--ink);font:inherit;caret-color:var(--ink)}",
+    "input{min-width:0;min-height:44px;padding:0 12px;border-radius:8px;border:1.5px solid var(--ink);background:var(--field);color:var(--ink);font:inherit;font-family:'FocusGuard Kalam','Segoe Print','Bradley Hand',system-ui,cursive;caret-color:var(--ink)}", // what the user types is their own words
     "input::placeholder{color:var(--ink2);opacity:1}",
     "::selection{background:var(--brass);color:#2B1E17}",
     ".sub{display:flex;align-items:center;gap:16px;margin-top:2px}",
@@ -144,7 +171,9 @@ export function renderCard(model) {
   // A fullscreen element lives in the top layer: the card must be inside it to be seen.
   const place = () => (document.fullscreenElement ?? document.documentElement).append(host);
   function close() {
+    closed = true;
     clearTimeout(announceTimer);
+    for (const face of faces) document.fonts.delete(face);
     window.removeEventListener("pagehide", close);
     document.removeEventListener("fullscreenchange", place);
     host.remove();
@@ -251,7 +280,16 @@ export function renderCard(model) {
     else dismiss();
   });
   place();
-  announceTimer = setTimeout(() => { live.textContent = announce; }, 100);
+  // Placed at once, shown when the type is ready: a dismissal or a newer render during the wait still finds the card.
+  const reveal = () => {
+    if (closed) return;
+    card.hidden = false;
+    announceTimer = setTimeout(() => { live.textContent = announce; }, 100);
+  };
+  if (loads.length) {
+    card.hidden = true;
+    Promise.race([Promise.all(loads), new Promise((done) => setTimeout(done, 150))]).then(reveal);
+  } else reveal();
 }
 
 /** Remove the card (hide_nudge). Self-contained like renderCard. */

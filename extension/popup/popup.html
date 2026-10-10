@@ -49,9 +49,11 @@
     <main class="stack" id="mainView" hidden>
       <div class="win win--card" id="ctxWin" data-state="paused" role="group" aria-label="Current task">
         <span class="win__leaf" aria-hidden="true"></span>
+        <!-- The Yeti looks out of the open window; he sits under the leaf, so the leaf closing covers him -->
+        <span class="yeti win__yeti" aria-hidden="true"></span>
         <div class="win__pane card">
-          <span class="pill" id="phasePill"></span>
           <h2 id="ctxTitle" tabindex="-1"></h2>
+          <span class="pill" id="phasePill"></span>
           <p class="muted" id="ctxMeta"></p>
           <p class="hand note" id="welcomeNote"></p>
           <p id="ctxDetail"></p>

@@ -7,6 +7,7 @@ import { AppText } from '@/components/app-text';
 import { LatticeWindow } from '@/components/brand';
 import { Button } from '@/components/button';
 import { Field } from '@/components/field';
+import { BrandBar } from '@/components/nav';
 import { Notice } from '@/components/notice';
 import { useDocumentTitle } from '@/hooks/use-document-title';
 import { clearSessionNotice, sessionNotice } from '@/lib/api';
@@ -74,123 +75,126 @@ export default function SignInScreen() {
   const google = () => run(() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } }));
 
   return (
-    <ScrollView
-      style={{ flex: 1 }}
-      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20, paddingBottom: 40 + insets.bottom }}>
-      <View style={{ width: '100%', maxWidth: 440, gap: 28 }} role="main">
-        <View className="items-center gap-3">
-          <LatticeWindow state="open" size="md" />
-          <AppText variant="title" level={1} style={{ textAlign: 'center' }}>
-            Welcome to FocusGuard AI
-          </AppText>
-          <AppText tone="ink2" style={{ textAlign: 'center', maxWidth: 380 }}>
-            FocusGuard AI notices when you drift from your task, waits a while, then helps you get back to it. Use the same account as the Chrome extension so your goals and days line up.
-          </AppText>
-        </View>
+    <View style={{ flex: 1 }}>
+      <BrandBar />
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', padding: 20, paddingBottom: 40 + insets.bottom }}>
+        <View style={{ width: '100%', maxWidth: 440, gap: 28 }} role="main">
+          <View className="items-center gap-3">
+            <LatticeWindow state="open" size="md" />
+            <AppText variant="title" level={1} style={{ textAlign: 'center' }}>
+              Welcome to FocusGuard AI
+            </AppText>
+            <AppText tone="ink2" style={{ textAlign: 'center', maxWidth: 380 }}>
+              FocusGuard AI notices when you drift from your task, waits a while, then helps you get back to it. Use the same account as the Chrome extension so your goals and days line up.
+            </AppText>
+          </View>
 
-        {!AUTH_CONFIGURED ? (
-          <Notice tone="try">
-            Sign-in isn’t set up yet. Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to .env (or set EXPO_PUBLIC_DEMO_MODE=1) and restart.
-          </Notice>
-        ) : null}
-        {notice ? <Notice>{notice}</Notice> : null}
-
-        <View style={{ gap: 14, backgroundColor: t.surface, borderWidth: 1, borderColor: t.line, borderRadius: RADIUS.control, padding: 24 }}>
-          {/* R40: Google is the primary, first option. The email code below is the secondary one. */}
-          {WEB && !sent ? (
-            <>
-              <Button
-                label="Continue with Google"
-                disabled={busy || !AUTH_CONFIGURED}
-                onPress={google}
-                lead={
-                  <View style={{ width: 26, height: 26, borderRadius: 5, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
-                    <GoogleMark size={18} />
-                  </View>
-                }
-                style={{ alignSelf: 'stretch', minHeight: 50 }}
-              />
-              <AppText variant="small" tone="ink2" style={{ textAlign: 'center' }}>
-                or use an email code
-              </AppText>
-            </>
+          {!AUTH_CONFIGURED ? (
+            <Notice tone="try">
+              Sign-in isn’t set up yet. Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to .env (or set EXPO_PUBLIC_DEMO_MODE=1) and restart.
+            </Notice>
           ) : null}
+          {notice ? <Notice>{notice}</Notice> : null}
 
-          {!sent ? (
-            <>
-              <Field
-                value={email}
-                onChangeText={setEmail}
-                placeholder="you@example.com"
-                keyboardType="email-address"
-                inputMode="email"
-                autoCapitalize="none"
-                autoComplete="email"
-                autoCorrect={false}
-                returnKeyType="send"
-                onSubmitEditing={() => canSend && sendCode()}
-                accessibilityLabel="Email address"
-              />
-              <Button
-                tone={WEB ? 'quiet' : 'primary'}
-                label={busy ? 'Sending…' : 'Email me a code'}
-                disabled={!canSend}
-                onPress={sendCode}
-                style={{ alignSelf: 'stretch' }}
-              />
-            </>
-          ) : (
-            <>
-              <AppText>Enter the 6-digit code we sent to {addr}.</AppText>
-              <Field
-                value={code}
-                onChangeText={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))}
-                placeholder="123456"
-                keyboardType="number-pad"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                textContentType="oneTimeCode"
-                maxLength={6}
-                returnKeyType="go"
-                onSubmitEditing={() => canVerify && verify()}
-                accessibilityLabel="6-digit code"
-              />
-              <Button label={busy ? 'Checking…' : 'Sign in'} disabled={!canVerify} onPress={verify} style={{ alignSelf: 'stretch' }} />
-              <View className="flex-row flex-wrap gap-3">
-                <Button tone="quiet" label="Send a new code" disabled={busy} onPress={sendCode} />
+          <View style={{ gap: 14, backgroundColor: t.surface, borderWidth: 1, borderColor: t.line, borderRadius: RADIUS.control, padding: 24 }}>
+            {/* R40: Google is the primary, first option. The email code below is the secondary one. */}
+            {WEB && !sent ? (
+              <>
                 <Button
-                  tone="quiet"
-                  label="Use a different email"
-                  disabled={busy}
-                  onPress={() => {
-                    setSent(false);
-                    setCode('');
-                    setError(null);
-                  }}
+                  label="Continue with Google"
+                  disabled={busy || !AUTH_CONFIGURED}
+                  onPress={google}
+                  lead={
+                    <View style={{ width: 26, height: 26, borderRadius: 5, backgroundColor: '#fff', alignItems: 'center', justifyContent: 'center' }}>
+                      <GoogleMark size={18} />
+                    </View>
+                  }
+                  style={{ alignSelf: 'stretch', minHeight: 50 }}
                 />
-              </View>
-            </>
-          )}
-          {error ? <Notice tone="try" urgent>{error}</Notice> : null}
-        </View>
+                <AppText variant="small" tone="ink2" style={{ textAlign: 'center' }}>
+                  or use an email code
+                </AppText>
+              </>
+            ) : null}
 
-        <View style={{ gap: 8 }}>
-          <Pressable
-            role="button"
-            aria-expanded={showPrivacy}
-            onPress={() => setShowPrivacy((v) => !v)}
-            style={[{ minHeight: 44, justifyContent: 'center', alignSelf: 'center' }, webStyle({ cursor: 'pointer' })]}>
-            <AppText variant="label" style={{ textDecorationLine: 'underline' }}>
-              {showPrivacy ? 'Hide how your privacy works' : 'How your privacy works'}
-            </AppText>
-          </Pressable>
-          {showPrivacy ? (
-            <AppText tone="ink2">
-              Your browsing activity stays in your browser: page titles and full addresses never leave it. Our server keeps only your account email, your goals, task names with their site names, your settings and daily totals. No ads and no tracking. You can export or delete everything from Settings.
-            </AppText>
-          ) : null}
+            {!sent ? (
+              <>
+                <Field
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="you@example.com"
+                  keyboardType="email-address"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  autoCorrect={false}
+                  returnKeyType="send"
+                  onSubmitEditing={() => canSend && sendCode()}
+                  accessibilityLabel="Email address"
+                />
+                <Button
+                  tone={WEB ? 'quiet' : 'primary'}
+                  label={busy ? 'Sending…' : 'Email me a code'}
+                  disabled={!canSend}
+                  onPress={sendCode}
+                  style={{ alignSelf: 'stretch' }}
+                />
+              </>
+            ) : (
+              <>
+                <AppText>Enter the 6-digit code we sent to {addr}.</AppText>
+                <Field
+                  value={code}
+                  onChangeText={(v) => setCode(v.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="123456"
+                  keyboardType="number-pad"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  textContentType="oneTimeCode"
+                  maxLength={6}
+                  returnKeyType="go"
+                  onSubmitEditing={() => canVerify && verify()}
+                  accessibilityLabel="6-digit code"
+                />
+                <Button label={busy ? 'Checking…' : 'Sign in'} disabled={!canVerify} onPress={verify} style={{ alignSelf: 'stretch' }} />
+                <View className="flex-row flex-wrap gap-3">
+                  <Button tone="quiet" label="Send a new code" disabled={busy} onPress={sendCode} />
+                  <Button
+                    tone="quiet"
+                    label="Use a different email"
+                    disabled={busy}
+                    onPress={() => {
+                      setSent(false);
+                      setCode('');
+                      setError(null);
+                    }}
+                  />
+                </View>
+              </>
+            )}
+            {error ? <Notice tone="try" urgent>{error}</Notice> : null}
+          </View>
+
+          <View style={{ gap: 8 }}>
+            <Pressable
+              role="button"
+              aria-expanded={showPrivacy}
+              onPress={() => setShowPrivacy((v) => !v)}
+              style={[{ minHeight: 44, justifyContent: 'center', alignSelf: 'center' }, webStyle({ cursor: 'pointer' })]}>
+              <AppText variant="label" style={{ textDecorationLine: 'underline' }}>
+                {showPrivacy ? 'Hide how your privacy works' : 'How your privacy works'}
+              </AppText>
+            </Pressable>
+            {showPrivacy ? (
+              <AppText tone="ink2">
+                Your browsing activity stays in your browser: page titles and full addresses never leave it. Our server keeps only your account email, your goals, task names with their site names, your settings and daily totals. No ads and no tracking. You can export or delete everything from Settings.
+              </AppText>
+            ) : null}
+          </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }

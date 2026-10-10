@@ -41,6 +41,17 @@ test('every page uses the shared tokens, and every bundled font and brand asset 
   for (const [page] of PAGES) assert.match(read(page), /<link rel="stylesheet" href="(\.\.\/)?styles\/tokens\.css"/, `${page} must load styles/tokens.css`);
 });
 
+test('the task window: the state chip sits below the title (never a kicker above it), and the Yeti sits under the leaf so closing covers him', () => {
+  const html = read('popup/popup.html');
+  const win = html.slice(html.indexOf('id="ctxWin"')); // the header's mark window comes earlier in the file
+  const at = (/** @type {string} */ s) => win.indexOf(s);
+  assert.ok(at('id="ctxTitle"') > 0 && at('id="ctxTitle"') < at('id="phasePill"'), 'phasePill must come after ctxTitle');
+  assert.ok(at('win__leaf') < at('win__yeti') && at('win__yeti') < at('win__pane'), 'yeti is painted under the leaf, beside the words');
+  const css = read('popup/popup.css');
+  assert.match(css, /\.pill\s*\{[^}]*background:\s*var\(--pill-bg\)/, 'the chip stays filled');
+  assert.doesNotMatch(css.match(/\.pill\s*\{[^}]*\}/)?.[0] ?? '', /text-transform|letter-spacing/, 'sentence case, normal tracking');
+});
+
 test('R40: "Continue with Google" is the first, primary sign-in button; "Email me a code" is the secondary option below it', () => {
   const html = read('popup/popup.html');
   const google = html.indexOf('id="googleBtn"');

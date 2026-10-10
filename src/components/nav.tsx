@@ -46,7 +46,7 @@ export function Nav({ wide, children }: { wide: boolean; children: ReactNode; st
         <Brand />
         <View style={{ gap: 4 }}>{children}</View>
         <View style={{ marginTop: 'auto', paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(251,246,236,0.3)' }}>
-          <AppText variant="small" tone="cream">
+          <AppText tone="cream">
             Page titles and full addresses never leave your browser.
           </AppText>
         </View>

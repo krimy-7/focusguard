@@ -85,14 +85,14 @@ const MARK = { pane: '#FBF6EC', leaf: '#E9D9B5', stile: '#C8963E' };
 const SIZES = {
   mark: { w: 44, h: 44, border: 3, sill: 5, jamb: 11, stile: 3, yeti: 34, yetiLeft: 1 },
   md: { w: 112, h: 68, border: 4, sill: 6, jamb: 22, stile: 4, yeti: 52, yetiLeft: 10 },
-  lg: { w: 0, h: 0, border: 5, sill: 8, jamb: 56, stile: 5, yeti: 0, yetiLeft: 0 },
+  lg: { w: 0, h: 0, border: 5, sill: 8, jamb: 56, stile: 5, yeti: 76, yetiLeft: 0 },
 };
 
 type Props = {
   state: WindowState;
   /** mark: 44px brand icon. md: Yeti at a window. lg: fluid task window; children sit in the open part. */
   size?: 'mark' | 'md' | 'lg';
-  /** lg only. Shown beside the leaf when open or waiting, on a plate over the closed lattice otherwise. */
+  /** lg only. Shown beside the leaf when open or waiting, on a plate over the closed lattice otherwise. The Yeti peeks over the sill to its right while open. */
   children?: ReactNode;
   label?: string;
   style?: StyleProp<ViewStyle>;
@@ -114,11 +114,13 @@ export function LatticeWindow({ state, size = 'md', children, label, style }: Pr
   const [stageW, setStageW] = useState(lg ? 0 : cfg.w - 2 * cfg.border);
   const narrow = lg && stageW > 0 && stageW < 440;
   const jamb = narrow ? 36 : cfg.jamb;
+  const yeti = lg && narrow ? 56 : cfg.yeti;
   const target = state === 'open' ? stageW - jamb : state === 'wait' ? stageW * (narrow ? 0.7 : 0.6) : 0;
 
   const [x] = useState(() => new Animated.Value(target));
   const [paneO] = useState(() => new Animated.Value(closed ? 0 : 1));
   const [plateO] = useState(() => new Animated.Value(closed ? 1 : 0));
+  const [yetiO] = useState(() => new Animated.Value(state === 'open' ? 1 : 0));
   const seen = useRef<{ state: WindowState; ready: boolean }>({ state, ready: false });
 
   useEffect(() => {
@@ -130,9 +132,15 @@ export function LatticeWindow({ state, size = 'md', children, label, style }: Pr
     go(x, target, 500);
     go(paneO, closed ? 0 : 1, 350);
     go(plateO, closed ? 1 : 0, closed ? 300 : 120, closed ? 300 : 0);
-  }, [state, stageW, target, closed, reduced, x, paneO, plateO]);
+    // lg: the Yeti sits at the open edge, so the leaf covers him as it slides shut; this fade only mops up a sliver on tiny stages.
+    go(yetiO, state === 'open' ? 1 : 0, 250, state === 'open' ? 250 : 150);
+  }, [state, stageW, target, closed, reduced, x, paneO, plateO, yetiO]);
 
-  const stagePad = { paddingRight: stageW - target + 20 };
+  // lg: while open the text leaves room for the Yeti between itself and the leaf.
+  // Wide stages keep a column beside him; under 440px the title needs the full width, so he gets room below the text instead.
+  const roomBeside = lg && state === 'open' && stageW >= 440;
+  const roomBelow = lg && state === 'open' && stageW < 440;
+  const stagePad = { paddingRight: stageW - target + 20 + (roomBeside ? yeti + 12 : 0), paddingBottom: roomBelow ? Math.round(yeti * 0.7) : undefined };
 
   return (
     <View
@@ -154,7 +162,12 @@ export function LatticeWindow({ state, size = 'md', children, label, style }: Pr
         style={lg ? { minHeight: 176, justifyContent: 'center' } : { flex: 1 }}>
         {/* the pane behind the leaf */}
         {lg ? (
-          closed ? null : <Animated.View style={[stagePad, { paddingVertical: 22, paddingLeft: 24, opacity: paneO, zIndex: 0 }]}>{children}</Animated.View>
+          <>
+            {closed ? null : <Animated.View style={[stagePad, { paddingVertical: 22, paddingLeft: 24, opacity: paneO, zIndex: 0 }]}>{children}</Animated.View>}
+            <Animated.View style={{ position: 'absolute', right: jamb + 12, bottom: -Math.round(yeti * 0.12), opacity: yetiO, zIndex: 0 }}>
+              <YetiMark size={yeti} />
+            </Animated.View>
+          </>
         ) : (
           <Animated.View style={{ position: 'absolute', left: cfg.yetiLeft, bottom: -Math.round(cfg.yeti * 0.12), opacity: paneO }}>
             <YetiMark size={cfg.yeti} />

@@ -23,7 +23,12 @@ body.popup {
 .card h2 { font-weight: 700; line-height: 1.25; overflow-wrap: anywhere; }
 .card h2:focus { outline: none; }
 .card h2:empty, .card p:empty { display: none; }
-.pill { justify-self: start; padding: 3px 9px 2px; border-radius: 5px; background: var(--pill-bg); color: var(--pill-ink); font-weight: 700; letter-spacing: .06em; text-transform: uppercase; line-height: 1.3; }
+/* The state as a chip under the title: filled, plain sentence case, never a label above the heading */
+.pill { justify-self: start; margin: 2px 0; padding: 3px 9px 2px; border-radius: 5px; background: var(--pill-bg); color: var(--pill-ink); font-weight: 700; line-height: 1.3; }
+.pill:empty { display: none; }
+/* The Yeti peeks over the sill, right of the words; the leaf (z-index 2) closes over him, the plaque (z-index 3) sits above both */
+.win__yeti { position: absolute; z-index: 1; right: calc(var(--jamb) + 6px); bottom: -6px; width: 68px; height: 68px; }
+.win--card[data-state="open"] .card { padding-right: calc(var(--jamb) + 68px + 20px); }
 /* Closed states: a stone plaque over the shut lattice keeps the words readable */
 .win--card[data-state="paused"] .win__pane { z-index: 3; margin: 12px; padding: 12px 14px; border-radius: 3px; background: var(--stone); box-shadow: 0 1px 0 var(--line); }
 .note { font-size: 1em; line-height: 1.4; overflow-wrap: anywhere; }

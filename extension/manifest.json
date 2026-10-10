@@ -4,7 +4,7 @@
   "name": "FocusGuard AI",
   "version": "2.0.0",
   "description": "Privacy-first focus coach. Notices drift from the task you chose, gives you grace, and nudges you back gently.",
-  "minimum_chrome_version": "127",
+  "minimum_chrome_version": "130",
   "permissions": [
     "tabs",
     "storage",
@@ -48,6 +48,15 @@
       "matches": [
         "<all_urls>"
       ]
+    },
+    {
+      "resources": [
+        "fonts/*.woff2"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
+      "use_dynamic_url": true
     }
   ],
   "options_ui": {
