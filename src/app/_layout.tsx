@@ -1,13 +1,26 @@
-import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { DefaultTheme, Stack, ThemeProvider, useRouter, type Href } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 
 import '@/global.css';
 
+import { useSession } from '@/lib/supabase';
 import { Palette } from '@/theme';
 
 SplashScreen.preventAutoHideAsync();
+
+// Index R30: the extension links to ${DASHBOARD_URL}/settings. A signed-out visitor is redirected to
+// sign-in, and the guard flip would land them on Today, so remember the requested tab from the URL
+// the page was opened with and go there once signed in.
+// ponytail: module memory only, so the Google redirect (full page reload to the origin) lands on Today;
+// move it to sessionStorage if that path matters.
+const DEEP_LINKS = ['/history', '/settings'];
+let pendingPath: string | null =
+  Platform.OS === 'web' && typeof window !== 'undefined' && DEEP_LINKS.includes(window.location.pathname)
+    ? window.location.pathname
+    : null;
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -18,16 +31,22 @@ export default function RootLayout() {
     BeVietnamPro_600SemiBold: require('@expo-google-fonts/be-vietnam-pro/600SemiBold/BeVietnamPro_600SemiBold.ttf'),
     BeVietnamPro_700Bold: require('@expo-google-fonts/be-vietnam-pro/700Bold/BeVietnamPro_700Bold.ttf'),
   });
+  const { loading, signedIn } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
+    if (fontsLoaded && !loading) SplashScreen.hideAsync();
+  }, [fontsLoaded, loading]);
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  // Runs after the commit that rendered the Stack with the signed-in guard, so the navigator is mounted.
+  useEffect(() => {
+    if (!fontsLoaded || loading || !signedIn || !pendingPath) return;
+    const to = pendingPath;
+    pendingPath = null;
+    router.replace(to as Href);
+  }, [fontsLoaded, loading, signedIn, router]);
+
+  if (!fontsLoaded || loading) return null;
 
   const routerTheme = {
     ...DefaultTheme,
@@ -42,11 +61,16 @@ export default function RootLayout() {
     },
   };
 
+  // Client-side gate only (v57 protected-routes page); the backend verifies every token itself.
   return (
     <ThemeProvider value={routerTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="settings" />
+        <Stack.Protected guard={signedIn}>
+          <Stack.Screen name="(tabs)" />
+        </Stack.Protected>
+        <Stack.Protected guard={!signedIn}>
+          <Stack.Screen name="sign-in" />
+        </Stack.Protected>
       </Stack>
     </ThemeProvider>
   );

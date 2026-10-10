@@ -1,143 +1,94 @@
-import type {
-  Achievement,
-  BeastMode,
-  BreakState,
-  ContextActivity,
-  ContextDetect,
-  FocusContext,
-  Goal,
-  Insight,
-  Intervention,
-  MoodEntry,
-  Session,
-  Stats,
-} from '@/lib/api';
+import { deviceTz, localDay, recentDays } from '@/lib/day';
+import { MAX_LINES, splitLines } from '@/lib/lines';
+import type { ContextSnap, DailyTotals, ExportBundle, Goal, GoalPatch, MePatch, Profile } from '@/lib/types';
 
-// Demo-mode mock data (EXPO_PUBLIC_DEMO_MODE=1). Mirrors the backend seed.
+// Demo mode (EXPO_PUBLIC_DEMO_MODE=1): in-memory C1-shaped data. No sign-in, no network. Resets on reload.
 
-export const MOCK = {
-  goals: (): Goal[] => {
-    const day = new Date().toISOString().slice(0, 10);
-    return [
-      { id: 1, title: 'Finish the landing page hero', status: 'in_progress', source: 'ai', day, created_at: `${day}T06:00:00Z` },
-      { id: 2, title: 'Study React for one hour', status: 'open', source: 'ai', day, created_at: `${day}T06:00:05Z` },
-      { id: 3, title: 'Prepare the presentation', status: 'open', source: 'ai', day, created_at: `${day}T06:00:10Z` },
-    ];
+let profile: Profile = {
+  user_id: 'demo-user',
+  tz: deviceTz(),
+  settings: { grace_s: 300, quiet_hours: [{ from: '22:00', to: '07:00' }] },
+};
+
+let seq = 0;
+function makeGoal(title: string, day: string, status: Goal['status'] = 'open'): Goal {
+  seq += 1;
+  const now = new Date().toISOString();
+  return { id: `demo-${seq}`, day, title, category: 'work', status, sort: seq, created_at: now, done_at: status === 'done' ? now : null };
+}
+
+const today = localDay(new Date(), profile.tz);
+let goals: Goal[] = [
+  makeGoal('Finish the landing page hero', today, 'done'),
+  makeGoal('Study React for one hour', today),
+  makeGoal('Prepare the presentation', today),
+];
+
+// Newest day first: [focus_s, nudges, self_returns, recoveries, snoozes, breaks, longest_detour_s]; null = nothing recorded.
+const WEEK: ([number, number, number, number, number, number, number] | null)[] = [
+  [5400, 1, 2, 1, 0, 1, 240],
+  [3600, 5, 1, 3, 2, 2, 1500],
+  null,
+  [7200, 0, 3, 0, 0, 2, 0],
+  [2700, 2, 1, 1, 1, 0, 420],
+  [9000, 1, 4, 1, 0, 3, 300],
+  [1200, 3, 0, 2, 1, 1, 960],
+];
+
+const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
+
+export const demo = {
+  me: (): Profile => profile,
+
+  patchMe(body: MePatch): Profile {
+    profile = { ...profile, tz: body.tz ?? profile.tz, settings: { ...profile.settings, ...body.settings } };
+    return profile;
   },
 
-  contexts: (): FocusContext[] => [
-    {
-      id: 1,
-      title: 'Landing Page Design',
-      mode: 'work',
-      source: 'detected',
-      active: true,
-      confirmed: true,
-      note: '',
-      created_at: '2026-07-31T06:30:00Z',
-      activities: [
-        { id: 1, kind: 'domain', label: 'figma.com', domain: 'figma.com', duration_s: 1920, occurred_at: '2026-07-31T08:00:00Z' },
-        { id: 2, kind: 'domain', label: 'fonts.google.com', domain: 'fonts.google.com', duration_s: 360, occurred_at: '2026-07-31T08:30:00Z' },
-        { id: 3, kind: 'domain', label: 'photoshop.adobe.com', domain: 'photoshop.adobe.com', duration_s: 660, occurred_at: '2026-07-31T09:00:00Z' },
-      ],
-    },
-    {
-      id: 2,
-      title: 'React Tutorial',
-      mode: 'learning',
-      source: 'detected',
-      active: false,
-      confirmed: true,
-      note: '',
-      created_at: '2026-07-30T13:00:00Z',
-      activities: [
-        { id: 4, kind: 'domain', label: 'react.dev', domain: 'react.dev', duration_s: 2400, occurred_at: '2026-07-30T13:00:00Z' },
-      ],
-    },
-  ],
+  goals: (day: string): Goal[] => goals.filter((g) => g.day === day).sort((a, b) => a.sort - b.sort),
 
-  detect: (): ContextDetect => ({
-    proposed_title: 'Landing Page Design',
+  addGoals(lines: string, day: string): Goal[] {
+    const created = splitLines(lines).slice(0, MAX_LINES).map((t) => makeGoal(t, day));
+    goals = [...goals, ...created];
+    return created;
+  },
+
+  patchGoal(id: string, patch: GoalPatch): Goal {
+    const g = goals.find((x) => x.id === id);
+    if (!g) throw new Error('That item is no longer there.');
+    const done_at = patch.status === 'done' ? new Date().toISOString() : patch.status === 'open' ? null : g.done_at;
+    const next: Goal = { ...g, ...patch, done_at };
+    goals = goals.map((x) => (x.id === id ? next : x));
+    return next;
+  },
+
+  deleteGoal(id: string): void {
+    goals = goals.filter((g) => g.id !== id);
+  },
+
+  activeContext: (): ContextSnap => ({
+    id: 'demo-ctx',
+    device_id: 'demo-device',
+    title: 'Landing page redesign',
     mode: 'work',
-    confidence: 0.82,
-    reason: 'Matches your recent activity.',
+    state: 'active',
+    confidence: 'confirmed',
+    started_at: minutesAgo(50),
+    ended_at: null,
+    last_active_at: minutesAgo(1),
+    sites: ['figma.com', 'github.com', 'fonts.google.com'],
   }),
 
-  activity: (): ContextActivity => ({
-    id: 99,
-    kind: 'domain',
-    label: 'figma.com',
-    domain: 'figma.com',
-    duration_s: 120,
-    occurred_at: '2026-07-31T09:30:00Z',
-  }),
-
-  stats: (): Stats => ({
-    focus_time_s: 6840,
-    sessions: 3,
-    interrupts: 2,
-    deep_focus_min: 114,
-    score: 82,
-    streak_days: 14,
-    current_focus: 'Landing Page Design',
-  }),
-
-  insight: (): Insight => ({
-    provider: 'mock',
-    message: "You're absolutely in the zone. Your focus today is impressive!",
-    suggestion: 'Try: protecting your momentum for 25 more minutes, then celebrate with a real break.',
-    generated_at: new Date().toISOString(),
-  }),
-
-  sessions: (): Session[] => {
-    const now = new Date();
-    const block = (hoursAgo: number, mins: number) => {
-      const start = new Date(now.getTime() - hoursAgo * 3600_000);
-      const end = new Date(start.getTime() + mins * 60_000);
-      return { started_at: start.toISOString(), ended_at: end.toISOString(), duration_s: mins * 60 };
-    };
-    return [
-      { id: 1, task_title: 'Landing Page Design', app_name: 'Chrome', url: 'figma.com', ...block(3, 32), score: 85 },
-      { id: 2, task_title: 'React Tutorial', app_name: 'Chrome', url: 'react.dev', ...block(26, 40), score: 78 },
-      { id: 3, task_title: 'PR Review', app_name: 'Chrome', url: 'github.com', ...block(50, 40), score: 90 },
-      { id: 4, task_title: 'Email batch', app_name: 'Chrome', url: 'gmail.com', ...block(74, 20), score: 60 },
-    ];
+  daily(from: string, to: string): DailyTotals[] {
+    return recentDays(WEEK.length, new Date(), profile.tz).flatMap((day, i) => {
+      const w = WEEK[i];
+      if (!w || day < from || day > to) return [];
+      const [focus_s, nudges, self_returns, recoveries, snoozes, breaks, longest_detour_s] = w;
+      return [{ day, focus_s, nudges, self_returns, recoveries, snoozes, breaks, longest_detour_s }];
+    });
   },
 
-  break: (): BreakState => ({
-    on_break: false,
-    context: null,
-    saved_progress: '',
-    next_step: '',
-    since: null,
-  }),
-
-  intervention: (): Intervention => ({
-    id: 1,
-    level: 1,
-    message: 'Still on Landing Page Design? Your attention drifted — want to come back?',
-    action: '',
-    context_id: 1,
-    occurred_at: new Date().toISOString(),
-  }),
-
-  mood: (): MoodEntry => ({ id: 1, mood: '🙂', note: '', recorded_at: new Date().toISOString() }),
-
-  beast: (): BeastMode | null => ({
-    id: 1,
-    started_at: new Date().toISOString(),
-    ends_at: null,
-    duration_min: 60,
-    active: false,
-    blocked_sites: [],
-  }),
-
-  achievements: (): Achievement[] => [
-    { code: 'first_focus', title: 'First Focus', description: 'Complete your first focus session.', unlocked_at: '2026-07-20T00:00:00Z' },
-    { code: 'seven_day_streak', title: '7 Day Streak', description: 'Focused 7 days in a row.', unlocked_at: '2026-07-28T00:00:00Z' },
-    { code: 'deep_work', title: 'Deep Work', description: 'Logged a 50+ minute deep focus session.', unlocked_at: '2026-07-25T00:00:00Z' },
-    { code: 'context_master', title: 'Context Master', description: 'Confirmed 5 different contexts.', unlocked_at: null },
-    { code: 'comeback', title: 'Comeback', description: 'Recovered from a distraction the same day.', unlocked_at: '2026-07-27T00:00:00Z' },
-    { code: 'beast_mode', title: 'Beast Mode', description: 'Completed a Beast Mode session.', unlocked_at: null },
-  ],
+  exportAll(): ExportBundle {
+    return { profile, goals, contexts: [demo.activeContext()], daily: demo.daily('0000-01-01', '9999-12-31') };
+  },
 };

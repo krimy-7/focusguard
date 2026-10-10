@@ -15,9 +15,8 @@ type TabRoute = {
 
 export const TAB_ROUTES: TabRoute[] = [
   { name: 'index', label: 'Today', icon: 'weather-sunny', iconActive: 'weather-sunny' },
-  { name: 'contexts', label: 'Contexts', icon: 'shape-outline', iconActive: 'shape' },
-  { name: 'progress', label: 'Progress', icon: 'chart-line', iconActive: 'chart-line' },
-  { name: 'support', label: 'Support', icon: 'heart-outline', iconActive: 'heart' },
+  { name: 'history', label: 'History', icon: 'history', iconActive: 'history' },
+  { name: 'settings', label: 'Settings', icon: 'cog-outline', iconActive: 'cog' },
 ];
 
 type BottomTabBarProps = {
@@ -39,14 +38,16 @@ export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
         'bg-surface-container-lowest border border-outline-variant/70',
         isDesktop ? 'rounded-[28px] p-md' : 'mx-md mb-sm px-sm pt-sm rounded-[24px]',
       )}>
-      <View className={cn(isDesktop ? 'flex-1 gap-xs' : 'flex-row items-center justify-around')}>
+      <View
+        accessibilityRole="tablist"
+        className={cn(isDesktop ? 'flex-1 gap-xs' : 'flex-row items-center justify-around')}>
         {isDesktop ? (
           <View className="flex-row items-center gap-sm px-sm pb-lg mb-sm border-b border-outline-variant/70">
             <View className="w-9 h-9 rounded-[14px] bg-primary items-center justify-center">
               <MaterialCommunityIcons name="shield-check" size={20} color={Palette.onPrimary} />
             </View>
             <View>
-              <AppText variant="labelLg">FocusGuard</AppText>
+              <AppText variant="labelLg">FocusGuard AI</AppText>
               <AppText variant="labelSm" color="on-surface-variant">Focus workspace</AppText>
             </View>
           </View>
@@ -59,9 +60,12 @@ export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
           return (
             <Pressable
               key={route.name}
+              accessibilityRole="tab"
+              accessibilityLabel={def.label}
+              aria-selected={focused}
               onPress={() => navigation.navigate(route.name)}
               className={cn(
-                'flex-row items-center gap-[8px] rounded-[14px] px-md py-sm active:opacity-80',
+                'min-h-[44px] flex-row items-center gap-[8px] rounded-[14px] px-md py-sm active:opacity-80',
                 isDesktop && 'w-full justify-start',
                 focused ? 'bg-primary' : 'bg-transparent',
               )}>
@@ -70,9 +74,7 @@ export function BottomTabBar({ state, navigation }: BottomTabBarProps) {
                 size={20}
                 color={focused ? Palette.onPrimary : Palette.onSurfaceVariant}
               />
-              <AppText
-                variant="labelSm"
-                color={focused ? 'on-primary' : 'on-surface-variant'}>
+              <AppText variant="labelSm" color={focused ? 'on-primary' : 'on-surface-variant'}>
                 {def.label}
               </AppText>
             </Pressable>

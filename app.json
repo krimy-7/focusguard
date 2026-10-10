@@ -22,7 +22,8 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
+      "name": "FocusGuard AI",
+      "output": "single",
       "favicon": "./assets/images/favicon.png",
       "backgroundColor": "#fcf8ff"
     },

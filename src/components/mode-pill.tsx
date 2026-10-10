@@ -2,7 +2,7 @@ import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
 import { cn, type TwColorName } from '@/theme/tailwind';
-import type { Mode } from '@/lib/api';
+import type { Mode } from '@/lib/types';
 
 const MODE_META: Record<Mode, { label: string; chip: TwColorName; text: TwColorName }> = {
   learning: { label: 'Learning', chip: 'tertiary-container', text: 'on-tertiary-container' },
