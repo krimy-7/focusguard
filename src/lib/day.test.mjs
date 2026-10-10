@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { dayLabel, isHHMM, localDay, quietHoursError, recentDays } from './day.ts';
+import { dayLabel, dayShort, isHHMM, localDay, quietHoursError, recentDays } from './day.ts';
 
 test('localDay: Kathmandu (UTC+5:45) five minutes after local midnight is the new day', () => {
   assert.equal(localDay(new Date('2026-10-09T18:20:00Z'), 'Asia/Kathmandu'), '2026-10-10');
@@ -57,4 +57,8 @@ test('quietHoursError: rejects malformed times and names the period', () => {
 
 test('quietHoursError: rejects same start and end', () => {
   assert.match(quietHoursError([{ from: '10:00', to: '10:00' }]) ?? '', /same time/i);
+});
+
+test('dayShort: weekday regardless of zone', () => {
+  assert.equal(dayShort('2026-10-10', 'en-US'), 'Sat');
 });

@@ -17,6 +17,8 @@ export const MESSAGES = {
   signedOut: 'Your session ended. Please sign in again.',
   notFound: 'That item is no longer there.',
   tooMany: 'Too many requests. Wait a minute and try again.',
+  staleOffline: 'Offline — showing your last view',
+  deleted: 'Your account was deleted. Take care.',
 };
 
 export function messageFor(status: number, detail: string): string {
@@ -36,6 +38,11 @@ function detailText(detail: unknown): string {
 
 export function errorText(e: unknown): string {
   return e instanceof Error && e.message ? e.message : 'Something went wrong. Try again in a moment.';
+}
+
+/** Banner copy when a refresh fails but a loaded view is still on screen. */
+export function staleMessage(e: unknown): string {
+  return e instanceof ApiError && e.status === 0 ? MESSAGES.staleOffline : `${errorText(e)} Showing your last view.`;
 }
 
 export type CallerDeps = {

@@ -12,6 +12,14 @@ export function fmtDuration(s: number): string {
   return rest ? `${h} h ${rest} min` : `${h} h`;
 }
 
+const isEmpty = (t: DailyTotals | null | undefined): t is null | undefined =>
+  !t || t.focus_s + t.nudges + t.self_returns + t.recoveries + t.breaks === 0;
+
+const feel = (t: DailyTotals) => {
+  const hard = t.nudges >= 3 || t.longest_detour_s >= 900;
+  return { hard, smooth: !hard && t.nudges <= 1 && t.focus_s >= 1800 };
+};
+
 const times = (n: number) => (n === 1 ? 'once' : n === 2 ? 'twice' : `${n} times`);
 
 /**
@@ -20,9 +28,8 @@ const times = (n: number) => (n === 1 ? 'once' : n === 2 ? 'twice' : `${n} times
  * `recoveries`/`snoozes` are shown as raw totals in History (their overlap with self_returns is not pinned by C1).
  */
 export function storyFor(t: DailyTotals | null | undefined): string {
-  if (!t || t.focus_s + t.nudges + t.self_returns + t.recoveries + t.breaks === 0) return 'Nothing recorded for this day.';
-  const hard = t.nudges >= 3 || t.longest_detour_s >= 900;
-  const smooth = !hard && t.nudges <= 1 && t.focus_s >= 1800;
+  if (isEmpty(t)) return 'Nothing recorded for this day.';
+  const { hard, smooth } = feel(t);
   const out: string[] = [];
   if (smooth) out.push('A smooth day.');
   if (hard) out.push("A bumpy day, and that's okay.");
@@ -32,4 +39,20 @@ export function storyFor(t: DailyTotals | null | undefined): string {
   if (hard && t.longest_detour_s >= 60) out.push(`Your longest detour was ${fmtDuration(t.longest_detour_s)}.`);
   if (t.breaks > 0) out.push(`You took ${t.breaks === 1 ? 'a break' : `${t.breaks} breaks`}.`);
   return out.join(' ');
+}
+
+export type Headline = { before: string; mark: string; after: string };
+
+/**
+ * The short sentence Today leads with, split so `mark` can be underlined in brass: before + mark + after.
+ * The marked phrase is always something that went well (coming back, time in focus). No score, no blame.
+ */
+export function headlineFor(t: DailyTotals | null | undefined): Headline {
+  if (isEmpty(t)) return { before: 'A fresh start. ', mark: 'Your day fills in', after: ' as you work.' };
+  const { hard, smooth } = feel(t);
+  const lead = hard ? "A bumpy day, and that's okay. " : smooth ? 'A smooth day. ' : 'A steady day. ';
+  const checks = t.nudges === 0 ? 'FocusGuard AI stayed quiet' : `FocusGuard AI checked in ${times(t.nudges)}`;
+  if (t.self_returns > 0) return { before: `${lead}${checks} and you `, mark: `came back on your own ${times(t.self_returns)}`, after: '.' };
+  if (t.focus_s >= 60) return { before: `${lead}${checks}. You spent `, mark: `${fmtDuration(t.focus_s)} in focus`, after: '.' };
+  return { before: `${lead}${checks}.`, mark: '', after: '' };
 }

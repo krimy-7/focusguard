@@ -2,7 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Web chrome the components cannot reach: first-paint ground, focus ring, selection, scrollbars, motion.
+   Values mirror src/theme/index.ts (ink / ground). */
+:root {
+  color-scheme: light dark;
+  --fg-focus: #2b1e17;
+  --fg-ground: #e8ebe4;
+  --fg-select: rgba(200, 150, 62, 0.45);
+  --fg-scroll: rgba(43, 30, 23, 0.35);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fg-focus: #efe9db;
+    --fg-ground: #1e1612;
+    --fg-select: rgba(212, 162, 78, 0.5);
+    --fg-scroll: rgba(239, 233, 219, 0.35);
+  }
+}
+
 html,
 body {
-  background-color: #f8fafc;
+  background-color: var(--fg-ground);
+}
+
+:focus-visible {
+  outline: 3px solid var(--fg-focus) !important;
+  outline-offset: 2px !important;
+}
+[data-rail] :focus-visible {
+  outline-color: #fbf6ec !important;
+}
+
+::selection {
+  background: var(--fg-select);
+}
+input,
+textarea {
+  caret-color: var(--fg-focus);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--fg-scroll) transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }

@@ -178,3 +178,9 @@ test('errorText', () => {
   assert.equal(errorText(new ApiError(404, 'gone')), 'gone');
   assert.match(errorText('weird'), /something went wrong/i);
 });
+
+test('staleMessage: offline gets the calm banner line, other errors say what happened', async () => {
+  const { staleMessage } = await import('./http.ts');
+  assert.equal(staleMessage(new ApiError(0, MESSAGES.offline)), 'Offline — showing your last view');
+  assert.equal(staleMessage(new ApiError(500, 'Something went wrong on our side (500). Try again in a moment.')), 'Something went wrong on our side (500). Try again in a moment. Showing your last view.');
+});

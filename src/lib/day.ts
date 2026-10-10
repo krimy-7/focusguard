@@ -33,6 +33,11 @@ export function dayLabel(day: string, locale?: string): string {
   });
 }
 
+/** "Sat" for a YYYY-MM-DD day (UTC noon, so no zone can shift it). */
+export function dayShort(day: string, locale?: string): string {
+  return new Date(`${day}T12:00:00Z`).toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' });
+}
+
 export function isHHMM(s: string): boolean {
   return /^([01]\d|2[0-3]):[0-5]\d$/.test(s);
 }

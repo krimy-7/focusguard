@@ -8,12 +8,19 @@ import type { ContextSnap, DailyTotals, ExportBundle, Goal, GoalPatch, MePatch, 
 
 export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000';
 
-/** Set when the session ended on its own (refresh did not work), so Sign in can say why the user is there. */
-export const sessionNotice = { ended: false };
+/**
+ * Why the user landed on Sign in: the session ended on its own (refresh did not work), or they just deleted
+ * their account. Module memory only; the screen reads it once and the next action clears it.
+ */
+export const sessionNotice = { ended: false, deleted: false };
 // A function, not a field write at the call site: the React Compiler lint rule (react-hooks/immutability) rejects
 // assigning to an imported object inside a component.
 export const clearSessionNotice = () => {
   sessionNotice.ended = false;
+  sessionNotice.deleted = false;
+};
+export const noteAccountDeleted = () => {
+  sessionNotice.deleted = true;
 };
 
 const PENDING_DELETE = 'fg.pendingDelete';

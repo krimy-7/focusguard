@@ -1,23 +1,19 @@
+import type { ReactNode } from 'react';
 import { View } from 'react-native';
 
 import { AppText } from '@/components/app-text';
-import { MascotAvatar } from '@/components/mascot';
+import { LatticeWindow } from '@/components/brand';
 
-type EmptyStateProps = {
-  title: string;
-  subtitle?: string;
-  action?: React.ReactNode;
-};
-
-export function EmptyState({ title, subtitle, action }: EmptyStateProps) {
+/** A page-level message with the Yeti at a closed window. The title is the page's h1. */
+export function EmptyState({ title, subtitle, action }: { title: string; subtitle?: string; action?: ReactNode }) {
   return (
-    <View className="items-center py-xl px-lg gap-sm">
-      <MascotAvatar size={64} />
-      <AppText variant="headlineMd" className="text-center">
+    <View className="items-center gap-4 py-10">
+      <LatticeWindow state="paused" size="md" />
+      <AppText variant="title" level={1} style={{ textAlign: 'center' }}>
         {title}
       </AppText>
       {subtitle ? (
-        <AppText variant="bodyMd" color="on-surface-variant" className="text-center">
+        <AppText tone="ink2" style={{ textAlign: 'center', maxWidth: 440 }}>
           {subtitle}
         </AppText>
       ) : null}

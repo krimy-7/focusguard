@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { BANNED_WORDS, fmtDuration, storyFor } from './story.ts';
+import { BANNED_WORDS, fmtDuration, headlineFor, storyFor } from './story.ts';
 
 const T = (o = {}) => ({
   day: '2026-10-10',
@@ -62,4 +62,25 @@ test('never a banned word, a score or a percentage, across a grid of days', () =
             for (const w of BANNED_WORDS) assert.ok(!s.includes(w), `"${w}" in: ${s}`);
             assert.ok(!s.includes('%') && !s.includes('score'), s);
           }
+});
+
+test('headlineFor: before + mark + after reads as one calm sentence', () => {
+  const s = (h) => h.before + h.mark + h.after;
+  assert.equal(s(headlineFor(null)), 'A fresh start. Your day fills in as you work.');
+  const smooth = headlineFor(T({ focus_s: 5400, nudges: 1, self_returns: 2 }));
+  assert.equal(s(smooth), 'A smooth day. FocusGuard AI checked in once and you came back on your own twice.');
+  assert.equal(smooth.mark, 'came back on your own twice');
+  const quiet = headlineFor(T({ focus_s: 7200 }));
+  assert.equal(s(quiet), 'A smooth day. FocusGuard AI stayed quiet. You spent 2 h in focus.');
+  assert.equal(quiet.mark, '2 h in focus');
+  const bumpy = headlineFor(T({ focus_s: 3600, nudges: 5, self_returns: 1 }));
+  assert.equal(s(bumpy), "A bumpy day, and that's okay. FocusGuard AI checked in 5 times and you came back on your own once.");
+  assert.equal(headlineFor(T({ breaks: 1 })).mark, '');
+});
+
+test('headlineFor never uses banned words', () => {
+  for (const o of [{}, { focus_s: 100 }, { nudges: 6, self_returns: 0 }, { focus_s: 9000, nudges: 3, longest_detour_s: 1200 }]) {
+    const h = headlineFor(T(o));
+    for (const w of BANNED_WORDS) assert.ok(!(h.before + h.mark + h.after).toLowerCase().includes(w));
+  }
 });

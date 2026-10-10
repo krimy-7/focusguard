@@ -3,8 +3,8 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
-    "@expo-google-fonts/be-vietnam-pro": "^0.4.1",
-    "@expo-google-fonts/plus-jakarta-sans": "^0.4.2",
+    "@expo-google-fonts/kalam": "^0.4.1",
+    "@expo-google-fonts/mukta": "^0.4.1",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@supabase/supabase-js": "^2.117.3",
@@ -30,6 +30,8 @@
     "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
+    "@fontsource/kalam": "^5.3.0",
+    "@fontsource/mukta": "^5.3.0",
     "@types/chrome": "^0.3.5",
     "@types/react": "~19.2.2",
     "eslint": "^9.0.0",
