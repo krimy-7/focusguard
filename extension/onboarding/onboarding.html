@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Welcome to FocusGuard AI</title>
+  <link rel="stylesheet" href="../popup/popup.css" />
+  <style>
+    body.page { gap: 16px; }
+    ul.plain { padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+  </style>
+</head>
+<body class="page">
+  <header class="brand">
+    <div class="brand-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg>
+    </div>
+    <h1 id="heading" tabindex="-1">Before FocusGuard AI starts</h1>
+  </header>
+
+  <p>FocusGuard AI notices when you drift from the task you chose and gives you a gentle nudge back. To do that it needs to look at your tabs. Here is exactly what it does. Nothing is observed until you click <strong>Start FocusGuard AI</strong>.</p>
+
+  <section class="card" aria-labelledby="h-observe">
+    <h2 id="h-observe">What FocusGuard AI looks at, in this browser</h2>
+    <ul class="plain">
+      <li>The site name and title of the tab you're on, and when you switch tabs.</li>
+      <li>Whether you're at the computer, so it never nudges you while you're away.</li>
+      <li>It skips banking, health, password-manager and government sites, incognito windows and Chrome's own pages. You can add more sites to skip in Settings.</li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="h-stays">
+    <h2 id="h-stays">What never leaves your browser</h2>
+    <p>Page titles, full web addresses, the tabs to reopen after a break, your break notes, any AI key, and the moment-by-moment record of what you did.</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-leaves">
+    <h2 id="h-leaves">What is sent to FocusGuard AI's server, only after you sign in</h2>
+    <ul class="plain">
+      <li>Your goals.</li>
+      <li>Your context names, their kind (work, learning, personal) and state, and the <em>names</em> of sites in each context, like github.com. Never full addresses.</li>
+      <li>Your settings and daily totals, like focus minutes, nudges and breaks.</li>
+    </ul>
+    <p class="muted">Sent over HTTPS. Not sold, not used for ads. You can export or delete everything from the dashboard. <a href="privacy.html" target="_blank" rel="noopener">Read the privacy policy</a>.</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-ai">
+    <h2 id="h-ai">Optional AI help</h2>
+    <p class="muted">AI can recognise sites FocusGuard AI's list doesn't know and suggest context names. It's off unless you turn it on.</p>
+    <fieldset>
+      <legend class="sr-only">AI help</legend>
+      <label class="radio"><input type="radio" name="aiMode" value="off" checked /> Off: use the built-in site list only</label>
+      <label class="radio"><input type="radio" name="aiMode" value="nano" /> On-device: Chrome's built-in model, nothing leaves your browser</label>
+    </fieldset>
+    <p class="muted">You can also connect a local model or your own API key later in Settings. Then the site name, cleaned-up page title, context name and today's goal titles go only to the address you choose.</p>
+  </section>
+
+  <section class="card" aria-labelledby="h-access">
+    <h2 id="h-access">Nudges on distracting sites</h2>
+    <p class="muted">To show a small card in the corner of distracting sites (like <span id="examples">social media and video sites</span>), Chrome needs your permission for those sites only. Without it, FocusGuard AI uses Chrome notifications instead.</p>
+    <button class="btn" id="grantBtn" type="button">Allow nudges on these sites</button>
+    <p class="muted" id="grantStatus" role="status" aria-live="polite"></p>
+  </section>
+
+  <div class="row gap">
+    <button class="btn primary" id="startBtn" type="button">Start FocusGuard AI</button>
+    <button class="btn ghost" id="laterBtn" type="button">Not now</button>
+  </div>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
+
+  <script type="module" src="onboarding.js"></script>
+</body>
+</html>

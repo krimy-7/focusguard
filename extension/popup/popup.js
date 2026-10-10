@@ -1,351 +1,293 @@
-// FocusGuard popup logic.
-// Loads stats from the backend (BASE_URL) with a graceful fallback to the
-// service worker's local tracking when the backend is unreachable.
+// @ts-check
+// Popup: sign-in, current context, pause/break/new context, welcome back, Beast Mode. Talks to the
+// service worker only through C3 messages; reads storage.local directly for device-only data.
+import { getConfig } from '../config.js';
+import { sendCode, verifyCode, isSignedIn, syncProfileTz, apiFetch, AuthError, isDefaultTz } from '../auth/session.js';
+import { nameContext } from '../ai/index.js';
+import { start as beastStart, stop as beastStop, getBeast, normalizeSites, originsFor } from '../beast/beast.js';
+import { pauseUntil, PAUSE_OFF, fmtMinutes, phaseLabel, recentSites, stored } from './model.js';
+import { openSettings } from './settings.js';
 
-const CONFIG = typeof FOCUSGUARD_CONFIG !== "undefined" ? FOCUSGUARD_CONFIG : {};
+/** @param {string} id */
+const $ = (id) => /** @type {any} */ (document.getElementById(id));
+/** @param {string} msg */
+const say = (msg) => { $('status').textContent = msg; };
+/** @param {object} msg */
+const send = (msg) => chrome.runtime.sendMessage(msg);
+/** @param {number} ms */
+const clock = (ms) => new Date(ms).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+const VIEWS = ['consentView', 'signedOutView', 'mainView', 'settingsView'];
+const DRIFT = ['grace', 'intervened_l1', 'escalated_l2'];
+const PENDING_EMAIL = 'fg_signin_email'; // storage.session: survives the popup closing while the user reads their email
+// R27: the AI name for the proposal on screen (`host|title`), kept so the 15 s refresh re-applies it.
+let named = { key: '', title: '', mode: '' };
+let proposalDirty = false; // the user edited the proposal: never overwrite it
+let tzTried = false; // retryTz runs at most once per popup open
 
-const els = {
-  currentFocus: document.getElementById("currentFocus"),
-  focusTime: document.getElementById("focusTime"),
-  interrupts: document.getElementById("interrupts"),
-  progressFill: document.getElementById("progressFill"),
-  elapsedLabel: document.getElementById("elapsedLabel"),
-  goalLabel: document.getElementById("goalLabel"),
-  pauseBtn: document.getElementById("pauseBtn"),
-  insightCard: document.getElementById("insightCard"),
-  insightText: document.getElementById("insightText"),
-  insightSuggestion: document.getElementById("insightSuggestion"),
-  dashboardLink: document.getElementById("dashboardLink"),
-  logInterrupt: document.getElementById("logInterrupt"),
-  quickBreak: document.getElementById("quickBreak"),
-  mascotHint: document.getElementById("mascotHint"),
-  contextActive: document.getElementById("contextActive"),
-  contextTitle: document.getElementById("contextTitle"),
-  contextStatePill: document.getElementById("contextStatePill"),
-  contextMeta: document.getElementById("contextMeta"),
-  contextActions: document.getElementById("contextActions"),
-  backToWorkBtn: document.getElementById("backToWorkBtn"),
-  backToWorkLabel: document.getElementById("backToWorkLabel"),
-  interventionExtra: document.getElementById("interventionExtra"),
-  seeProgressBtn: document.getElementById("seeProgressBtn"),
-  takeBreakBtn: document.getElementById("takeBreakBtn"),
-  extendBtn: document.getElementById("extendBtn"),
-  contextPropose: document.getElementById("contextPropose"),
-  proposeNote: document.getElementById("proposeNote"),
-  proposeTitle: document.getElementById("proposeTitle"),
-  proposeOkBtn: document.getElementById("proposeOkBtn"),
-  proposeCancelBtn: document.getElementById("proposeCancelBtn"),
-};
-
-const FOCUS_GOAL_SECONDS = 25 * 60;
-let focusSeconds = 0;
-let paused = false;
-let ticker = null;
-let lastPolledState = null;
-let pollingInterval = null;
-let contextCacheTime = 0;
-let contextCache = null;
-
-function fmt(seconds) {
-  const s = Math.max(0, Math.floor(seconds));
-  const m = Math.floor(s / 60);
-  const r = s % 60;
-  return `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`;
+/** Spec §3.1: the first-sign-in tz PATCH (code form / google.js) is best effort and can hit a 429/503 or a
+ *  dropped network. While D's cached profile still has the server default and this browser is elsewhere,
+ *  try again (syncProfileTz re-checks GET /me, so it never overwrites a non-default tz).
+ *  ponytail: a user abroad who deliberately picks Asia/Kathmandu gets it replaced; add a "tz synced" key if that matters. */
+async function retryTz() {
+  if (tzTried) return;
+  tzTried = true;
+  const fg_settings_cache = await stored('fg_settings_cache');
+  if (!isDefaultTz(fg_settings_cache?.profile?.tz)) return; // no cache yet, or already synced
+  if (isDefaultTz(Intl.DateTimeFormat().resolvedOptions().timeZone)) return;
+  await syncProfileTz();
+  await send({ type: 'settings_changed' }).catch(() => {}); // D refreshes fg_settings_cache with the new tz
 }
 
-function fmtDuration(seconds) {
-  const m = Math.round(seconds / 60);
-  if (m < 60) return `${m}m`;
-  const h = Math.floor(m / 60);
-  return `${h}h ${m % 60}m`;
+/** @param {string} id @param {boolean} [focus] */
+function show(id, focus = false) {
+  for (const v of VIEWS) $(v).hidden = v !== id;
+  $('openSettings').hidden = id !== 'mainView';
+  if (focus) $(id).querySelector('h2')?.focus();
 }
 
-function render() {
-  els.focusTime.textContent = fmtDuration(focusSeconds);
-  els.elapsedLabel.textContent = fmt(focusSeconds);
-  const pct = Math.min(100, (focusSeconds / FOCUS_GOAL_SECONDS) * 100);
-  els.progressFill.style.width = `${pct}%`;
-  els.goalLabel.textContent = paused ? "Paused" : `${fmt(FOCUS_GOAL_SECONDS - focusSeconds)} left`;
-  els.pauseBtn.style.background = paused ? "var(--secondary-container)" : "var(--primary)";
-  els.pauseBtn.querySelector("svg").innerHTML = paused
-    ? '<path d="M8 5v14l11-7z" />'
-    : '<path d="M6 5h4v14H6zM14 5h4v14h-4z" />';
-}
-
-function startTicker() {
-  if (ticker) clearInterval(ticker);
-  ticker = setInterval(() => {
-    if (!paused) {
-      focusSeconds += 1;
-      render();
-    }
-  }, 1000);
-  render();
-}
-
-function showToast(message) {
-  const toast = document.createElement("div");
-  toast.className = "toast";
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add("show"));
-  setTimeout(() => {
-    toast.classList.remove("show");
-    setTimeout(() => toast.remove(), 300);
-  }, 1600);
-}
-
-async function post(path, body) {
+/** Send an engine command and re-render from the returned view. @param {string} c @param {object} [args] */
+async function cmd(c, args = {}) {
   try {
-    const res = await fetch(`${CONFIG.BASE_URL}${path}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    return res.ok;
+    const r = await send({ type: 'cmd', cmd: c, ...args });
+    if (r?.view) await render(r.view);
   } catch {
-    return false;
+    say('FocusGuard AI is starting up. Try again in a moment.');
   }
 }
 
-function renderContextCard(active, st) {
-  const pending = st && st.lastProposal && st.lastProposal.proposed_title;
-  const distraction = st && (st.activityRelation === "distraction" || st.distractionState === "grace" || st.distractionState === "first" || st.distractionState === "second");
-
-  // 1) Pending new-work-area proposal → confirm/cancel form.
-  if (pending && !distraction) {
-    els.contextActive.hidden = true;
-    els.contextPropose.hidden = false;
-    els.proposeNote.textContent = `Detected: ${pending}`;
-    els.proposeTitle.value = pending;
-    els.proposeCancelBtn.hidden = false;
-    return;
-  }
-
-  // 2) Possible distraction / intervention states.
-  if (distraction) {
-    els.contextActive.hidden = false;
-    els.contextPropose.hidden = true;
-    els.contextTitle.textContent = (active && active.title) || st.contextTitle || "—";
-    els.contextActions.hidden = true;
-
-    const site = st.distractionSite || (st.currentActivity && st.currentActivity.domain) || "";
-    const mode = (active && active.mode) || st.contextMode || "";
-    if (st.distractionState === "first" || st.distractionState === "second") {
-      els.contextStatePill.textContent = st.distractionState === "first" ? "First intervention" : "Second intervention";
-      els.contextStatePill.className = "state-pill drift";
-      const title = st.contextTitle || "your focus";
-      // Show the message the worker sent, local text only as fallback.
-      els.contextMeta.textContent =
-        st.lastInterventionMessage ||
-        (st.distractionState === "first"
-          ? `You've been away from ${title}.`
-          : `${title} is crying in the corner 😭`);
-      els.contextActions.hidden = false;
-      els.backToWorkLabel.textContent = "Back to work";
-      const isFirst = st.distractionState === "first";
-      els.interventionExtra.hidden = false;
-      els.seeProgressBtn.hidden = !isFirst;
-      els.takeBreakBtn.hidden = isFirst;
-      els.extendBtn.hidden = false;
-      const send = (type) => () => {
-        chrome.runtime.sendMessage({ type }).catch(() => null);
-        window.location.reload();
-      };
-      els.backToWorkBtn.onclick = send("BACK_TO_WORK");
-      els.seeProgressBtn.onclick = send("SEE_PROGRESS");
-      els.takeBreakBtn.onclick = send("TAKE_BREAK");
-      els.extendBtn.onclick = send("EXTEND_TIMER");
-    } else {
-      els.contextStatePill.textContent = "Possible distraction";
-      els.contextStatePill.className = "state-pill drift";
-      els.contextMeta.textContent = site ? `You're on ${site}` : "You left your focus";
-      els.contextActions.hidden = true;
-      // Grace countdown ticker.
-      const start = st.gracePeriodStartedAt || st.awaySince;
-      const durMs = (st.gracePeriodDurationMin || 5) * 60 * 1000;
-      if (start && typeof start === 'number' && start > 0) {
-        const remaining = Math.max(0, start + durMs - Date.now());
-        const siteStr = site ? `You're on ${site}` : "You left your focus";
-        els.contextMeta.textContent = `${siteStr} · grace: ${fmt(Math.round(remaining / 1000))}`;
-      } else {
-        els.contextMeta.textContent = site ? `You're on ${site}` : "You left your focus";
-      }
-    }
-    if (mode) els.contextMeta.textContent += ` · ${mode}`;
-    return;
-  }
-
-  // 3) Active context (no distraction).
-  if (active || st.contextTitle) {
-    els.contextActive.hidden = false;
-    els.contextPropose.hidden = true;
-    els.contextTitle.textContent = (active && active.title) || st.contextTitle;
-    els.contextStatePill.textContent = "Active";
-    els.contextStatePill.className = "state-pill";
-    const tabCount = (active && active.activities ? active.activities : []).filter((a) => a.kind === "tab").length;
-    const mode = (active && active.mode) || st.contextMode || "";
-    els.contextMeta.textContent = mode ? `Mode: ${mode}` : "";
-    if (tabCount > 0) els.contextMeta.textContent += ` · ${tabCount} related tab${tabCount === 1 ? "" : "s"} grouped`;
-    els.contextActions.hidden = true;
-    return;
-  }
-
-  // 4) No context yet — discovery form (type your own or use detected).
-  els.contextActive.hidden = true;
-  els.contextPropose.hidden = false;
-  els.proposeNote.hidden = true;
-  els.proposeTitle.value = "";
-  els.proposeCancelBtn.hidden = true;
+async function refresh() {
+  const fg_consent = await stored('fg_consent');
+  if (!fg_consent) return show('consentView');
+  /** @type {any} */
+  let res = null;
+  try { res = await send({ type: 'get_view' }); } catch { /* worker asleep or restarting */ }
+  const signedIn = res ? res.signedIn : await isSignedIn();
+  if (!signedIn) return showSignIn();
+  retryTz().catch(() => {}); // fire-and-forget: never delays the view
+  if (!$('settingsView').hidden) return; // never yank the user out of Settings
+  show('mainView');
+  if (res?.view) await render(res.view);
+  await renderBeast();
 }
 
-async function loadFromBackend() {
+/** @param {any} v PopupView (C2) */
+async function render(v) {
+  const now = Date.now();
+  const paused = !!(v.pausedUntil && v.pausedUntil > now);
+  const ctx = v.context;
+  const onBreak = v.phase === 'on_break';
+
+  $('phasePill').textContent = phaseLabel(v.phase, v.pausedUntil, now);
+  $('phasePill').className = `pill${DRIFT.includes(v.phase) && !paused ? ' drift' : paused || onBreak ? ' calm' : ''}`;
+
+  $('ctxBlock').hidden = !ctx || onBreak;
+  if (ctx && !onBreak) {
+    $('ctxTitle').textContent = ctx.title;
+    const bits = [ctx.mode[0].toUpperCase() + ctx.mode.slice(1), `${fmtMinutes(ctx.inContextMin)} in context`];
+    if (ctx.confidence === 'inferred') bits.push('guessed');
+    if (v.drift && !paused) bits.push(`grace until ${clock(v.drift.deadline)}`);
+    $('ctxMeta').textContent = bits.join(' · ');
+  }
+  $('backBtn').hidden = !(ctx && ['intervened_l1', 'escalated_l2'].includes(v.phase));
+  if (ctx) $('backBtn').textContent = `Back to ${ctx.title}`;
+
+  const proposing = !ctx && v.phase === 'detected' && v.proposal;
+  $('proposalForm').hidden = !proposing;
+  if (proposing) {
+    const key = `${v.proposal.host}|${v.proposal.title}`;
+    if (key !== named.key) { named = { key, title: '', mode: '' }; proposalDirty = false; suggestName(v.proposal, key); }
+    fillProposal(named.title || v.proposal.suggested.title, named.mode || v.proposal.suggested.mode);
+  }
+  $('idleHint').hidden = !!ctx || !!proposing;
+
+  $('welcomeBlock').hidden = !(onBreak && ctx);
+  if (onBreak && ctx) {
+    const key = `fg_resume:${ctx.id}`;
+    const resume = await stored(key);
+    const sites = recentSites(resume);
+    $('welcomeNote').textContent = v.onBreak?.note ? `“${v.onBreak.note}”` : '';
+    $('welcomeNote').hidden = !v.onBreak?.note;
+    $('welcomeCtx').textContent = ctx.title;
+    $('welcomeSites').textContent = [`On a break since ${clock(v.onBreak?.startedAt ?? now)}`, sites.length ? `You were on ${sites.join(', ')}` : '']
+      .filter(Boolean).join('. ');
+    $('resumeBtn').textContent = `Resume ${ctx.title}`;
+  }
+
+  $('pausedBlock').hidden = !paused;
+  if (paused) $('pausedText').textContent = v.pausedUntil >= PAUSE_OFF ? 'Nudges are off until you turn them back on.' : `Nudges are paused until ${clock(v.pausedUntil)}.`;
+
+  $('ctxActions').hidden = !ctx;
+  $('newCtxBtn').hidden = onBreak;
+  $('pauseMenu').hidden = paused;
+  $('breakMenu').hidden = onBreak || !['active', ...DRIFT].includes(v.phase);
+}
+
+/** Pre-fill the proposal form unless the user is editing it. @param {string} title @param {string} mode */
+function fillProposal(title, mode) {
+  if (proposalDirty || document.activeElement === $('proposalTitle')) return;
+  $('proposalTitle').value = title;
+  $('proposalMode').value = mode;
+}
+
+/** R27: ask the optional AI for a context name, once per proposal. Fire-and-forget: nameContext
+ *  resolves to null (never throws) when AI fails, and may take up to 6 s.
+ *  @param {{host:string, title:string}} p @param {string} key */
+async function suggestName(p, key) {
+  const fg_ai = await stored('fg_ai');
+  if ((fg_ai?.mode ?? 'off') === 'off') return; // no AI: don't even fetch goals
+  /** @type {string[]} */
+  let goals = [];
   try {
-    const st = await chrome.runtime.sendMessage({ type: "GET_STATE" }).catch(() => null);
-    const res = await fetch(`${CONFIG.BASE_URL}/api/stats`, { signal: AbortSignal.timeout(3000) });
-    if (!res.ok) return false;
-    const stats = await res.json();
-    focusSeconds = stats.focus_time_s || 0;
-    els.interrupts.textContent = stats.interrupts ?? 0;
-    if (stats.current_focus) {
-      els.currentFocus.textContent = stats.current_focus;
-    }
-
-    const insightRes = await fetch(`${CONFIG.BASE_URL}/api/insights`, { signal: AbortSignal.timeout(5000) });
-    if (insightRes.ok) {
-      const insight = await insightRes.json();
-      if (insight.message) {
-        els.insightText.textContent = insight.message;
-        els.insightSuggestion.textContent = insight.suggestion ? `Try: ${insight.suggestion}` : "";
-        els.insightCard.hidden = false;
-      }
-    }
-
-    const ctxRes = await fetch(`${CONFIG.BASE_URL}/api/contexts`, { signal: AbortSignal.timeout(3000) });
-    if (ctxRes.ok) {
-      const contexts = await ctxRes.json();
-      const active = (Array.isArray(contexts) ? contexts : []).find((c) => c.active) || null;
-      renderContextCard(active, st);
-    } else {
-      renderContextCard(null, st);
-    }
-    return true;
-  } catch {
-    return false;
-  }
+    const r = await apiFetch('/goals'); // C1: no `day` = today in the profile tz
+    if (r.ok) goals = (await r.json()).map((/** @type {any} */ g) => g.title);
+  } catch { /* signed out or offline: name it without goals */ }
+  const n = await nameContext({ host: p.host, title: p.title, goals });
+  if (!n || named.key !== key) return; // AI off or no answer, or the proposal changed meanwhile
+  named = { key, title: n.title, mode: n.mode };
+  if (!$('proposalForm').hidden) fillProposal(n.title, n.mode);
 }
 
-async function loadLocalFallback() {
-  try {
-    const res = await chrome.runtime.sendMessage({ type: "GET_STATE" });
-    if (res) {
-      focusSeconds = res.focusSecondsToday || 0;
-      els.interrupts.textContent = res.interruptCountToday || 0;
-      if (res.contextTitle) {
-        els.currentFocus.textContent = res.contextTitle;
-      } else if (res.activeDomain) {
-        els.currentFocus.textContent = res.activeTitle || res.activeDomain;
-      } else {
-        els.currentFocus.textContent = "No active context";
-      }
-      const active = res.contextTitle
-        ? { title: res.contextTitle, mode: res.contextMode || "", activities: (res.contextDomains || []).map((d) => ({ kind: "tab", domain: d })) }
-        : null;
-      renderContextCard(active, res);
-      if (res.beast && res.beast.active) {
-        els.contextMeta.textContent += " · Beast Mode ON";
-      }
-    }
-  } catch {
-    els.currentFocus.textContent = "No active context";
-  }
-  startTicker();
+async function renderBeast() {
+  const st = await getBeast();
+  $('beastOn').hidden = !st;
+  $('beastForm').hidden = !!st;
+  if (st) $('beastText').textContent = `Blocking ${st.sites.join(', ')} until ${clock(st.until)}.`;
 }
 
-async function pollBackgroundState() {
-  try {
-    const st = await chrome.runtime.sendMessage({ type: "GET_STATE" }).catch(() => null);
-    if (!st) return;
-    
-    // Detect if state has changed (avoid unnecessary renders)
-    const currentJson = JSON.stringify(st);
-    if (currentJson === lastPolledState) return;
-    lastPolledState = currentJson;
-    
-    // Update focus time and interrupts
-    focusSeconds = st.focusSecondsToday || 0;
-    els.interrupts.textContent = st.interruptCountToday || 0;
-    render();
-    
-    // Refresh context from backend every 5 seconds
-    if (Date.now() - contextCacheTime > 5000) {
-      try {
-        const ctxRes = await fetch(`${CONFIG.BASE_URL}/api/contexts`, { signal: AbortSignal.timeout(3000) });
-        if (ctxRes.ok) {
-          contextCache = await ctxRes.json();
-          contextCacheTime = Date.now();
-        }
-      } catch {}
-    }
-    
-    const active = contextCache ? (Array.isArray(contextCache) ? contextCache : []).find((c) => c.active) || null : null;
-    renderContextCard(active, st);
-  } catch {}
+async function showSignIn() {
+  show('signedOutView');
+  const pending = await stored(PENDING_EMAIL, chrome.storage.session);
+  $('emailForm').hidden = !!pending;
+  $('codeForm').hidden = !pending;
+  // One primary action per step: while a code is being entered, "Sign in" is it (Google returns with "Use a different email").
+  $('googleBtn').hidden = !!pending;
+  $('divider').hidden = !!pending;
+  if (pending) $('codeHint').textContent = `We sent a 6-digit code to ${pending}. It can take a minute to arrive.`;
 }
 
-(async function init() {
-  if (CONFIG.DASHBOARD_URL) {
-    els.dashboardLink.href = CONFIG.DASHBOARD_URL;
-  }
-  els.pauseBtn.addEventListener("click", () => {
-    paused = !paused;
-    render();
-  });
+/** @param {unknown} e */
+const authMessage = (e) => (e instanceof AuthError ? e.message : 'Couldn’t reach the sign-in service. Check your connection and try again.');
 
-  els.logInterrupt.addEventListener("click", async () => {
-    const ok = await post("/api/events", {
-      type: "interruption",
-      detail: "Logged from popup",
-      duration_s: 0,
-    });
-    if (ok) els.interrupts.textContent = Number(els.interrupts.textContent || 0) + 1;
-    showToast(ok ? "Interruption logged!" : "Couldn't reach FocusGuard — not saved");
-  });
+/** @param {HTMLFormElement} form @param {() => Promise<void>} work */
+async function busy(form, work) {
+  const btn = /** @type {HTMLButtonElement} */ (form.querySelector('button[type="submit"]'));
+  btn.disabled = true;
+  $('signInError').textContent = '';
+  try { await work(); } catch (e) { $('signInError').textContent = authMessage(e); } finally { btn.disabled = false; }
+}
 
-  els.quickBreak.addEventListener("click", async () => {
-    const ok = await post("/api/events", {
-      type: "break",
-      detail: "Quick break",
-      duration_s: 300,
-    });
-    showToast(ok ? "Break logged. Enjoy!" : "Couldn't reach FocusGuard — not saved");
+$('emailForm').addEventListener('submit', (/** @type {Event} */ e) => {
+  e.preventDefault();
+  const email = $('email').value.trim();
+  if (!/^\S+@\S+\.\S+$/.test(email)) { $('signInError').textContent = 'Enter your email address.'; return; }
+  busy($('emailForm'), async () => {
+    await sendCode(email);
+    await chrome.storage.session.set({ [PENDING_EMAIL]: email });
+    await showSignIn();
+    $('code').focus();
   });
+});
 
-  els.proposeOkBtn.addEventListener("click", async () => {
-    const title = els.proposeTitle.value.trim();
-    if (!title) {
-      els.proposeTitle.focus();
-      return;
-    }
-    const res = await chrome.runtime.sendMessage({ type: "CONFIRM_CONTEXT", title }).catch(() => null);
-    showToast(res && res.ok ? "Context confirmed!" : "Couldn't confirm — is the backend running?");
-    setTimeout(() => window.location.reload(), 700);
+$('codeForm').addEventListener('submit', (/** @type {Event} */ e) => {
+  e.preventDefault();
+  const code = $('code').value.trim();
+  if (!/^\d{6}$/.test(code)) { $('signInError').textContent = 'Enter the 6-digit code from the email.'; return; }
+  busy($('codeForm'), async () => {
+    const email = await stored(PENDING_EMAIL, chrome.storage.session);
+    await verifyCode(email, code);
+    await chrome.storage.session.remove(PENDING_EMAIL);
+    await syncProfileTz().catch(() => {});
+    await send({ type: 'settings_changed' }).catch(() => {});
+    say('Signed in.');
+    await refresh();
+    show('mainView', true);
   });
+});
 
-  els.proposeCancelBtn.addEventListener("click", async () => {
-    await chrome.runtime.sendMessage({ type: "IGNORE_CONTEXT" }).catch(() => null);
-    showToast("Proposal ignored");
-    els.contextPropose.hidden = true;
+$('differentEmail').addEventListener('click', async () => {
+  await chrome.storage.session.remove(PENDING_EMAIL);
+  await showSignIn();
+  $('email').focus();
+});
+
+// The popup closes when the Google window takes focus, so the flow runs in its own tab.
+$('googleBtn').addEventListener('click', async () => {
+  await chrome.tabs.create({ url: chrome.runtime.getURL('auth/google.html') });
+  window.close();
+});
+
+$('openOnboarding').addEventListener('click', async () => {
+  await chrome.tabs.create({ url: chrome.runtime.getURL('onboarding/onboarding.html') });
+  window.close();
+});
+
+$('proposalForm').addEventListener('submit', (/** @type {Event} */ e) => {
+  e.preventDefault();
+  const title = $('proposalTitle').value.trim();
+  if (!title) { $('proposalTitle').focus(); return; }
+  cmd('confirm', { title, mode: $('proposalMode').value });
+});
+for (const id of ['proposalTitle', 'proposalMode']) $(id).addEventListener('input', () => { proposalDirty = true; });
+$('proposalCancel').addEventListener('click', () => cmd('cancel'));
+$('backBtn').addEventListener('click', () => cmd('back'));
+$('resumeBtn').addEventListener('click', () => cmd('resume'));
+$('unpauseBtn').addEventListener('click', () => cmd('resume'));
+$('newCtxBtn').addEventListener('click', async () => {
+  await cmd('end');
+  say('Context ended. Open the tab you’re starting on and FocusGuard AI will offer to track it.');
+});
+
+for (const b of document.querySelectorAll('[data-pause]')) {
+  b.addEventListener('click', async () => {
+    $('pauseMenu').open = false;
+    await cmd('pause', { until: pauseUntil(/** @type {any} */ (b).dataset.pause, Date.now()) });
   });
+}
 
-  // Render instantly from persisted local state (no waiting on the network),
-  // then overlay with fresh backend data when it arrives.
-  await loadLocalFallback();
-  const ok = await loadFromBackend();
-  if (!ok) {
-    els.currentFocus.textContent = "Backend offline — local mode";
-  }
-  
-  // Start polling background state every 500ms to stay synced with real-time changes
-  pollingInterval = setInterval(pollBackgroundState, 500);
-})();
+$('breakForm').addEventListener('submit', async (/** @type {Event} */ e) => {
+  e.preventDefault();
+  const note = $('breakNote').value.trim();
+  $('breakMenu').open = false;
+  $('breakNote').value = '';
+  await cmd('break', note ? { note } : {});
+});
+
+$('beastForm').addEventListener('submit', (/** @type {Event} */ e) => {
+  e.preventDefault();
+  const sites = normalizeSites($('beastSites').value);
+  const minutes = Number($('beastMinutes').value);
+  if (!sites.length) return say('Add at least one site to block, like reddit.com.');
+  if (!minutes) return say('Choose how long Beast Mode should run.');
+  // permissions.request needs the click's user gesture: call it before any await. Chrome's prompt can close
+  // the popup, so start now (the rules stay inert without host access) and roll back on an explicit "no".
+  const asked = chrome.permissions.request({ origins: originsFor(sites) });
+  (async () => {
+    await beastStart(sites, minutes);
+    await send({ type: 'settings_changed' }).catch(() => {});
+    await renderBeast();
+    if (await asked) return say('Beast Mode is on.');
+    await beastStop();
+    await send({ type: 'settings_changed' }).catch(() => {});
+    await renderBeast();
+    say('Beast Mode needs access to those sites to block them.');
+  })().catch((/** @type {Error} */ err) => say(err.message));
+});
+
+$('beastStop').addEventListener('click', async () => {
+  await beastStop();
+  await send({ type: 'settings_changed' }).catch(() => {});
+  await renderBeast();
+  say('Beast Mode is off.');
+});
+
+$('openSettings').addEventListener('click', () => openSettings(async () => { show('mainView', true); await refresh(); }));
+
+getConfig().then((c) => { $('dashboardLink').href = c.DASHBOARD_URL; }); // R11/R28: includes config.local.json overrides
+
+// Spec §3.1's settings refresh on popup open is D's get_view (refreshSettings, 60 s max age): no extra message.
+refresh();
+// Keep "time in context" and grace fresh, but never while the user is typing.
+setInterval(() => {
+  const tag = document.activeElement?.tagName;
+  if (tag !== 'INPUT' && tag !== 'TEXTAREA' && tag !== 'SELECT') refresh();
+}, 15_000);

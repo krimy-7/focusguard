@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign in with Google · FocusGuard AI</title>
+  <link rel="stylesheet" href="../popup/popup.css" />
+</head>
+<body class="page">
+  <main class="card">
+    <h1 id="heading" tabindex="-1">Sign in with Google</h1>
+    <p class="muted" id="msg" role="status" aria-live="polite">Opening Google…</p>
+    <button class="btn primary" id="retry" type="button" hidden>Try again</button>
+    <button class="btn" id="done" type="button" hidden>Close this tab</button>
+  </main>
+  <script type="module" src="google.js"></script>
+</body>
+</html>

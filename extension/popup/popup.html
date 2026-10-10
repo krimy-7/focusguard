@@ -2,180 +2,226 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FocusGuard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FocusGuard AI</title>
   <link rel="stylesheet" href="popup.css" />
 </head>
 <body>
   <header class="header">
     <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-        </svg>
+      <div class="brand-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg>
       </div>
-      <div class="brand-text">
-        <h1>FocusGuard</h1>
-      </div>
+      <h1>FocusGuard AI</h1>
     </div>
+    <button class="icon-btn" id="openSettings" type="button" hidden>Settings</button>
   </header>
 
-  <section class="context-card" id="contextCard">
-    <div class="card-header-row">
-      <p class="eyebrow">Active Context</p>
-    </div>
-    
-    <div id="contextActive" hidden>
-      <div class="context-title-row">
-        <h2 id="contextTitle">—</h2>
-        <span class="state-pill" id="contextStatePill">Active</span>
-      </div>
-      <p class="status-line" id="contextMeta"></p>
-      <div class="context-actions" id="contextActions" hidden>
-        <button class="action-btn primary-btn" id="backToWorkBtn">
-          <span class="action-icon">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-            </svg>
-          </span>
-          <span id="backToWorkLabel">Back to work</span>
-        </button>
-        <div class="propose-actions" id="interventionExtra">
-          <button class="action-btn small ghost" id="seeProgressBtn">See progress</button>
-          <button class="action-btn small ghost" id="takeBreakBtn">Take a break</button>
-          <button class="action-btn small ghost" id="extendBtn">Extend</button>
-        </div>
-      </div>
-    </div>
+  <p class="status" id="status" role="status" aria-live="polite"></p>
 
-    <div id="contextPropose" hidden>
-      <p class="propose-note" id="proposeNote">Detected: —</p>
-      <input class="propose-input" id="proposeTitle" type="text" maxlength="120" placeholder="What are you working on?" />
-      <div class="propose-actions">
-        <button class="action-btn small ghost" id="proposeCancelBtn">Cancel</button>
-        <button class="action-btn small confirm" id="proposeOkBtn">Confirm Target</button>
-      </div>
-    </div>
+  <!-- Consent not given yet -->
+  <section class="card" id="consentView" hidden>
+    <h2 tabindex="-1">Finish setting up</h2>
+    <p class="muted">FocusGuard AI doesn't look at any tabs until you've read what it does and clicked Start.</p>
+    <button class="btn primary" id="openOnboarding" type="button">Open setup</button>
   </section>
 
-  <section class="focus-card" id="focusCard" style="display: none;">
-    <div class="focus-accent"></div>
-    <div class="focus-top">
-      <div>
-        <p class="eyebrow" style="display: none;">On this tab</p>
-        <h2 id="currentFocus" style="display: none;">Detecting…</h2>
-      </div>
-      <div class="timer-pulse">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.59L8.71 12.3a1 1 0 1 1 1.41-1.41L12 12.59l4.88-4.88a1 1 0 0 1 1.41 1.41z" />
-        </svg>
-      </div>
-    </div>
-    <div class="timer-row">
-      <div class="progress-track">
-        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-      </div>
-      <div class="timer-labels">
-        <span id="elapsedLabel">00:00</span>
-        <span id="goalLabel" class="goal-label">25:00 goal</span>
-      </div>
-    </div>
-    <button class="pause-btn" id="pauseBtn" title="Pause / Resume focus">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="#ffffff">
-        <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-      </svg>
-    </button>
+  <!-- Signed out -->
+  <section class="card" id="signedOutView" hidden>
+    <h2 tabindex="-1">Sign in</h2>
+    <!-- R40: Google is the primary, first button; the emailed code is the secondary option below it. -->
+    <button class="btn primary" id="googleBtn" type="button">Continue with Google</button>
+    <p class="divider" id="divider"><span>or</span></p>
+    <form id="emailForm" novalidate>
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="email" required />
+      <button class="btn" type="submit">Email me a code</button>
+    </form>
+    <form id="codeForm" novalidate hidden>
+      <p class="muted" id="codeHint"></p>
+      <label for="code">6-digit code</label>
+      <input id="code" inputmode="numeric" autocomplete="one-time-code" pattern="\d{6}" maxlength="6" required />
+      <button class="btn primary" type="submit">Sign in</button>
+      <button class="btn ghost" id="differentEmail" type="button">Use a different email</button>
+    </form>
+    <p class="error" id="signInError" role="alert"></p>
   </section>
 
-  <section class="actions">
-    <button class="action-btn secondary-action" id="logInterrupt">
-      <span class="action-icon alert-icon">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-          <line x1="12" y1="9" x2="12" y2="13" />
-          <line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
-      </span>
-      <span class="btn-label">Log Interruption</span>
-      <span class="chevron">›</span>
-    </button>
-    <button class="action-btn teal" id="quickBreak">
-      <span class="action-icon break-icon">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-        </svg>
-      </span>
-      <span class="btn-label">Quick Break (5m)</span>
-      <span class="chevron">⚡</span>
-    </button>
-  </section>
-
-  <section class="stats-section">
-    <div class="section-title-row">
-      <h3>Stats at a Glance</h3>
-      <span class="today-tag">Today</span>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon mint">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-        </div>
-        <div class="stat-details">
-          <p class="stat-label">Focus Time</p>
-          <p class="stat-value" id="focusTime">0m</p>
-        </div>
+  <!-- Signed in -->
+  <main id="mainView" hidden>
+    <section class="card" aria-labelledby="ctxHeading">
+      <div class="row">
+        <p class="eyebrow" id="ctxHeading">Current context</p>
+        <span class="pill" id="phasePill"></span>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon coral">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
-        </div>
-        <div class="stat-details">
-          <p class="stat-label">Interrupts</p>
-          <p class="stat-value" id="interrupts">0</p>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <section class="insight" id="insightCard" hidden>
-    <div class="insight-header">
-      <span class="insight-spark">✨</span>
-      <span class="insight-title">AI Focus Nudge</span>
+      <div id="ctxBlock" hidden>
+        <h2 id="ctxTitle" tabindex="-1"></h2>
+        <p class="muted" id="ctxMeta"></p>
+        <button class="btn primary" id="backBtn" type="button" hidden>Back to it</button>
+      </div>
+
+      <form id="proposalForm" hidden>
+        <label for="proposalTitle">Working on this?</label>
+        <input id="proposalTitle" type="text" maxlength="120" required />
+        <label for="proposalMode">Kind of work</label>
+        <select id="proposalMode">
+          <option value="work">Work</option>
+          <option value="learning">Learning</option>
+          <option value="personal">Personal</option>
+        </select>
+        <div class="row gap">
+          <button class="btn primary" type="submit">Yes, track it</button>
+          <button class="btn ghost" id="proposalCancel" type="button">Not now</button>
+        </div>
+      </form>
+
+      <p class="muted" id="idleHint" hidden>Open the tab you're working on and FocusGuard AI will offer to track it.</p>
+
+      <!-- Welcome back (on a break) -->
+      <div id="welcomeBlock" hidden>
+        <p class="note" id="welcomeNote"></p>
+        <h2 id="welcomeCtx"></h2>
+        <p class="muted" id="welcomeSites"></p>
+        <button class="btn primary" id="resumeBtn" type="button">Resume</button>
+      </div>
+
+      <div id="pausedBlock" hidden>
+        <p class="muted" id="pausedText"></p>
+        <button class="btn primary" id="unpauseBtn" type="button">Turn nudges back on</button>
+      </div>
+    </section>
+
+    <section class="actions" id="ctxActions" aria-label="Context actions">
+      <button class="btn" id="newCtxBtn" type="button">New context</button>
+
+      <details id="pauseMenu">
+        <summary class="btn">Pause nudges</summary>
+        <div class="menu">
+          <button class="btn ghost" data-pause="30m" type="button">For 30 minutes</button>
+          <button class="btn ghost" data-pause="tomorrow" type="button">Until tomorrow</button>
+          <button class="btn ghost" data-pause="off" type="button">Until I turn them back on</button>
+        </div>
+      </details>
+
+      <details id="breakMenu">
+        <summary class="btn">Take a break</summary>
+        <form class="menu" id="breakForm">
+          <label for="breakNote">Leave yourself a note for next time? (optional)</label>
+          <input id="breakNote" type="text" maxlength="200" />
+          <button class="btn primary" type="submit">Start break</button>
+        </form>
+      </details>
+    </section>
+
+    <section class="card" aria-labelledby="beastHeading">
+      <h2 class="small" id="beastHeading">Beast Mode</h2>
+      <div id="beastOn" hidden>
+        <p class="muted" id="beastText"></p>
+        <button class="btn" id="beastStop" type="button">Stop Beast Mode</button>
+      </div>
+      <form id="beastForm" novalidate>
+        <p class="muted">Block chosen sites for a set time. You can always continue after a short wait.</p>
+        <label for="beastSites">Sites to block</label>
+        <textarea id="beastSites" rows="2" placeholder="reddit.com, youtube.com"></textarea>
+        <label for="beastMinutes">For how long</label>
+        <select id="beastMinutes" required>
+          <option value="">Choose…</option>
+          <option value="25">25 minutes</option>
+          <option value="50">50 minutes</option>
+          <option value="90">90 minutes</option>
+          <option value="180">3 hours</option>
+        </select>
+        <button class="btn primary" type="submit">Start Beast Mode</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Settings (rendered by settings.js) -->
+  <section id="settingsView" hidden>
+    <div class="row">
+      <h2 tabindex="-1">Settings</h2>
+      <button class="btn ghost small" id="closeSettings" type="button">Done</button>
     </div>
-    <p class="insight-text" id="insightText"></p>
-    <p class="insight-suggestion" id="insightSuggestion"></p>
+
+    <form class="card" id="nudgeForm">
+      <h3>Nudges</h3>
+      <label for="grace">Grace before a nudge</label>
+      <select id="grace"></select>
+      <fieldset>
+        <legend>Quiet hours (no nudges)</legend>
+        <div class="quiet-row"><label>From <input type="time" data-q="0" data-k="from" /></label><label>to <input type="time" data-q="0" data-k="to" /></label></div>
+        <div class="quiet-row"><label>From <input type="time" data-q="1" data-k="from" /></label><label>to <input type="time" data-q="1" data-k="to" /></label></div>
+        <div class="quiet-row"><label>From <input type="time" data-q="2" data-k="from" /></label><label>to <input type="time" data-q="2" data-k="to" /></label></div>
+      </fieldset>
+      <button class="btn primary" type="submit">Save</button>
+    </form>
+
+    <form class="card" id="aiForm">
+      <fieldset>
+        <legend>AI help (optional)</legend>
+        <label class="radio"><input type="radio" name="aiMode" value="off" /> Off</label>
+        <label class="radio"><input type="radio" name="aiMode" value="nano" /> On-device (Chrome's built-in model)</label>
+        <label class="radio"><input type="radio" name="aiMode" value="local" /> Local model on this computer</label>
+        <label class="radio"><input type="radio" name="aiMode" value="key" /> My own API key</label>
+      </fieldset>
+      <div id="aiNano" hidden>
+        <p class="muted" id="nanoStatus"></p>
+        <button class="btn" id="nanoDownload" type="button" hidden>Download on-device model</button>
+      </div>
+      <div id="aiLocal" hidden>
+        <label for="localUrl">Address</label>
+        <input id="localUrl" type="url" placeholder="http://localhost:11434" />
+        <label for="localModel">Model name</label>
+        <input id="localModel" type="text" placeholder="llama3.2" />
+      </div>
+      <div id="aiKey" hidden>
+        <label for="provider">Provider</label>
+        <select id="provider">
+          <option value="openai">OpenAI-compatible</option>
+          <option value="anthropic">Anthropic</option>
+          <option value="gemini">Google Gemini</option>
+        </select>
+        <div id="baseUrlRow">
+          <label for="baseUrl">Base URL</label>
+          <input id="baseUrl" type="url" placeholder="https://api.openai.com" />
+        </div>
+        <label for="keyModel">Model name</label>
+        <input id="keyModel" type="text" />
+        <label for="apiKey">API key</label>
+        <input id="apiKey" type="password" autocomplete="off" spellcheck="false" />
+      </div>
+      <p class="disclosure" id="aiDisclosure" aria-live="polite"></p>
+      <button class="btn primary" type="submit">Save AI choice</button>
+    </form>
+
+    <section class="card" aria-labelledby="rulesHeading">
+      <h3 id="rulesHeading">"This is related" rules</h3>
+      <ul class="list" id="rulesList"></ul>
+      <p class="muted" id="rulesEmpty">No rules yet. They appear when you mark a site as part of a context.</p>
+    </section>
+
+    <section class="card" aria-labelledby="sensHeading">
+      <h3 id="sensHeading">Never look at these sites</h3>
+      <p class="muted">Banking, health and password sites are already skipped. Add any others here.</p>
+      <ul class="list" id="sensList"></ul>
+      <form class="row gap" id="sensForm">
+        <label class="sr-only" for="sensInput">Site to skip</label>
+        <input id="sensInput" type="text" placeholder="example.com" />
+        <button class="btn small" type="submit">Add</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <p class="muted" id="accountText"></p>
+      <button class="btn" id="signOutBtn" type="button">Sign out</button>
+    </section>
   </section>
 
   <footer class="footer">
-    <a id="dashboardLink" href="#" target="_blank">
-      <span>Dashboard</span>
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-        <polyline points="15 3 21 3 21 9" />
-        <line x1="10" y1="14" x2="21" y2="3" />
-      </svg>
-    </a>
-    <div class="mascot-pill" title="FocusGuard Companion">
-      <div class="mascot-orb">
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="#0f766e">
-          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-        </svg>
-      </div>
-      <span id="mascotHint">Stay focused & hydrated!</span>
-    </div>
+    <a id="dashboardLink" href="#" target="_blank" rel="noopener">Open dashboard</a>
   </footer>
 
-  <script src="../config.js"></script>
-  <script src="popup.js"></script>
+  <script type="module" src="popup.js"></script>
 </body>
 </html>
