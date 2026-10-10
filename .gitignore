@@ -36,7 +36,7 @@ yarn-error.*
 backend/.env
 
 # extension local secrets
-extension/config.local.js
+extension/config.local.json
 
 # backend
 backend/.venv/

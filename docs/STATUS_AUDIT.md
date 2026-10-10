@@ -2,6 +2,8 @@
 
 **Date:** 2026-10-10 · **Scope:** whole repo (backend, extension, Expo app, Android module, docs) · **Method:** every source file read; key claims re-verified by hand.
 
+> **Phases 1–4 in progress (2026-10-10):** designed in `docs/specs/2026-10-10-v1-core-design.md`, planned in `docs/superpowers/plans/` (index + streams A–E). Launch blockers needing the maintainer: `docs/PENDING_DECISIONS.md`.
+>
 > **Phase 0 (cleanup) done on branch `phase-0-cleanup`.** Findings below describe the repo *before* that branch; items fixed there: secrets blanked, debug/CORS/dev-reset locked down, `/ws` + tasks + milestones + dead endpoints removed, demo data behind `DEMO_MODE`/`EXPO_PUBLIC_DEMO_MODE`, honest offline states, grace = 5 min, title sanitizing + sensitive-domain + incognito skip, OpenRouter call removed from the extension, blur spam + popup reset/PRO removed, Extend fixed, Android blocker archived to `archive/android-blocker`, dead template files/deps removed, first backend tests. Still open: everything in Phases 1–5.
 
 ---

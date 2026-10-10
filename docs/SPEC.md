@@ -110,7 +110,7 @@ Status lives in **`docs/STATUS_AUDIT.md`** (source of truth; update it in the sa
 | **P6** | **Deterministic core, AI at the edges.** | Classification of known domains, timers, flags, and the state machine use no AI. |
 | **P7** | **Privacy by minimization.** | See §15. Collect the minimum, keep it briefly, send AI the least. |
 | **P8** | **Graceful degradation.** | AI down → templates. Backend down → local fallback. Offline → buffer and reconcile. |
-| **P9** | **One account, one truth.** | Server is authoritative for context state; devices send intents, not states (§17). |
+| **P9** | **One account, one truth.** | *v1 (D-12):* the **extension is authoritative for its browser profile**; the server mirrors context snapshots and daily totals. Server-side command relay for mobile arrives in v1.1 (§17). |
 | **P10** | **Context is the unit.** | Features attach to contexts, not to raw timers or app usage. |
 
 ### 3.1 Explicit non-goals / anti-patterns
@@ -142,6 +142,8 @@ FocusGuard MUST NOT become:
 ---
 
 ## 5. System architecture
+
+> **v1 amendment (2026-10-10):** Superseded for v1 by `docs/specs/2026-10-10-v1-core-design.md` §2: the drift engine runs in the extension; the backend stores goals, context snapshots (site *names* only), settings and daily totals. No WebSockets or Redis in v1.
 
 ```mermaid
 flowchart TB
@@ -330,6 +332,8 @@ stateDiagram-v2
 \* Suppressed nudges return to `active` but record the suppressed drift for analytics; they do not count as user failures.
 
 ### 8.2 Engine contract
+
+> **v1 amendment (2026-10-10):** The engine contract is now specified in `docs/research/2026-10-10-engine-design-notes.md` §2 as amended by `docs/specs/2026-10-10-v1-core-design.md` §4.4 and the plan index resolutions (R19–R38). It runs in the extension service worker as a pure ES module.
 
 ```python
 # Pure. No I/O, no wall-clock reads, no AI calls.
@@ -546,6 +550,8 @@ A recovery is `stuck = true` if the user is still in-context 10 minutes after re
 
 ### 12.1 Where AI is used (and not)
 
+> **v1 amendment (2026-10-10):** AI is **bring-your-own** (D-10, D-14): Off (default) · On-device (Gemini Nano) · Local model · Your API key. FocusGuard runs no LLM and the backend holds no AI keys. v1 uses AI only to name proposed contexts and classify unknown sites; planning is typed (D-11).
+
 | # | Task | Frequency | Model class | Fallback |
 |---|---|---|---|---|
 | 0 | Audio → text | 1×/morning | On-device first; Whisper API if low confidence/unsupported | Typed input |
@@ -662,6 +668,8 @@ First Focus · First Context Recovery · 7-Day Streak · Deep Work · Context Ma
 
 ## 14. Chrome extension (Watchdog)
 
+> **v1 amendment (2026-10-10):** v1 permissions, nudge surfaces, tab-group contexts and consent flow: `docs/specs/2026-10-10-v1-core-design.md` §4 and `docs/research/2026-10-10-chrome-platform.md`.
+
 ### 14.1 MV3 design constraints (important)
 
 - The **service worker is ephemeral.** Do not rely on in-memory state or `setTimeout` for grace timers. Persist state in `chrome.storage.session`/`local` and schedule with **`chrome.alarms`** using absolute timestamps.
@@ -712,6 +720,8 @@ One-time developer registration fee; dedicated team Google account with 2-step v
 
 ## 15. Privacy & data governance (MUST-level)
 
+> **v1 amendment (2026-10-10):** v1 is stricter than this section (D-15): **page titles, URLs, raw events, resume targets and AI keys never leave the browser.** The server never receives raw events, so the 7-day raw-event retention and purge job (§15.1, §15.2.2, §16.4) are not needed in v1.
+
 FocusGuard syncs across devices, so it is **not local-only**, and no document, slide, or copy may claim that. The honest model is **minimization + short retention**.
 
 ### 15.1 Data inventory
@@ -740,6 +750,8 @@ FocusGuard syncs across devices, so it is **not local-only**, and no document, s
 ---
 
 ## 16. Backend
+
+> **v1 amendment (2026-10-10):** Superseded for v1 by `docs/specs/2026-10-10-v1-core-design.md` §3 (4 tables, 12 endpoints, Supabase Auth, Alembic) and contract C1 in `docs/superpowers/plans/2026-10-10-v1-core-index.md`.
 
 ### 16.1 Modules (⚪ SPEC; map onto existing domains)
 
@@ -827,6 +839,8 @@ SENTRY_DSN=              # prod
 ---
 
 ## 17. Cross-device sync semantics
+
+> **v1 amendment (2026-10-10):** v1 has a single authoritative device per browser profile and no real-time sync (D-12, D-15). This section describes the v1.1 mobile relay.
 
 - **Server is authoritative** for context state. Clients send **commands** with a `client_event_id` (idempotency key) and `device_id`; the server applies them via `step()` and broadcasts a snapshot with a monotonically increasing `version`.
 - Clients apply a snapshot only if `version` is newer. On reconnect, request `sync.snapshot`.
