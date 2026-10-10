@@ -24,6 +24,8 @@ export default function ContextsScreen() {
   const [selectedMode, setSelectedMode] = useState<Mode>('work');
   const [detecting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const detectSignals = async (): Promise<ContextDetect | null> => {
     // Derive the signal from the most recent real session (logged by the
@@ -41,12 +43,19 @@ export default function ContextsScreen() {
   };
 
   const load = useCallback(async () => {
-    const [cs, det] = await Promise.all([api.getContexts(), detectSignals()]);
-    setContexts(cs);
-    setProposal(det);
-    setEditingTitle(det?.proposed_title ?? '');
-    setSelectedMode(det?.mode ?? 'work');
-    setLoading(false);
+    try {
+      // Detection is a nice-to-have; if it fails, just show no proposal.
+      const [cs, det] = await Promise.all([api.getContexts(), detectSignals().catch(() => null)]);
+      setContexts(cs);
+      setProposal(det);
+      setEditingTitle(det?.proposed_title ?? '');
+      setSelectedMode(det?.mode ?? 'work');
+      setLoadError(false);
+    } catch {
+      setLoadError(true);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useFocusEffect(
@@ -55,33 +64,40 @@ export default function ContextsScreen() {
     }, [load]),
   );
 
-  const confirm = async () => {
-    if (!proposal || !editingTitle.trim()) return;
-    const title = editingTitle.trim();
-    const existing = contexts.find((c) => c.title.toLowerCase() === title.toLowerCase());
-    if (existing) {
-      await api.confirmContext(existing.id, title, selectedMode);
-    } else {
-      const created = await api.createContext(title, selectedMode, 'detected');
-      await api.setActiveContext(created.id);
+  const write = async (fn: () => Promise<unknown>) => {
+    setActionError(null);
+    try {
+      await fn();
+      load();
+    } catch {
+      setActionError("Can't reach FocusGuard right now. Nothing was saved.");
     }
-    setProposal(null);
-    load();
   };
+
+  const confirm = () =>
+    write(async () => {
+      if (!proposal || !editingTitle.trim()) return;
+      const title = editingTitle.trim();
+      const existing = contexts.find((c) => c.title.toLowerCase() === title.toLowerCase());
+      if (existing) {
+        await api.confirmContext(existing.id, title, selectedMode);
+      } else {
+        const created = await api.createContext(title, selectedMode, 'detected');
+        await api.setActiveContext(created.id);
+      }
+      setProposal(null);
+    });
 
   const dismiss = () => setProposal(null);
 
-  const activate = async (ctx: FocusContext) => {
-    await api.setActiveContext(ctx.id);
-    load();
-  };
+  const activate = (ctx: FocusContext) => write(() => api.setActiveContext(ctx.id));
 
-  const groupLastActivity = async (ctx: FocusContext) => {
-    const last = ctx.activities[0];
-    if (!last) return;
-    await api.groupActivity(ctx.id, { kind: last.kind, label: last.label, domain: last.domain });
-    load();
-  };
+  const groupLastActivity = (ctx: FocusContext) =>
+    write(async () => {
+      const last = ctx.activities[0];
+      if (!last) return;
+      await api.groupActivity(ctx.id, { kind: last.kind, label: last.label, domain: last.domain });
+    });
 
   const activeContext = contexts.find((c) => c.active) ?? null;
 
@@ -98,6 +114,12 @@ export default function ContextsScreen() {
           FocusGuard groups your tabs and apps into contexts — so switching between Figma, fonts and
           Photoshop stays one job.
         </AppText>
+
+        {actionError ? (
+          <AppText variant="labelSm" color="error">
+            {actionError}
+          </AppText>
+        ) : null}
 
         {/* Pending detection */}
         {detecting && (
@@ -197,7 +219,9 @@ export default function ContextsScreen() {
         ) : null}
 
         {/* Context list */}
-        {contexts.length ? (
+        {loadError ? (
+          <EmptyState title="Can't reach FocusGuard right now" subtitle="Check that the backend is running, then pull to refresh." />
+        ) : contexts.length ? (
           <View className="gap-sm">
             <AppText variant="labelLg">All contexts</AppText>
             {contexts.map((ctx) => {

@@ -14,11 +14,11 @@ router = APIRouter(prefix="/dev", tags=["dev"])
 def reset_database(db: Session = Depends(get_db)):
     """Wipe all data and re-seed with the mock dataset.
 
-    Development-only: guarded by DEBUG. Leaves the DB with NO active context so
+    Development-only: guarded by ENABLE_DEV_ROUTES. Leaves the DB with NO active context so
     the extension starts detecting fresh from the current tab.
     """
-    if not get_settings().debug:
-        raise HTTPException(status_code=403, detail="Reset is disabled outside development.")
+    if not get_settings().enable_dev_routes:
+        raise HTTPException(status_code=404)
 
     engine = resolve_engine()
     if engine.dialect.name == "postgresql":
@@ -32,4 +32,4 @@ def reset_database(db: Session = Depends(get_db)):
     seed_database(db)
     db.query(Context).update({"active": False})
     db.commit()
-    return {"status": "reset", "seeded": True}
+    return {"status": "reset", "seeded": get_settings().demo_mode}

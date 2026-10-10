@@ -68,7 +68,6 @@ export default function SettingsScreen() {
   const [quietWatch, setQuietWatch] = useState(true);
   const [cloudSync, setCloudSync] = useState(true);
   const [contextRetention, setContextRetention] = useState(true);
-  const [privateMode, setPrivateMode] = useState(false);
   const [contexts, setContexts] = useState<FocusContext[]>([]);
 
   useFocusEffect(
@@ -97,7 +96,7 @@ export default function SettingsScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      <TopAppBar />
+      <TopAppBar onSettings={() => {}} />
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ ...contentStyle, paddingBottom: 40 + insets.bottom }}
@@ -174,7 +173,6 @@ export default function SettingsScreen() {
         {/* Privacy */}
         <Section title="Privacy">
           <ToggleRow icon="history" label="Context retention" sub="Keep grouped activity history" value={contextRetention} onChange={setContextRetention} />
-          <ToggleRow icon="shield-lock-outline" label="Private mode" sub="Never send raw activity" value={privateMode} onChange={setPrivateMode} />
           <View className="flex-row items-center gap-md py-sm px-sm opacity-60">
             <View className="w-10 h-10 rounded-full bg-surface-container-high items-center justify-center">
               <Icon name="database-export-outline" size={20} color={Palette.onSurfaceVariant} />
@@ -188,19 +186,8 @@ export default function SettingsScreen() {
           </View>
         </Section>
 
-        <Section title="Account" danger>
-          <Pressable className="flex-row items-center gap-md py-sm px-sm active:opacity-80">
-            <View className="w-10 h-10 rounded-full bg-error-container items-center justify-center">
-              <Icon name="logout" size={20} color={Palette.error} />
-            </View>
-            <AppText variant="bodyLg" color="error">
-              Log Out
-            </AppText>
-          </Pressable>
-        </Section>
-
         <AppText variant="labelSm" color="on-surface-variant" className="text-center pb-sm">
-          FocusGuard is privacy-first. Raw browsing data is never exposed — only meaningful context.
+          FocusGuard only sends site names and shortened page titles — never full URLs, page content, or incognito tabs. Banking, health and similar sites are skipped entirely.
         </AppText>
       </ScrollView>
     </View>

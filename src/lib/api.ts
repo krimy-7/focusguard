@@ -104,7 +104,6 @@ export type BeastMode = {
   duration_min: number;
   active: boolean;
   blocked_sites: string[];
-  blocked_apps: string[];
 };
 
 // The backend stores naive UTC timestamps (no timezone marker). JS parses a
@@ -121,16 +120,6 @@ export type Achievement = {
   title: string;
   description: string;
   unlocked_at: string | null;
-};
-
-export type Task = {
-  id: number;
-  title: string;
-  category: string;
-  tag: string;
-  status: string;
-  created_at: string;
-  completed_at: string | null;
 };
 
 async function apiFetch<T>(path: string, init?: RequestInit, timeoutMs = 6000): Promise<T> {
@@ -158,11 +147,13 @@ async function apiFetch<T>(path: string, init?: RequestInit, timeoutMs = 6000): 
   }
 }
 
+// Mock data only in explicit demo mode; otherwise callers see the real error.
 async function fallback<T>(fn: () => Promise<T>, mock: () => T): Promise<T> {
   try {
     return await fn();
-  } catch {
-    return mock();
+  } catch (err) {
+    if (process.env.EXPO_PUBLIC_DEMO_MODE === '1') return mock();
+    throw err;
   }
 }
 
@@ -209,8 +200,6 @@ export const api = {
   getStats: () => fallback(() => apiFetch<Stats>('/api/stats'), MOCK.stats),
   getSessions: () => fallback(() => apiFetch<Session[]>('/api/sessions'), MOCK.sessions),
   getInsight: () => fallback(() => apiFetch<Insight>('/api/insights', undefined, 12000), MOCK.insight),
-  triggerIntervention: (level: 1 | 2, message: string) =>
-    fallback(() => apiFetch<Intervention>('/api/interventions', { method: 'POST', body: JSON.stringify({ level, message }) }), MOCK.intervention),
   getCurrentIntervention: () =>
     fallback(() => apiFetch<Intervention | null>('/api/interventions/current'), MOCK.intervention),
   resolveIntervention: (id: number, action: string) =>
@@ -226,14 +215,11 @@ export const api = {
   logMood: (mood: string, note = '') =>
     fallback(() => apiFetch<MoodEntry>('/api/mood', { method: 'POST', body: JSON.stringify({ mood, note }) }), MOCK.mood),
   getBeast: () => fallback(() => apiFetch<BeastMode | null>('/api/beast'), MOCK.beast),
-  startBeast: (duration_min: number, blocked_sites: string[], blocked_apps: string[] = []) =>
+  startBeast: (duration_min: number, blocked_sites: string[]) =>
     fallback(
-      () => apiFetch<BeastMode>('/api/beast', { method: 'POST', body: JSON.stringify({ duration_min, blocked_sites, blocked_apps }) }),
+      () => apiFetch<BeastMode>('/api/beast', { method: 'POST', body: JSON.stringify({ duration_min, blocked_sites }) }),
       MOCK.beast,
     ),
   stopBeast: () => fallback(() => apiFetch<BeastMode | null>('/api/beast/stop', { method: 'POST' }), MOCK.beast),
   getAchievements: () => fallback(() => apiFetch<Achievement[]>('/api/achievements'), MOCK.achievements),
-
-  // --- Legacy tasks (kept for compatibility) ---
-  getTasks: () => fallback(() => apiFetch<Task[]>('/api/tasks'), MOCK.tasks),
 };

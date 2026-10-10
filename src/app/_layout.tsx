@@ -1,12 +1,9 @@
-import { DefaultTheme, Stack, ThemeProvider, router } from 'expo-router';
+import { DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { AppState } from 'react-native';
 
 import '@/global.css';
-
-import { consumeBeastBlock } from '../../modules/focusguard-usage';
 
 import { Palette } from '@/theme';
 
@@ -27,17 +24,6 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
-
-  useEffect(() => {
-    const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') {
-        consumeBeastBlock().then((pkg) => {
-          if (pkg) router.replace(`/beast-block?app=${encodeURIComponent(pkg)}`);
-        });
-      }
-    });
-    return () => sub.remove();
-  }, []);
 
   if (!fontsLoaded) {
     return null;
@@ -61,7 +47,6 @@ export default function RootLayout() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="settings" />
-        <Stack.Screen name="beast-block" />
       </Stack>
     </ThemeProvider>
   );

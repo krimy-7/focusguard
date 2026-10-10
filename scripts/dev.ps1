@@ -66,7 +66,6 @@ Write-Host "       Tunnel: $tunnelUrl"
 # --- 3. Wire env files -----------------------------------------------------
 Write-Host "[3/5] Wiring the tunnel URL into .env files ..."
 Set-EnvValue $envRoot "EXPO_PUBLIC_API_URL" $tunnelUrl
-Set-EnvValue $envRoot "EXPO_PUBLIC_WS_URL"  (($tunnelUrl -replace "^https", "wss") + "/ws")
 
 $corsLine = (Get-Content $backendEnv) | Where-Object { $_ -match "^CORS_ORIGINS=" } | Select-Object -First 1
 if (-not $corsLine) {

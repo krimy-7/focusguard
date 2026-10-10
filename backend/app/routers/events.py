@@ -10,11 +10,6 @@ from app.schemas import EventCreate, EventOut
 router = APIRouter(prefix="/events", tags=["events"])
 
 
-@router.get("", response_model=list[EventOut])
-def list_events(db: Session = Depends(get_db)):
-    return db.query(FocusEvent).order_by(FocusEvent.occurred_at.desc()).limit(100).all()
-
-
 @router.post("", response_model=EventOut, status_code=201)
 def create_event(payload: EventCreate, db: Session = Depends(get_db)):
     event = FocusEvent(

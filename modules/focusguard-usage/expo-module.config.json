@@ -1,6 +1,0 @@
-{
-  "platforms": ["android", "web"],
-  "android": {
-    "modules": ["expo.modules.focusguardusage.FocusGuardUsageModule"]
-  }
-}

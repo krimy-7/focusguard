@@ -33,9 +33,7 @@ yarn-error.*
 # local env files
 .env*.local
 .env
-.env.example
 backend/.env
-backend/.env.example
 
 # extension local secrets
 extension/config.local.js
@@ -46,6 +44,10 @@ backend/focusguard.db
 __pycache__/
 *.pyc
 uvicorn_*.log
+backend/*.log
+backend/*.db
+*.log
+modules/**/android/.gradle/
 
 # typescript
 *.tsbuildinfo

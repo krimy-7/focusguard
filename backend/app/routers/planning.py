@@ -35,6 +35,8 @@ def extract_goals_from_audio(file: UploadFile = File(...), db: Session = Depends
     """Turn a voice note into a day plan via audio transcription and AI extraction."""
     audio_bytes = file.file.read()
     transcript = ai_service.transcribe_audio(audio_bytes, file.filename, file.content_type or "audio/wav")
+    if not transcript.strip():
+        raise HTTPException(status_code=503, detail="Transcription unavailable — type your plan instead.")
     extracted = ai_service.extract_goals(transcript)
     goals = []
     for item in extracted:

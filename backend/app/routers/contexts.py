@@ -26,14 +26,6 @@ def list_contexts(db: Session = Depends(get_db)):
     )
 
 
-@router.get("/{context_id}", response_model=ContextOut)
-def get_context(context_id: int, db: Session = Depends(get_db)):
-    ctx = db.get(Context, context_id)
-    if not ctx:
-        raise HTTPException(status_code=404, detail="Context not found")
-    return ctx
-
-
 @router.post("", response_model=ContextOut, status_code=201)
 def create_context(payload: ContextCreate, db: Session = Depends(get_db)):
     ctx = Context(title=payload.title, mode=payload.mode, source=payload.source, note=payload.note)
@@ -81,8 +73,9 @@ def update_context(context_id: int, payload: ContextUpdate, db: Session = Depend
     return ctx
 
 
-@router.post("/{context_id}/activity", response_model=ContextActivityOut, status_code=201)
-def add_activity(context_id: int, payload: ContextActivityCreate, db: Session = Depends(get_db)):
+@router.post("/{context_id}/group", response_model=ContextActivityOut, status_code=201)
+def group_activity(context_id: int, payload: ContextActivityCreate, db: Session = Depends(get_db)):
+    """Group a new activity under an existing context instead of creating a new one."""
     ctx = db.get(Context, context_id)
     if not ctx:
         raise HTTPException(status_code=404, detail="Context not found")
@@ -97,9 +90,3 @@ def add_activity(context_id: int, payload: ContextActivityCreate, db: Session = 
     db.commit()
     db.refresh(activity)
     return activity
-
-
-@router.post("/{context_id}/group", response_model=ContextActivityOut, status_code=201)
-def group_activity(context_id: int, payload: ContextActivityCreate, db: Session = Depends(get_db)):
-    """Group a new activity under an existing context instead of creating a new one."""
-    return add_activity(context_id, payload, db)

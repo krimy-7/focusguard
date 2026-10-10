@@ -5,7 +5,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import FocusEvent, FocusSession, Task
+from app.models import DailyGoal, FocusEvent, FocusSession
 from app.schemas import InsightOut, StatsOut
 from app.services.ai import ai_service
 
@@ -88,7 +88,7 @@ def get_stats(db: Session = Depends(get_db)):
 def get_insight(db: Session = Depends(get_db)):
     stats = compute_stats(db)
     recent_events = db.query(FocusEvent).order_by(FocusEvent.occurred_at.desc()).limit(8).all()
-    open_tasks = db.query(Task).filter(Task.status != "done").limit(5).all()
+    open_tasks = db.query(DailyGoal).filter(DailyGoal.status != "done").limit(5).all()
 
     context = {
         "stats": stats.model_dump(),

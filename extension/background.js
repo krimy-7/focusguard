@@ -10,20 +10,17 @@
 //     interventions with actionable buttons
 //   - Beast Mode: redirect blocked domains to a block page
 
-// Local, gitignored overrides (keys etc.) must load BEFORE config.js so the
-// merge at the bottom of config.js picks them up. Missing file is fine.
+// Local, gitignored overrides (e.g. a short demo grace) must load BEFORE
+// config.js so the merge at the bottom of config.js picks them up. Missing file is fine.
 try {
   importScripts("config.local.js");
 } catch (e) {}
-importScripts("config.js");
+importScripts("config.js", "privacy.js");
 
 const CONFIG = typeof FOCUSGUARD_CONFIG !== "undefined" ? FOCUSGUARD_CONFIG : {};
 const STORAGE_KEY = "focusguard_state";
 
-// Raw configured durations (minutes) — may be fractional (e.g. 10/60 for 10s).
-// These are used for elapsed-time validation in the alarm handlers, NOT for the
-// alarm delay: Chrome enforces a 1-minute alarm minimum, so alarms always fire
-// at 1 min and the handlers re-check whether the configured time actually elapsed.
+// Configured durations (minutes) — may be fractional via config.local.js for demos.
 const GRACE_MIN = Number(CONFIG.GRACE_MINUTES) || 5;
 const SECOND_MIN = Number(CONFIG.SECOND_MINUTES) || 5;
 
@@ -44,9 +41,7 @@ const DEFAULT_STATE = {
   activityRelation: "none", // "active" | "related" | "distraction" | "proposal"
   distractionState: "none", // "none" | "grace" | "first" | "second"
   gracePeriodStartedAt: null,
-  gracePeriodDurationMin: 5,
-  firstInterventionShown: false,
-  secondInterventionShown: false,
+  gracePeriodDurationMin: 5, // read by the popup's grace countdown
   lastInterventionMessage: null,
   distractionSite: null,
   awaySince: null,
@@ -97,6 +92,10 @@ function hostnameOf(url) {
 function normalizeDomain(value) {
   const host = hostnameOf(value);
   return host ? host.replace(/^www\./, "") : null;
+}
+
+function isPrivateTab(tab) {
+  return Boolean(tab.incognito) || isSensitiveHost(hostnameOf(tab.url));
 }
 
 function domainTopic(value) {
@@ -334,19 +333,15 @@ async function startDistraction(domain) {
     state.awaySince = Date.now();
     state.gracePeriodStartedAt = Date.now();
     state.gracePeriodDurationMin = GRACE_MIN;
-    state.firstInterventionShown = false;
-    state.secondInterventionShown = false;
     state.intervenedLevel = 0;
-    
+
     const graceDurationMs = GRACE_MIN * 60 * 1000;
-    console.log(`[DISTRACTION] Starting grace period of ${GRACE_MIN} minutes (${graceDurationMs}ms) for ${domain}`);
 
     // No Chrome alarms — the content script in the active tab times the grace
     // period (sub-minute precision) and messages us when it elapses.
     armWatchdog("grace", graceDurationMs);
 
     await saveState();
-    console.log(`[DISTRACTION] Grace timer armed (${graceDurationMs}ms) and state saved`);
   }
 }
 
@@ -523,8 +518,6 @@ function resetWatchdog() {
   state.intervenedLevel = 0;
   state.distractionState = state.contextTitle ? "active" : "none";
   state.gracePeriodStartedAt = null;
-  state.firstInterventionShown = false;
-  state.secondInterventionShown = false;
   saveState();
 }
 
@@ -556,16 +549,12 @@ async function evaluateWatchdog(domain) {
 async function triggerLevel1() {
   const title = state.contextTitle || "your focus";
   const awayMin = Math.max(1, Math.round(((Date.now() - state.awaySince) / 1000) / 60));
-  const fallback = `You've been away from ${title} for ${awayMin} minute${awayMin === 1 ? "" : "s"}.`;
-  const message = await generateInterventionMessage(1, title, fallback);
+  const message = `You've been away from ${title} for ${awayMin} minute${awayMin === 1 ? "" : "s"}.`;
   state.intervenedLevel = 1;
   state.distractionState = "first";
-  state.firstInterventionShown = true;
   state.lastInterventionMessage = message;
   await saveState();
-  console.log("[TRIGGER LEVEL 1] State saved, posting intervention...");
   await post("/api/interventions", { level: 1, message, context_id: state.contextId });
-  console.log("[TRIGGER LEVEL 1] Intervention posted, scheduling Level 2...");
 
   // Content-script timer for the second (playful) intervention.
   const secondMs = SECOND_MIN * 60 * 1000;
@@ -576,62 +565,13 @@ async function triggerLevel1() {
 
 async function triggerLevel2() {
   const title = state.contextTitle || "your focus";
-  const fallback = `${title} is crying in the corner 😭`;
-  const message = await generateInterventionMessage(2, title, fallback);
+  const message = `${title} is crying in the corner 😭`;
   state.intervenedLevel = 2;
   state.distractionState = "second";
-  state.secondInterventionShown = true;
   state.lastInterventionMessage = message;
   await saveState();
-  console.log("[TRIGGER LEVEL 2] State saved, posting intervention...");
   await post("/api/interventions", { level: 2, message, context_id: state.contextId });
-  console.log("[TRIGGER LEVEL 2] Intervention posted, creating notification...");
   await notify(2, message);
-}
-
-// Generate an intervention message via OpenRouter, falling back to the mock
-// message when there are no keys, both requests fail, or nothing is returned.
-async function generateInterventionMessage(level, contextTitle, fallback) {
-  const keys = [(CONFIG.OPENROUTER_KEY_FIRST || "").trim(), (CONFIG.OPENROUTER_KEY_SECOND || "").trim()].filter(Boolean);
-  if (!keys.length) return fallback;
-
-  const site = state.distractionSite || state.activeDomain || "another website";
-  const isLevel2 = level === 2;
-  const prompt = isLevel2
-    ? `The user has been away from their "${contextTitle}" focus for a while and ignored a first reminder. Write ONE short playful sentence (max 12 words) nudging them back to "${contextTitle}". No quotes, no hashtags, no markdown.`
-    : `The user drifted from their "${contextTitle}" focus to ${site}. Write ONE short gentle sentence (max 12 words) reminding them to return to "${contextTitle}". No quotes, no hashtags, no markdown.`;
-
-  // Try each key in turn (second key covers rate limits / outages).
-  for (const key of keys) {
-    try {
-      const res = await fetch(CONFIG.OPENROUTER_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${key}`,
-        },
-        body: JSON.stringify({
-          model: CONFIG.OPENROUTER_MODEL || "openrouter/free",
-          messages: [
-            {
-              role: "system",
-              content: "You are FocusGuard, a friendly focus coach. Reply with exactly one short sentence.",
-            },
-            { role: "user", content: prompt },
-          ],
-          max_tokens: 40,
-          temperature: isLevel2 ? 0.9 : 0.6,
-        }),
-      });
-      if (!res.ok) continue; // try next key
-      const data = await res.json();
-      const text = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content || "").trim();
-      if (text) return text.replace(/^["']|["']$/g, "");
-    } catch {
-      // network error — try next key
-    }
-  }
-  return fallback;
 }
 
 // Inject a blurred intervention overlay into the distraction tab (5s), rather
@@ -648,9 +588,8 @@ async function notify(level, message) {
   if (!tab || !tab.id) return;
   try {
     await chrome.tabs.sendMessage(tab.id, { type: "SHOW_INTERVENTION", level, message, context });
-    console.log(`[NOTIFICATION] Overlay sent to ${target} (Level ${level})`);
   } catch {
-    console.error("[NOTIFICATION ERROR] No content script to receive overlay", target);
+    // No content script in that tab — overlay skipped.
   }
 }
 
@@ -683,10 +622,16 @@ async function takeBreak() {
   resetWatchdog();
 }
 
+// "Extend 5 min": back to a fresh 5-minute grace so handleWatchdogElapsed
+// accepts it, and drop any pending second-level nudge.
 async function extendTimer() {
+  cancelWatchdog("second");
   state.awaySince = Date.now();
   state.gracePeriodStartedAt = Date.now();
-  armWatchdog("grace", (state.gracePeriodDurationMin || GRACE_MIN) * 60 * 1000);
+  state.gracePeriodDurationMin = 5;
+  state.distractionState = "grace";
+  state.intervenedLevel = 0;
+  armWatchdog("grace", 5 * 60 * 1000);
   post("/api/sync", { platform: "extension", event: "intervention", payload: { detail: "extend_timer" } });
   saveState();
 }
@@ -718,31 +663,6 @@ chrome.notifications.onButtonClicked.addListener(async (id, buttonIndex) => {
         await saveState();
       }
     }
-    return;
-  }
-  if (buttonIndex === 0) {
-    await backToWork();
-  } else if (id === "focusguard-1") {
-    // Level 1: [Back to work] [See progress] [Extend 5 min]
-    if (buttonIndex === 1) {
-      await seeProgress();
-    } else {
-      await extendTimer();
-    }
-  } else if (id === "focusguard-2") {
-    // Level 2: [Back to work] [Take a break] [Extend 5 min]
-    if (buttonIndex === 1) {
-      await takeBreak();
-    } else {
-      await extendTimer();
-    }
-  }
-});
-
-chrome.notifications.onClosed.addListener(() => {
-  if (state.intervenedLevel === 2) {
-    // Level 2 was seen/closed — user is aware. Don't re-nag within this drift.
-    resetWatchdog();
   }
 });
 
@@ -781,7 +701,10 @@ function flushActiveTab() {
 }
 
 async function setActiveTab(tab) {
-  if (!tab || !tab.url || tab.url.startsWith("chrome://") || tab.url.startsWith("chrome-extension://")) {
+  // Privacy floor: incognito and sensitive sites (banking, health, password
+  // managers, private messaging, government) are invisible — nothing is sent
+  // and they never count as context or distraction.
+  if (!tab || !tab.url || tab.url.startsWith("chrome://") || tab.url.startsWith("chrome-extension://") || isPrivateTab(tab)) {
     flushActiveTab();
     return;
   }
@@ -798,7 +721,7 @@ async function setActiveTab(tab) {
   if (domain === state.activeDomain) return;
   flushActiveTab();
   state.activeDomain = domain;
-  state.activeTitle = tab.title || domain;
+  state.activeTitle = sanitizeTitle(tab.title) || domain; // the only place a tab title enters state
   state.sessionStart = Date.now();
   state.recentDomains = [domain, ...(state.recentDomains || []).filter((d) => d !== domain)].slice(0, 10);
   saveState();
@@ -855,10 +778,6 @@ chrome.runtime.onInstalled.addListener(async () => {
   await syncBackend();
 });
 
-// Service workers go idle — use an alarm (not setInterval) for periodic sync.
-// 1 minute so Beast Mode / context changes picked up from the phone feel instant.
-chrome.alarms.create("focusguard.sync", { periodInMinutes: 1 });
-
 (async function init() {
   await loadState();
   await syncBackend();
@@ -866,13 +785,13 @@ chrome.alarms.create("focusguard.sync", { periodInMinutes: 1 });
   if (tab) await setActiveTab(tab);
 })();
 
-chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg && msg.type === "GET_STATE") {
     saveState();
     sendResponse({ ...state });
   }
   if (msg && msg.type === "LOG_EVENT") {
-    post("/api/events", { type: msg.event.type, detail: msg.event.detail, duration_s: Math.round(msg.event.durationS || 0) });
+    if (!(sender.tab && isPrivateTab(sender.tab))) post("/api/events", { type: msg.event.type, detail: msg.event.detail, duration_s: Math.round(msg.event.durationS || 0) });
     sendResponse({ ok: true });
   }
   if (msg && msg.type === "REFRESH") {
@@ -930,46 +849,6 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   if (msg && msg.type === "EXTEND_TIMER") {
     loadState().then(async () => {
       extendTimer();
-      sendResponse({ ok: true });
-    });
-    return true;
-  }
-  // Handlers for intervention popup actions (using 'action' field instead of 'type')
-  if (msg && msg.action === "BACK_TO_WORK") {
-    loadState().then(async () => {
-      await backToWork();
-      sendResponse({ ok: true });
-    });
-    return true;
-  }
-  if (msg && msg.action === "SEE_PROGRESS") {
-    loadState().then(async () => {
-      await seeProgress();
-      sendResponse({ ok: true });
-    });
-    return true;
-  }
-  if (msg && msg.action === "TAKE_BREAK") {
-    loadState().then(async () => {
-      await takeBreak();
-      sendResponse({ ok: true });
-    });
-    return true;
-  }
-  if (msg && msg.action === "EXTEND_TIMER") {
-    loadState().then(async () => {
-      extendTimer();
-      sendResponse({ ok: true });
-    });
-    return true;
-  }
-  if (msg && msg.type === "RESET") {
-    state = { ...DEFAULT_STATE };
-    cancelWatchdog("grace");
-    cancelWatchdog("second");
-    syncBackend().then(async () => {
-      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }).catch(() => []);
-      if (tab) await setActiveTab(tab);
       sendResponse({ ok: true });
     });
     return true;

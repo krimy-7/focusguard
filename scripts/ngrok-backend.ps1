@@ -5,7 +5,7 @@
 #
 # After it starts, copy the https://<sub>.ngrok.io forward URL into:
 #   - backend/.env        -> CORS_ORIGINS
-#   - extension/config.js -> FOCUSGUARD_CONFIG.BASE_URL (and WS_URL wss://)
+#   - extension/config.js -> FOCUSGUARD_CONFIG.BASE_URL
 #   - mobile/app config   -> EXPO_PUBLIC_API_URL
 # ============================================================
 
