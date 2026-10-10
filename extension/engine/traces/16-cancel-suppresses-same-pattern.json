@@ -1,0 +1,1 @@
+{"name":"cancel_suppresses_same_pattern","events":[{"t":0,"tab":1,"url":"https://github.com/a/b","title":"FocusGuard/engine"},{"t":10,"cmd":"cancel"},{"t":20,"tab":2,"url":"https://figma.com"},{"t":30,"cmd":"cancel"},{"t":40,"tab":1}],"expect":{"phase":"idle","count":{"propose_context":2}}}

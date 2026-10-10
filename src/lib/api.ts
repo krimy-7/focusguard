@@ -1,225 +1,86 @@
-import { MOCK } from '@/lib/mock';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { isAuthRetryableFetchError } from '@supabase/supabase-js';
 
-export const API_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000';
+import { ApiError, MESSAGES, makeCaller } from '@/lib/http';
+import { demo } from '@/lib/mock';
+import { DEMO, supabase } from '@/lib/supabase';
+import type { ContextSnap, DailyTotals, ExportBundle, Goal, GoalPatch, MePatch, Profile } from '@/lib/types';
 
-export type Mode = 'learning' | 'work' | 'personal';
+export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000';
 
-export type ContextActivity = {
-  id: number;
-  kind: string;
-  label: string;
-  domain: string;
-  duration_s: number;
-  occurred_at: string;
+/**
+ * Why the user landed on Sign in: the session ended on its own (refresh did not work), or they just deleted
+ * their account. Module memory only; the screen reads it once and the next action clears it.
+ */
+export const sessionNotice = { ended: false, deleted: false };
+// A function, not a field write at the call site: the React Compiler lint rule (react-hooks/immutability) rejects
+// assigning to an imported object inside a component.
+export const clearSessionNotice = () => {
+  sessionNotice.ended = false;
+  sessionNotice.deleted = false;
+};
+export const noteAccountDeleted = () => {
+  sessionNotice.deleted = true;
 };
 
-export type FocusContext = {
-  id: number;
-  title: string;
-  mode: Mode;
-  source: string;
-  active: boolean;
-  confirmed: boolean;
-  note: string;
-  created_at: string;
-  activities: ContextActivity[];
+const PENDING_DELETE = 'fg.pendingDelete';
+/** Set when DELETE /me ended in 502 or never answered (Task 10). http.ts finishes the delete on the next forced sign-out. */
+export const pendingDelete = {
+  get: async () => (await AsyncStorage.getItem(PENDING_DELETE).catch(() => null)) === '1',
+  set: () => AsyncStorage.setItem(PENDING_DELETE, '1').catch(() => {}),
+  clear: () => AsyncStorage.removeItem(PENDING_DELETE).catch(() => {}),
 };
 
-export type ContextDetect = {
-  proposed_title: string;
-  mode: Mode;
-  confidence: number;
-  reason: string;
-  existing_context_id?: number | null;
-  suggest_switch?: boolean;
-  switch_reason?: string;
-};
+// A refresh that hit the network (offline, auth 5xx) returns an error but supabase-js keeps the stored
+// session on purpose. Throwing here shows the offline message instead of signing the user out.
+const offline = () => new ApiError(0, MESSAGES.offline);
 
-export type Goal = {
-  id: number;
-  title: string;
-  status: 'open' | 'in_progress' | 'done';
-  source: string;
-  day: string;
-  created_at: string;
-};
+const call = makeCaller({
+  baseUrl: `${API_URL}/api`,
+  // getSession() refreshes an expired access token before returning it (auth research §3.4).
+  getToken: async () => {
+    const { data, error } = await supabase.auth.getSession();
+    if (error && isAuthRetryableFetchError(error)) throw offline();
+    return data.session?.access_token ?? null;
+  },
+  refresh: async () => {
+    const { error } = await supabase.auth.refreshSession();
+    if (error && isAuthRetryableFetchError(error)) throw offline();
+    return !error;
+  },
+  // Local scope: never revoke the extension's separate session (spec §3.1).
+  onSignedOut: async () => {
+    sessionNotice.ended = true; // the screen that caught the error unmounts; Sign in shows the notice instead
+    await supabase.auth.signOut({ scope: 'local' });
+  },
+  pendingDelete,
+});
 
-export type Stats = {
-  focus_time_s: number;
-  sessions: number;
-  interrupts: number;
-  deep_focus_min: number;
-  score: number;
-  streak_days: number;
-  current_focus: string | null;
-};
+const q = encodeURIComponent;
 
-export type Session = {
-  id: number;
-  task_title: string;
-  app_name: string;
-  url: string;
-  started_at: string;
-  ended_at: string | null;
-  duration_s: number;
-  score: number;
-};
-
-export type Insight = {
-  provider: string;
-  message: string;
-  suggestion: string | null;
-  generated_at: string;
-};
-
-export type BreakState = {
-  on_break: boolean;
-  context: FocusContext | null;
-  saved_progress: string;
-  next_step: string;
-  since: string | null;
-};
-
-export type Intervention = {
-  id: number;
-  level: 1 | 2;
-  message: string;
-  action: string;
-  context_id: number | null;
-  occurred_at: string;
-};
-
-export type MoodEntry = {
-  id: number;
-  mood: string;
-  note: string;
-  recorded_at: string;
-};
-
-export type BeastMode = {
-  id: number;
-  started_at: string;
-  ends_at: string | null;
-  duration_min: number;
-  active: boolean;
-  blocked_sites: string[];
-};
-
-// The backend stores naive UTC timestamps (no timezone marker). JS parses a
-// bare ISO string as LOCAL time, so append "Z" unless one is already present.
-export function parseServerUtc(value: string | null | undefined): number {
-  if (!value) return NaN;
-  const s = String(value).trim();
-  const hasTz = /Z$/i.test(s) || /[+-]\d{2}:?\d{2}$/.test(s);
-  return new Date(hasTz ? s : `${s}Z`).getTime();
-}
-
-export type Achievement = {
-  code: string;
-  title: string;
-  description: string;
-  unlocked_at: string | null;
-};
-
-async function apiFetch<T>(path: string, init?: RequestInit, timeoutMs = 6000): Promise<T> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const headers = {
-      'ngrok-skip-browser-warning': 'true',
-      ...(init?.headers ?? {}),
-    };
-    if (!(init?.body instanceof FormData)) {
-      (headers as Record<string, string>)['Content-Type'] = 'application/json';
-    }
-
-    const res = await fetch(`${API_URL}${path}`, {
-      ...init,
-      headers,
-      signal: controller.signal,
-    });
-    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
-    if (res.status === 204) return undefined as T;
-    return (await res.json()) as T;
-  } finally {
-    clearTimeout(timer);
-  }
-}
-
-// Mock data only in explicit demo mode; otherwise callers see the real error.
-async function fallback<T>(fn: () => Promise<T>, mock: () => T): Promise<T> {
-  try {
-    return await fn();
-  } catch (err) {
-    if (process.env.EXPO_PUBLIC_DEMO_MODE === '1') return mock();
-    throw err;
-  }
-}
-
+// Demo mode never touches the network; async wrappers turn demo throws into rejections.
 export const api = {
-  // --- Today / planning ---
-  extractGoals: (text: string) =>
-    fallback<Goal[]>(() => apiFetch('/api/planning/extract', { method: 'POST', body: JSON.stringify({ text }) }, 12000), MOCK.goals),
-  extractGoalsFromAudio: (formData: FormData) =>
-    fallback<Goal[]>(() => apiFetch<Goal[]>('/api/planning/extract/audio', { method: 'POST', body: formData }, 18000), MOCK.goals),
-  getGoals: (day?: string) =>
-    fallback(
-      () => apiFetch<Goal[]>(`/api/planning/goals${day ? `?day=${encodeURIComponent(day)}` : ''}`),
-      MOCK.goals,
-    ),
-  updateGoal: (id: number, status: string) =>
-    fallback(() => apiFetch<Goal>(`/api/planning/goals/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }), () => MOCK.goals()[0]),
+  me: async () => {
+    if (DEMO) return demo.me();
+    const p = await call<Profile>('GET', '/me');
+    // GET /me only succeeds when no deletion tombstone exists, so an old pending-delete flag is stale.
+    await pendingDelete.clear();
+    return p;
+  },
+  patchMe: async (body: MePatch) => (DEMO ? demo.patchMe(body) : call<Profile>('PATCH', '/me', body)),
+  exportMe: async () => (DEMO ? demo.exportAll() : call<ExportBundle>('GET', '/me/export')),
+  deleteMe: async () => (DEMO ? undefined : call<void>('DELETE', '/me')),
 
-  // --- Contexts ---
-  getContexts: () => fallback(() => apiFetch<FocusContext[]>('/api/contexts'), MOCK.contexts),
-  detectContext: (signals: Record<string, string>, recentDomains: string[]) =>
-    fallback(
-      () => apiFetch<ContextDetect>('/api/contexts/detect', { method: 'POST', body: JSON.stringify({ signals, recent_domains: recentDomains }) }, 12000),
-      MOCK.detect,
-    ),
-  createContext: (title: string, mode: Mode, source = 'manual') =>
-    fallback(
-      () => apiFetch<FocusContext>('/api/contexts', { method: 'POST', body: JSON.stringify({ title, mode, source }) }),
-      () => MOCK.contexts()[0],
-    ),
-  confirmContext: (id: number, title: string, mode: Mode) =>
-    fallback(
-      () => apiFetch<FocusContext>(`/api/contexts/${id}`, { method: 'PATCH', body: JSON.stringify({ title, mode, confirmed: true, active: true }) }),
-      () => MOCK.contexts()[0],
-    ),
-  setActiveContext: (id: number) =>
-    fallback(() => apiFetch<FocusContext>(`/api/contexts/${id}`, { method: 'PATCH', body: JSON.stringify({ active: true }) }), () => MOCK.contexts()[0]),
-  groupActivity: (id: number, activity: { kind: string; label: string; domain: string }) =>
-    fallback(
-      () => apiFetch<ContextActivity>(`/api/contexts/${id}/group`, { method: 'POST', body: JSON.stringify(activity) }),
-      MOCK.activity,
-    ),
+  goals: async (day: string) => (DEMO ? demo.goals(day) : call<Goal[]>('GET', `/goals?day=${q(day)}`)),
+  addGoals: async (lines: string, day: string) =>
+    DEMO ? demo.addGoals(lines, day) : call<Goal[]>('POST', '/goals', { lines, day }),
+  patchGoal: async (id: string, patch: GoalPatch) =>
+    DEMO ? demo.patchGoal(id, patch) : call<Goal>('PATCH', `/goals/${q(id)}`, patch),
+  deleteGoal: async (id: string) => (DEMO ? demo.deleteGoal(id) : call<void>('DELETE', `/goals/${q(id)}`)),
 
-  // --- Watchdog / interventions ---
-  getStats: () => fallback(() => apiFetch<Stats>('/api/stats'), MOCK.stats),
-  getSessions: () => fallback(() => apiFetch<Session[]>('/api/sessions'), MOCK.sessions),
-  getInsight: () => fallback(() => apiFetch<Insight>('/api/insights', undefined, 12000), MOCK.insight),
-  getCurrentIntervention: () =>
-    fallback(() => apiFetch<Intervention | null>('/api/interventions/current'), MOCK.intervention),
-  resolveIntervention: (id: number, action: string) =>
-    fallback(() => apiFetch<Intervention>(`/api/interventions/${id}/action`, { method: 'POST', body: JSON.stringify({ action }) }), MOCK.intervention),
+  activeContext: async (): Promise<ContextSnap | null> =>
+    DEMO ? demo.activeContext() : ((await call<ContextSnap[]>('GET', '/contexts?active=1'))[0] ?? null),
 
-  // --- Break ---
-  getBreak: () => fallback(() => apiFetch<BreakState>('/api/break'), MOCK.break),
-  startBreak: (saved_progress: string, next_step: string) =>
-    fallback(() => apiFetch<BreakState>('/api/break/start', { method: 'POST', body: JSON.stringify({ saved_progress, next_step }) }), MOCK.break),
-  resumeBreak: () => fallback(() => apiFetch<BreakState>('/api/break/resume', { method: 'POST' }), MOCK.break),
-
-  // --- Support ---
-  logMood: (mood: string, note = '') =>
-    fallback(() => apiFetch<MoodEntry>('/api/mood', { method: 'POST', body: JSON.stringify({ mood, note }) }), MOCK.mood),
-  getBeast: () => fallback(() => apiFetch<BeastMode | null>('/api/beast'), MOCK.beast),
-  startBeast: (duration_min: number, blocked_sites: string[]) =>
-    fallback(
-      () => apiFetch<BeastMode>('/api/beast', { method: 'POST', body: JSON.stringify({ duration_min, blocked_sites }) }),
-      MOCK.beast,
-    ),
-  stopBeast: () => fallback(() => apiFetch<BeastMode | null>('/api/beast/stop', { method: 'POST' }), MOCK.beast),
-  getAchievements: () => fallback(() => apiFetch<Achievement[]>('/api/achievements'), MOCK.achievements),
+  daily: async (from: string, to: string) =>
+    DEMO ? demo.daily(from, to) : call<DailyTotals[]>('GET', `/daily?from=${q(from)}&to=${q(to)}`),
 };

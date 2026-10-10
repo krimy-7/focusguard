@@ -1,0 +1,1 @@
+{"name":"two_hours_on_youtube_is_not_momentum","events":["P",{"t":20,"tab":2,"url":"https://youtube.com/watch","title":"lofi beats"},{"t":7220,"tab":1},{"t":7280,"tab":3,"url":"https://reddit.com"}],"expect":{"nudges":[[1,380],[2,680]],"alarm":{"grace":7580},"day.ignored":1,"has":[{"sync":"recovery","trigger":"intervention"}]}}

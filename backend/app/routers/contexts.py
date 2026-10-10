@@ -1,92 +1,62 @@
-from fastapi import APIRouter, Depends, HTTPException
+from datetime import date, timedelta
+
+from fastapi import APIRouter, Depends, HTTPException, Path
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app import days
+from app.auth import current_profile
 from app.database import get_db
-from app.models import Context, ContextActivity
-from app.schemas import (
-    ContextActivityCreate,
-    ContextActivityOut,
-    ContextCreate,
-    ContextDetectIn,
-    ContextDetectOut,
-    ContextOut,
-    ContextUpdate,
-)
-from app.services.ai import ai_service
+from app.days import day_bounds, local_today
+from app.models import Context, Profile
+from app.schemas import ContextSnap
 
 router = APIRouter(prefix="/contexts", tags=["contexts"])
 
 
-@router.get("", response_model=list[ContextOut])
-def list_contexts(db: Session = Depends(get_db)):
-    return (
-        db.query(Context)
-        .order_by(Context.active.desc(), Context.created_at.desc())
-        .all()
-    )
-
-
-@router.post("", response_model=ContextOut, status_code=201)
-def create_context(payload: ContextCreate, db: Session = Depends(get_db)):
-    ctx = Context(title=payload.title, mode=payload.mode, source=payload.source, note=payload.note)
-    db.add(ctx)
+@router.put("/{context_id}", response_model=ContextSnap)
+def put_context(
+    body: ContextSnap,
+    context_id: str = Path(pattern=r"^[A-Za-z0-9_-]{1,64}$"),
+    profile: Profile = Depends(current_profile),
+    db: Session = Depends(get_db),
+):
+    if body.id != context_id:
+        raise HTTPException(422, "Body id must equal the id in the URL")
+    row = db.get(Context, (profile.user_id, context_id))
+    if row is not None and row.last_active_at > body.last_active_at:
+        return row  # stale replay from an offline queue: keep the newer snapshot
+    if row is None:
+        row = Context(user_id=profile.user_id, id=context_id)
+        db.add(row)
+    for field, value in body.model_dump(exclude={"id"}).items():
+        setattr(row, field, value)
     db.commit()
-    db.refresh(ctx)
-    return ctx
+    return row
 
 
-@router.post("/detect", response_model=ContextDetectOut)
-def detect_context(payload: ContextDetectIn, db: Session = Depends(get_db)):
-    """Propose a context from desktop signals. The extension calls this when
-    the current activity no longer matches the active context."""
-    active = db.query(Context).filter(Context.active.is_(True)).first()
-    active_context = None
+@router.get("", response_model=list[ContextSnap])
+def list_contexts(
+    day: date | None = None,
+    active: bool = False,
+    profile: Profile = Depends(current_profile),
+    db: Session = Depends(get_db),
+):
+    query = select(Context).where(Context.user_id == profile.user_id)
     if active:
-        domains = [a.domain for a in active.activities if a.domain]
-        active_context = {"id": active.id, "title": active.title, "domains": domains}
-    existing_contexts = [
-        {"id": c.id, "title": c.title}
-        for c in db.query(Context).order_by(Context.created_at.desc()).all()
-    ]
-    return ai_service.propose_context(
-        payload.signals,
-        payload.recent_domains,
-        active_context=active_context,
-        existing_contexts=existing_contexts,
-    )
-
-
-@router.patch("/{context_id}", response_model=ContextOut)
-def update_context(context_id: int, payload: ContextUpdate, db: Session = Depends(get_db)):
-    ctx = db.get(Context, context_id)
-    if not ctx:
-        raise HTTPException(status_code=404, detail="Context not found")
-
-    for field, value in payload.model_dump(exclude_unset=True).items():
-        setattr(ctx, field, value)
-
-    if payload.active is True:
-        db.query(Context).filter(Context.active.is_(True), Context.id != ctx.id).update({"active": False})
-
-    db.commit()
-    db.refresh(ctx)
-    return ctx
-
-
-@router.post("/{context_id}/group", response_model=ContextActivityOut, status_code=201)
-def group_activity(context_id: int, payload: ContextActivityCreate, db: Session = Depends(get_db)):
-    """Group a new activity under an existing context instead of creating a new one."""
-    ctx = db.get(Context, context_id)
-    if not ctx:
-        raise HTTPException(status_code=404, detail="Context not found")
-    activity = ContextActivity(
-        context_id=context_id,
-        kind=payload.kind,
-        label=payload.label,
-        domain=payload.domain,
-        duration_s=payload.duration_s,
-    )
-    db.add(activity)
-    db.commit()
-    db.refresh(activity)
-    return activity
+        latest = db.scalars(
+            query.where(Context.ended_at.is_(None)).order_by(Context.last_active_at.desc()).limit(1)
+        ).first()
+        # R6: a context not heard from in 30 min (extension re-PUTs at least every 10) is not current.
+        # days.utcnow via the module, so tests' freeze() applies.
+        if latest is None or days.utcnow() - latest.last_active_at > timedelta(minutes=30):
+            return []
+        return [latest]
+    start, end = day_bounds(day or local_today(profile.tz), profile.tz)
+    # Overlaps [start, end). An unended context counts until its last activity, so an abandoned
+    # one does not show up on every later day.
+    overlapping = query.where(
+        Context.started_at < end,
+        func.coalesce(Context.ended_at, Context.last_active_at) >= start,
+    ).order_by(Context.started_at)
+    return db.scalars(overlapping).all()

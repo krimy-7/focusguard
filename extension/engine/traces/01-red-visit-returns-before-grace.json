@@ -1,0 +1,1 @@
+{"name":"red_visit_returns_before_grace","events":["P",{"t":600,"tab":2,"url":"https://reddit.com/r/x"},{"t":780,"tab":1}],"expect":{"nudges":[],"phase":"active","alarm":{"grace":900},"has":[{"sync":"recovery","trigger":"self_returned","awayS":180}]}}

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+<!-- Tikijhyal lattice patterns: #lat (open grille, brass pegs) and #lat-fine (closed/private). -->
+<defs><pattern id="lat" width="16" height="16" patternUnits="userSpaceOnUse">
+      <path d="M0 0L16 16M16 0L0 16" stroke="#2B1E17" stroke-width="3.2" fill="none"/>
+      <path d="M0 0L16 16M16 0L0 16" stroke="#6E5445" stroke-width=".7" fill="none"/>
+      <rect x="6.3" y="6.3" width="3.4" height="3.4" transform="rotate(45 8 8)" fill="#C8963E" stroke="#2B1E17" stroke-width=".8"/>
+    </pattern>
+    <!-- finer closed grille for the private state -->
+    <pattern id="lat-fine" width="9" height="9" patternUnits="userSpaceOnUse">
+      <path d="M0 0L9 9M9 0L0 9" stroke="#C8963E" stroke-width="1.7" fill="none"/>
+    </pattern></defs>
+<rect width="96" height="96" fill="url(#lat)"/>
+</svg>

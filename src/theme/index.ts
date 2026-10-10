@@ -1,156 +1,138 @@
-import { Platform } from 'react-native';
+import { useSyncExternalStore } from 'react';
+import { Platform, useColorScheme, useWindowDimensions } from 'react-native';
 
-// A quiet, high-contrast workspace palette: ink surfaces and a single teal signal.
-// The supportive colors stay deliberately muted so focus states always read first.
-export const Palette = {
-  primary: '#0f766e',
-  onPrimary: '#ffffff',
-  primaryContainer: '#ccfbf1',
-  onPrimaryContainer: '#134e4a',
-  primaryFixed: '#ccfbf1',
-  onPrimaryFixed: '#134e4a',
-  onPrimaryFixedVariant: '#0f766e',
-  primaryFixedDim: '#99f6e4',
-  inversePrimary: '#5eead4',
-  secondary: '#475569',
-  onSecondary: '#ffffff',
-  secondaryContainer: '#e2e8f0',
-  onSecondaryContainer: '#334155',
-  secondaryFixed: '#e2e8f0',
-  secondaryFixedDim: '#cbd5e1',
-  onSecondaryFixed: '#1e293b',
-  onSecondaryFixedVariant: '#475569',
-  tertiary: '#7c5c2f',
-  onTertiary: '#ffffff',
-  tertiaryContainer: '#fef3c7',
-  onTertiaryContainer: '#78350f',
-  tertiaryFixed: '#fef3c7',
-  tertiaryFixedDim: '#fde68a',
-  onTertiaryFixed: '#451a03',
-  onTertiaryFixedVariant: '#92400e',
-  error: '#dc2626',
-  onError: '#ffffff',
-  errorContainer: '#fee2e2',
-  onErrorContainer: '#991b1b',
-  surface: '#f8fafc',
-  onSurface: '#0f172a',
-  surfaceDim: '#e2e8f0',
-  surfaceBright: '#ffffff',
-  surfaceContainerLowest: '#ffffff',
-  surfaceContainerLow: '#f1f5f9',
-  surfaceContainer: '#eaf0f5',
-  surfaceContainerHigh: '#e2e8f0',
-  surfaceContainerHighest: '#cbd5e1',
-  surfaceVariant: '#e2e8f0',
-  onSurfaceVariant: '#64748b',
-  background: '#f8fafc',
-  onBackground: '#0f172a',
-  outline: '#94a3b8',
-  outlineVariant: '#dbe4ee',
-  surfaceTint: '#0f766e',
-  inverseSurface: '#0f172a',
-  inverseOnSurface: '#f8fafc',
-} as const;
+// FocusGuard AI build tokens (.impeccable/surfaces/src-app.md). Same roles in light and dark.
+// Colour is read with useTheme(); layout utilities stay in Tailwind classes.
 
-export type PaletteColor = keyof typeof Palette;
+export type WindowState = 'open' | 'wait' | 'paused' | 'private';
+type Pane = { pane: string; leaf: string; stile: string };
 
-export type ThemeColors = typeof Palette;
-
-export const Fonts = {
-  headline: 'PlusJakartaSans_800ExtraBold',
-  headlineSemibold: 'PlusJakartaSans_700Bold',
-  body: 'BeVietnamPro_400Regular',
-  bodyMedium: 'BeVietnamPro_500Medium',
-  bodySemiBold: 'BeVietnamPro_600SemiBold',
-  bodyBold: 'BeVietnamPro_700Bold',
+const LIGHT = {
+  dark: false,
+  ink: '#2B1E17',
+  ink2: '#5A4A40',
+  ground: ['#E1E9E8', '#E8EBE4', '#EFE9DB'] as const,
+  surface: '#F6F7F1',
+  field: '#FBFBF7',
+  rail: '#9A3E24',
+  railInk: '#FBF6EC',
+  brass: '#C8963E', // fills only, never text
+  brassTint: '#F4E7C8',
+  moss: '#4E6B3C',
+  mossTint: '#E4ECDA',
+  stone: '#E7E4DA',
+  line: 'rgba(43,30,23,0.16)',
+  danger: '#8C2A1A', // delete-account copy only
+  onInk: '#FBF6EC',
+  onMoss: '#FBF6EC',
+  onDanger: '#FBF6EC',
+  placeholder: '#6A5B51',
+  frame: '#2B1E17',
+  slat: { slat: '#2B1E17', groove: '#6E5445', peg: '#C8963E', fine: '#C8963E' },
+  win: {
+    open: { pane: '#E4ECDA', leaf: '#CFDDBF', stile: '#4E6B3C' },
+    wait: { pane: '#F4E7C8', leaf: '#EBD6A0', stile: '#C8963E' },
+    paused: { pane: '#E7E4DA', leaf: '#D9D5C9', stile: '#8B7D70' },
+    private: { pane: '#2B1E17', leaf: '#2B1E17', stile: '#C8963E' },
+  } satisfies Record<WindowState, Pane>,
 };
 
-export const Typography = {
-  headlineXl: {
-    fontFamily: Fonts.headline,
-    fontSize: 40,
-    lineHeight: 48,
-    letterSpacing: -0.8,
+export type Theme = Omit<typeof LIGHT, 'dark' | 'ground'> & { dark: boolean; ground: readonly [string, string, string] };
+
+const DARK: Theme = {
+  dark: true,
+  ink: '#EFE9DB',
+  ink2: '#C9BFB2',
+  ground: ['#1A1310', '#1E1612', '#231913'],
+  surface: '#2B1E17',
+  field: '#33251D',
+  rail: '#6E2A17',
+  railInk: '#FBF6EC',
+  brass: '#D4A24E',
+  brassTint: '#3A2C1A',
+  moss: '#86A86F',
+  mossTint: '#23301C',
+  stone: '#3A322B',
+  line: 'rgba(239,233,219,0.16)',
+  danger: '#F0A08F',
+  onInk: '#1A1310',
+  onMoss: '#1A1310',
+  onDanger: '#2B1E17',
+  placeholder: '#A89C8F',
+  frame: '#0E0906',
+  slat: { slat: '#120C09', groove: '#7A6253', peg: '#D4A24E', fine: '#D4A24E' },
+  win: {
+    open: { pane: '#23301C', leaf: '#33452A', stile: '#86A86F' },
+    wait: { pane: '#3A2C1A', leaf: '#5B4521', stile: '#D4A24E' },
+    paused: { pane: '#3A322B', leaf: '#4A4137', stile: '#7C6F63' },
+    private: { pane: '#120C09', leaf: '#120C09', stile: '#D4A24E' },
   },
-  headlineLg: {
-    fontFamily: Fonts.headline,
-    fontSize: 32,
-    lineHeight: 38,
-    letterSpacing: -0.4,
-  },
-  headlineLgMobile: {
-    fontFamily: Fonts.headline,
-    fontSize: 26,
-    lineHeight: 32,
-  },
-  headlineMd: {
-    fontFamily: Fonts.headlineSemibold,
-    fontSize: 24,
-    lineHeight: 30,
-  },
-  bodyLg: {
-    fontFamily: Fonts.bodyMedium,
-    fontSize: 18,
-    lineHeight: 28,
-  },
-  bodyMd: {
-    fontFamily: Fonts.body,
-    fontSize: 16,
-    lineHeight: 24,
-  },
-  labelLg: {
-    fontFamily: Fonts.bodyBold,
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: 0.28,
-  },
-  labelSm: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 12,
-    lineHeight: 16,
-  },
+};
+
+// On web, read prefers-color-scheme directly: NativeWind (darkMode 'class') takes over Appearance there and stops
+// reporting system changes. Native uses the platform scheme.
+const darkQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+const subscribeDark = (cb: () => void) => {
+  darkQuery?.addEventListener('change', cb);
+  return () => darkQuery?.removeEventListener('change', cb);
+};
+
+export function useTheme(): Theme {
+  const native = useColorScheme();
+  const web = useSyncExternalStore(subscribeDark, () => darkQuery?.matches ?? false, () => false);
+  return (Platform.OS === 'web' ? web : native === 'dark') ? DARK : LIGHT;
+}
+
+/** Wide screens get the brick side rail; narrow ones get the top bar and bottom tabs. */
+export function useLayout() {
+  const { width } = useWindowDimensions();
+  return { width, wide: width >= 960 };
+}
+
+// ---- type: Mukta for everything FocusGuard says, Kalam only for the user's own words. Both cover Devanagari.
+// Fonts are bundled (@expo-google-fonts); the web stack lets the system font show until they swap in.
+const web = Platform.OS === 'web';
+const stack = (name: string) => (web ? `${name}, "Nirmala UI", system-ui, "Segoe UI", sans-serif` : name);
+
+export const FONT_NAMES = {
+  regular: 'Mukta_400Regular',
+  medium: 'Mukta_500Medium',
+  semi: 'Mukta_600SemiBold',
+  bold: 'Mukta_700Bold',
+  hand: 'Kalam_400Regular',
+  handBold: 'Kalam_700Bold',
 } as const;
 
-export type TypographyVariant = keyof typeof Typography;
+export const Font = {
+  regular: stack(FONT_NAMES.regular),
+  medium: stack(FONT_NAMES.medium),
+  semi: stack(FONT_NAMES.semi),
+  bold: stack(FONT_NAMES.bold),
+  hand: stack(FONT_NAMES.hand),
+  handBold: stack(FONT_NAMES.handBold),
+};
 
-export const Spacing = {
-  xs: 4,
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 40,
-  gutter: 12,
-  containerPadding: 20,
+// Scale: 14 / 16 / 18 / 22 / 28 / 44. Ranked by weight and size, nothing below 14.
+export const TYPE = {
+  display: { fontFamily: Font.bold, fontSize: 44, lineHeight: 50, letterSpacing: -0.44 },
+  displaySm: { fontFamily: Font.bold, fontSize: 28, lineHeight: 34, letterSpacing: -0.2 },
+  title: { fontFamily: Font.bold, fontSize: 28, lineHeight: 34 },
+  heading: { fontFamily: Font.bold, fontSize: 22, lineHeight: 28 },
+  lead: { fontFamily: Font.medium, fontSize: 18, lineHeight: 26 },
+  body: { fontFamily: Font.regular, fontSize: 16, lineHeight: 24 },
+  label: { fontFamily: Font.semi, fontSize: 16, lineHeight: 22 },
+  small: { fontFamily: Font.regular, fontSize: 14, lineHeight: 20 },
+  smallBold: { fontFamily: Font.semi, fontSize: 14, lineHeight: 20 },
+  hand: { fontFamily: Font.hand, fontSize: 22, lineHeight: 30 },
+  handField: { fontFamily: Font.hand, fontSize: 18, lineHeight: 26 },
 } as const;
 
-export const Radius = {
-  md: 16,
-  lg: 24,
-  xl: 32,
-  pill: 999,
-} as const;
+export type TypeVariant = keyof typeof TYPE;
 
-// Shared ScrollView content container: keeps the phone-first layout readable
-// on wide screens (web/tablet) by capping the column width and centering it.
-export const ScreenContent = {
-  width: '100%',
-  maxWidth: 560,
-  alignSelf: 'center',
-  paddingHorizontal: Spacing.containerPadding,
-  paddingTop: Spacing.md,
-  paddingBottom: Spacing.xl,
-  gap: Spacing.lg,
-} as const;
+export const RADIUS = { frame: 4, control: 10, chip: 6 } as const;
 
-export const CardShadow = Platform.select({
-  web: {
-    boxShadow: '0 12px 32px -18px rgba(15, 23, 42, 0.18)',
-  },
-  default: {
-    shadowColor: '#0f172a',
-    shadowOpacity: 0.06,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 2,
-  },
+/** Soft, offset shadow (used only by the undo snackbar). */
+export const LIFT = Platform.select({
+  web: { boxShadow: '0 8px 20px rgba(43,30,23,0.28)' },
+  default: { shadowColor: '#2B1E17', shadowOpacity: 0.28, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 6 },
 });

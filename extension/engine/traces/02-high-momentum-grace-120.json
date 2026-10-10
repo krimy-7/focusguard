@@ -1,0 +1,1 @@
+{"name":"high_momentum_grace_120","until":3731,"events":["P",{"t":3610,"tab":2,"url":"https://reddit.com"}],"expect":{"alarm":{"grace":3730,"escalate":4030},"nudges":[[1,3730]],"phase":"intervened_l1"}}

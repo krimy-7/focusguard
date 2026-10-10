@@ -1,0 +1,1 @@
+{"name":"sw_restart_rehydrates_and_dup_alarm_is_noop","events":["P",{"t":600,"tab":2,"url":"https://reddit.com"},{"t":700,"restart":true},{"t":901,"dup_alarm":{"kind":"grace","dueAt":900}}],"expect":{"has":[{"schedule_alarm":"grace","at":900,"t":700}],"nudges":[[1,900]]}}

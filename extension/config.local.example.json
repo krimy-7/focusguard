@@ -1,0 +1,13 @@
+{
+  "API_URL": "http://localhost:8000",
+  "DASHBOARD_URL": "http://localhost:8081",
+  "SUPABASE_URL": "https://YOUR-PROJECT.supabase.co",
+  "SUPABASE_ANON_KEY": "your-supabase-anon-key",
+  "ENGINE": {
+    "GRACE_DEFAULT_S": 60,
+    "GRACE_MIN_S": 30,
+    "ESCALATION_DELAY_S": 60,
+    "SOFT_CONFIRM_TIMEOUT_S": 30,
+    "L1_MIN_GAP_S": 0
+  }
+}

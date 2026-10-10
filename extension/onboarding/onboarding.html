@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Welcome to FocusGuard AI</title>
+  <link rel="stylesheet" href="../styles/tokens.css" />
+  <link rel="stylesheet" href="onboarding.css" />
+</head>
+<body>
+  <header class="brick head">
+    <span class="win win--mark" data-state="open" aria-hidden="true"><span class="win__leaf"></span><span class="win__pane"><span class="yeti"></span></span></span>
+    <p class="name">FocusGuard AI</p>
+  </header>
+
+  <main class="grid">
+    <section class="lead" aria-labelledby="heading">
+      <div class="hero">
+        <span class="win win--hero arrive" data-state="open" aria-hidden="true"><span class="win__leaf"></span><span class="win__pane"><span class="yeti"></span></span></span>
+        <h1 id="heading" tabindex="-1">FocusGuard AI waits, then nudges you gently back to what you meant to do.</h1>
+      </div>
+      <figure class="preview">
+        <!-- Mirrors nudge/card.js: the tab with the window mark and name, the message, one row of actions, two quiet links, the × -->
+        <div class="nudge" aria-hidden="true">
+          <div class="nudge__tab">
+            <svg class="nudge__mark" width="44" height="32" viewBox="0 0 44 32" focusable="false">
+              <defs>
+                <clipPath id="nm-in"><rect x="2" y="2" width="40" height="28" rx="2"/></clipPath>
+                <pattern id="nm-lat" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 0L8 8M8 0L0 8" class="lat-line"/><rect x="3.1" y="3.1" width="1.8" height="1.8" transform="rotate(45 4 4)" fill="#C8963E"/></pattern>
+              </defs>
+              <rect x="1" y="1" width="42" height="30" rx="3" class="pane"/>
+              <g clip-path="url(#nm-in)">
+                <image href="../brand/yeti.svg" x="3" y="6" width="28" height="28"/>
+                <g class="leaf"><rect x="26" y="2" width="40" height="28" class="leaf-bg"/><rect x="26" y="2" width="40" height="28" fill="url(#nm-lat)"/><rect x="26" y="2" width="2" height="28" class="stile"/></g>
+              </g>
+              <rect x="1" y="1" width="42" height="30" rx="3" class="frame"/>
+            </svg>
+            <span class="nudge__name">FocusGuard AI</span>
+          </div>
+          <p class="nudge__text">Quick check-in: Landing page redesign is right where you left it.</p>
+          <div class="nudge__row"><span class="btn back">Back</span><span class="btn">+5 min</span><span class="btn">Break</span></div>
+          <div class="nudge__sub"><span class="nudge__link">This is part of my task</span><span class="nudge__link">Why this?</span></div>
+          <span class="nudge__x"><svg width="14" height="14" viewBox="0 0 14 14" focusable="false"><path d="M3 3l8 8M11 3l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+        </div>
+        <figcaption>A check-in looks like this. It sits in the corner of the page and never blocks it.</figcaption>
+      </figure>
+    </section>
+
+    <section class="facts" aria-label="Exactly what FocusGuard AI does">
+      <dl>
+        <div>
+          <dt>Looks at, in this browser</dt>
+          <dd>The site name and title of your current tab, when you switch tabs, and whether you’re at the computer. It skips banking, health, password and government sites, incognito windows and Chrome’s own pages.</dd>
+        </div>
+        <div>
+          <dt>Never leaves your browser</dt>
+          <dd>Page titles, full web addresses, tabs to reopen after a break, break notes, any AI key, and the moment-by-moment record of what you did.</dd>
+        </div>
+        <div>
+          <dt>Sent only after you sign in</dt>
+          <dd>Your goals, task names, the <em>names</em> of sites in each (like github.com, never full addresses), settings and daily totals. Over HTTPS, never sold, no ads. Export or delete it all from the dashboard. <a href="privacy.html" target="_blank" rel="noopener">Read the privacy policy</a>.</dd>
+        </div>
+      </dl>
+      <details class="ai">
+        <summary><span>Optional AI help</span><span class="val" id="aiVal">Off</span><svg class="ico chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></summary>
+        <fieldset>
+          <legend class="sr-only">AI help</legend>
+          <p class="muted">Recognises sites the built-in list doesn’t know and suggests task names. A local model or your own key can be added in Settings.</p>
+          <label class="radio"><input type="radio" name="aiMode" value="off" checked /> Off: built-in site list only</label>
+          <label class="radio"><input type="radio" name="aiMode" value="nano" /> On-device: Chrome’s built-in model, nothing leaves your browser</label>
+        </fieldset>
+      </details>
+    </section>
+
+    <section class="choices" aria-label="Your choices">
+      <div class="access">
+        <h2 id="h-access">Nudges on other sites</h2>
+        <p class="muted">A small card can appear in the corner of sites like these. Chrome asks you to confirm. Without it, you get a Chrome notification.</p>
+        <ul class="sites" aria-label="Examples">
+          <li>youtube.com</li><li>instagram.com</li><li>reddit.com</li><li>x.com</li><li>facebook.com</li>
+        </ul>
+        <button class="btn" id="grantBtn" type="button">Allow nudges on these sites</button>
+        <p class="fb" id="grantStatus" role="status" aria-live="polite"></p>
+      </div>
+
+      <div class="pin">
+        <h2 id="h-pin">Pin it, so it’s one click away</h2>
+        <div class="pin__art" aria-hidden="true">
+          <div class="pin__bar"><span class="pin__url"></span><span class="pin__ico ring"><svg class="ico" viewBox="0 0 24 24"><path d="M15.39 4.39a1 1 0 0 0 1.68-.474 2.5 2.5 0 1 1 3.014 3.015 1 1 0 0 0-.474 1.68l1.683 1.682a2.414 2.414 0 0 1 0 3.414L19.61 15.39a1 1 0 0 1-1.68-.474 2.5 2.5 0 1 0-3.014 3.015 1 1 0 0 1 .474 1.68l-1.683 1.682a2.414 2.414 0 0 1-3.414 0L8.61 19.61a1 1 0 0 0-1.68.474 2.5 2.5 0 1 1-3.014-3.015 1 1 0 0 0 .474-1.68l-1.683-1.682a2.414 2.414 0 0 1 0-3.414L4.39 8.61a1 1 0 0 1 1.68.474 2.5 2.5 0 1 0 3.014-3.015 1 1 0 0 1-.474-1.68l1.683-1.682a2.414 2.414 0 0 1 3.414 0z"/></svg></span></div>
+          <div class="pin__menu"><span class="win win--mark" data-state="open"><span class="win__leaf"></span><span class="win__pane"><span class="yeti"></span></span></span><span>FocusGuard AI</span><span class="pin__ico ring"><svg class="ico" viewBox="0 0 24 24"><path d="M12 17v5M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.8l-1.8-.9A2 2 0 0 1 15 10.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg></span></div>
+        </div>
+        <ol class="steps" aria-labelledby="h-pin">
+          <li>Click the puzzle piece in the toolbar.</li>
+          <li>Click the pin beside FocusGuard AI.</li>
+        </ol>
+      </div>
+    </section>
+
+    <div class="actions">
+      <button class="btn primary" id="startBtn" type="button">Start FocusGuard AI</button>
+      <button class="btn ghost" id="laterBtn" type="button">Not now</button>
+      <p class="fb" id="status" role="status" aria-live="polite"></p>
+    </div>
+  </main>
+
+  <script type="module" src="onboarding.js"></script>
+</body>
+</html>

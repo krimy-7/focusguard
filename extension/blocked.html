@@ -1,35 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blocked by FocusGuard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>This can wait · FocusGuard AI</title>
+  <link rel="stylesheet" href="styles/tokens.css" />
   <style>
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #12100f;
-      color: #f5f0e8;
-      font-family: system-ui, -apple-system, sans-serif;
-      text-align: center;
-    }
-    .card { padding: 32px; }
-    h1 { font-size: 28px; margin-bottom: 8px; }
-    p { color: #b7aca0; margin: 4px 0; }
-    .beast { font-size: 18px; margin: 16px 0 4px; }
+    /* Always the warm-dark sal-wood palette (data-theme="dark"): this page is shown mid-distraction, often late.
+       Contrast: text on ground 13:1, secondary 8:1, Back (dark on moss) 7:1. Motion: none beyond the buttons' colour. */
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    .head { height: 72px; padding: 0 24px; }
+    main { flex: 1; width: 100%; max-width: 460px; margin: 0 auto; padding: 48px 24px 64px; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+    .win--hero { margin-bottom: 8px; }
+    h1 { font-size: 28px; line-height: 1.2; font-weight: 700; text-wrap: balance; overflow-wrap: anywhere; }
+    main p { color: var(--ink-2); max-width: 44ch; text-wrap: pretty; }
+    .actions { display: grid; gap: 12px; width: 100%; margin-top: 8px; }
+    #wait { min-height: 1.45em; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <p class="beast">🐉 BEAST MODE</p>
-    <h1>Stay on Track.</h1>
-    <p>FocusGuard is protecting your flow by blocking distractions so you can make progress.</p>
-    <p>Spend this time finishing one task, reviewing your plan, or taking a quick break.</p>
-    <p>If you need this page later, switch off Beast Mode in the extension settings.</p>
-    <p style="margin-top: 16px; color: #e1d9c8;">Tip: Keep the momentum going with one clear goal.</p>
-  </div>
+  <header class="brick head">
+    <span class="win win--mark" data-state="open" aria-hidden="true"><span class="win__leaf"></span><span class="win__pane"><span class="yeti"></span></span></span>
+    <p class="name">FocusGuard AI</p>
+  </header>
+  <main>
+    <span class="win win--hero" data-state="wait" aria-hidden="true"><span class="win__leaf"></span><span class="win__pane"><span class="yeti"></span></span></span>
+    <h1 id="headline"><span id="site">This site</span> can wait.</h1>
+    <p id="why">You asked FocusGuard AI to keep it closed for a while. It’ll still be here later.</p>
+    <div class="actions">
+      <button class="btn back" id="back" type="button"><span>Back to <span id="ctx">what you were doing</span></span></button>
+      <button class="btn" id="cont" type="button" disabled aria-describedby="wait">Open for 10 min</button>
+    </div>
+    <p id="wait">Open for 10 min is available in 10 seconds.</p>
+    <!-- Announced twice in total (start, ready), not every second -->
+    <p class="sr-only" id="announce" role="status" aria-live="polite"></p>
+  </main>
+  <script type="module" src="beast/blocked.js"></script>
 </body>
 </html>

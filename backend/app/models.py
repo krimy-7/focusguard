@@ -1,141 +1,104 @@
-from datetime import datetime
+import uuid
+from datetime import date, datetime, timezone
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import JSON, Date, DateTime, Index, Integer, String, TypeDecorator, Uuid, text
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
+from app.days import utcnow
+
+# jsonb on Postgres, JSON text on SQLite (tests/dev). Used for settings and for sites (portable text[]).
+JSONType = JSON().with_variant(JSONB(), "postgresql")
 
 
-class FocusSession(Base):
-    __tablename__ = "focus_sessions"
+class UTCDateTime(TypeDecorator):
+    """Stores UTC; always returns an aware UTC datetime (SQLite would otherwise drop tzinfo)."""
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    task_title: Mapped[str] = mapped_column(String(300), default="", index=True)
-    app_name: Mapped[str] = mapped_column(String(120), default="")
-    url: Mapped[str] = mapped_column(Text, default="")
-    started_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
-    ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    duration_s: Mapped[float] = mapped_column(Float, default=0.0)
-    score: Mapped[int] = mapped_column(Integer, default=0)
+    impl = DateTime(timezone=True)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
 
 
-class FocusEvent(Base):
-    __tablename__ = "focus_events"
+class Profile(Base):
+    __tablename__ = "profiles"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    type: Mapped[str] = mapped_column(String(40), index=True)
-    detail: Mapped[str] = mapped_column(String(300), default="")
-    duration_s: Mapped[float] = mapped_column(Float, default=0.0)
-    occurred_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    tz: Mapped[str] = mapped_column(String(64), default="Asia/Kathmandu", server_default="Asia/Kathmandu")
+    settings: Mapped[dict] = mapped_column(JSONType, default=dict, server_default=text("'{}'"))
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, onupdate=utcnow)
+
+
+class Goal(Base):
+    __tablename__ = "goals"
+    __table_args__ = (Index("ix_goals_user_day", "user_id", "day"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid)
+    day: Mapped[date] = mapped_column(Date)
+    title: Mapped[str] = mapped_column(String(200))
+    category: Mapped[str] = mapped_column(String(16))
+    status: Mapped[str] = mapped_column(String(8), default="open")
+    sort: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)
+    done_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
 
 
 class Context(Base):
-    """An intended focus context (e.g. 'Landing Page Design') the user works within."""
-
     __tablename__ = "contexts"
+    __table_args__ = (Index("ix_contexts_user_last_active", "user_id", "last_active_at"),)
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
-    mode: Mapped[str] = mapped_column(String(20), default="work")  # learning | work | personal
-    source: Mapped[str] = mapped_column(String(40), default="detected")  # detected | manual | planning
-    active: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
-    confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
-    note: Mapped[str] = mapped_column(Text, default="")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
-
-    activities: Mapped[list["ContextActivity"]] = relationship(
-        back_populates="context", cascade="all, delete-orphan", order_by="ContextActivity.occurred_at.desc()"
-    )
-
-
-class ContextActivity(Base):
-    """A single observed signal (tab/domain/app) grouped under a context."""
-
-    __tablename__ = "context_activities"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    context_id: Mapped[int] = mapped_column(ForeignKey("contexts.id"), index=True)
-    kind: Mapped[str] = mapped_column(String(20), default="tab")  # tab | domain | app
-    label: Mapped[str] = mapped_column(String(200), default="")
-    domain: Mapped[str] = mapped_column(String(200), default="")
-    duration_s: Mapped[float] = mapped_column(Float, default=0.0)
-    occurred_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
-
-    context: Mapped[Context] = relationship(back_populates="activities")
+    # Composite key: ids are extension-generated, so each user gets their own id namespace
+    # (one user can never collide with, overwrite, or probe another user's context id).
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    device_id: Mapped[str] = mapped_column(String(64))
+    title: Mapped[str] = mapped_column(String(120))
+    mode: Mapped[str] = mapped_column(String(16))
+    state: Mapped[str] = mapped_column(String(16))
+    confidence: Mapped[str] = mapped_column(String(16))
+    started_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    ended_at: Mapped[datetime | None] = mapped_column(UTCDateTime, nullable=True)
+    last_active_at: Mapped[datetime] = mapped_column(UTCDateTime)
+    sites: Mapped[list] = mapped_column(JSONType, default=list)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, onupdate=utcnow)
 
 
-class DailyGoal(Base):
-    """A structured goal produced during morning planning."""
+class DailyTotal(Base):
+    __tablename__ = "daily_totals"
 
-    __tablename__ = "daily_goals"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(String(300), nullable=False)
-    status: Mapped[str] = mapped_column(String(20), default="open", index=True)  # open | in_progress | done
-    source: Mapped[str] = mapped_column(String(20), default="ai")  # ai | manual
-    day: Mapped[str] = mapped_column(String(10), index=True)  # YYYY-MM-DD
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
-
-class MoodEntry(Base):
-    """Quick mood capture (single emoji + optional note)."""
-
-    __tablename__ = "mood_entries"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    mood: Mapped[str] = mapped_column(String(20), nullable=False)
-    note: Mapped[str] = mapped_column(String(200), default="")
-    recorded_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    day: Mapped[date] = mapped_column(Date, primary_key=True)
+    device_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    focus_s: Mapped[int] = mapped_column(Integer, default=0)
+    nudges: Mapped[int] = mapped_column(Integer, default=0)
+    self_returns: Mapped[int] = mapped_column(Integer, default=0)
+    recoveries: Mapped[int] = mapped_column(Integer, default=0)
+    snoozes: Mapped[int] = mapped_column(Integer, default=0)
+    breaks: Mapped[int] = mapped_column(Integer, default=0)
+    longest_detour_s: Mapped[int] = mapped_column(Integer, default=0)
+    updated_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow, onupdate=utcnow)
 
 
-class BeastModeSession(Base):
-    """Explicit high-focus mode blocking selected sites/apps for a duration."""
+class DeletedUser(Base):
+    """Tombstone written by DELETE /me. No personal data; kept forever so an access token that is
+    still valid (up to 1 h after admin deleteUser) can never re-create the deleted account's rows."""
 
-    __tablename__ = "beast_mode_sessions"
+    __tablename__ = "deleted_users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    started_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    ends_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    duration_min: Mapped[int] = mapped_column(Integer, default=60)
-    active: Mapped[bool] = mapped_column(Boolean, default=True, index=True)
-    blocked_sites: Mapped[str] = mapped_column(Text, default="[]")  # JSON list of domains
-    blocked_apps: Mapped[str] = mapped_column(Text, default="[]")  # JSON list of Android package names
-
-
-class InterventionLog(Base):
-    """A record of a watchdog intervention and the user's response."""
-
-    __tablename__ = "intervention_logs"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    level: Mapped[int] = mapped_column(Integer, default=1)
-    message: Mapped[str] = mapped_column(Text, default="")
-    action: Mapped[str] = mapped_column(String(30), default="")
-    # back_to_work | see_progress | extend_timer | take_break | dismiss
-    context_id: Mapped[int | None] = mapped_column(ForeignKey("contexts.id"), nullable=True)
-    occurred_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
-
-
-class Achievement(Base):
-    """Badges rewarding positive behaviour (first focus, streaks, recoveries...)."""
-
-    __tablename__ = "achievements"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    code: Mapped[str] = mapped_column(String(60), unique=True, nullable=False)
-    title: Mapped[str] = mapped_column(String(120), nullable=False)
-    description: Mapped[str] = mapped_column(Text, default="")
-    unlocked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-
-
-class BreakSession(Base):
-    """Saved state while the user is on a break, preserving context continuity."""
-
-    __tablename__ = "break_sessions"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    context_id: Mapped[int | None] = mapped_column(ForeignKey("contexts.id"), nullable=True)
-    saved_progress: Mapped[str] = mapped_column(Text, default="")
-    next_step: Mapped[str] = mapped_column(Text, default="")
-    started_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, index=True)
-    ended_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True)
+    deleted_at: Mapped[datetime] = mapped_column(UTCDateTime, default=utcnow)

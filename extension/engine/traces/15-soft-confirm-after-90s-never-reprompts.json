@@ -1,0 +1,1 @@
+{"name":"soft_confirm_after_90s_never_reprompts","until":95,"events":[{"t":0,"tab":1,"url":"https://github.com/a/b","title":"FocusGuard/engine · GitHub"},{"t":50,"tab":2,"url":"https://figma.com"},{"t":60,"tab":1}],"expect":{"phase":"active","ctx.confidence":"inferred","count":{"propose_context":1,"group_tab":0}}}

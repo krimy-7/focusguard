@@ -1,0 +1,1 @@
+{"name":"idle_resets_momentum_no_overlay","events":["P",{"t":1210,"idle":"idle"},{"t":3000,"idle":"active"},{"t":3010,"tab":2,"url":"https://reddit.com"}],"expect":{"alarm":{"grace":3310},"not":[{"show_nudge":"*"},{"show_recovery":"*"}]}}

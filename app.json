@@ -6,15 +6,15 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "focusguard",
-    "userInterfaceStyle": "light",
-    "backgroundColor": "#fcf8ff",
-    "primaryColor": "#5e41d0",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#E8EBE4",
+    "primaryColor": "#9A3E24",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/images/icon.png"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#5e41d0",
+        "backgroundColor": "#9A3E24",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -22,18 +22,26 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "static",
+      "name": "FocusGuard AI",
+      "shortName": "FocusGuard",
+      "description": "Notices when you drift from your task, waits, and helps you get back.",
+      "output": "single",
       "favicon": "./assets/images/favicon.png",
-      "backgroundColor": "#fcf8ff"
+      "themeColor": "#9A3E24",
+      "backgroundColor": "#E8EBE4"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#fcf8ff",
+          "backgroundColor": "#E8EBE4",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 160,
+          "dark": {
+            "backgroundColor": "#1E1612",
+            "image": "./assets/images/splash-icon.png"
+          }
         }
       ]
     ],

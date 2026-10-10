@@ -2,180 +2,154 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FocusGuard</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FocusGuard AI</title>
+  <link rel="stylesheet" href="../styles/tokens.css" />
   <link rel="stylesheet" href="popup.css" />
 </head>
-<body>
-  <header class="header">
-    <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
-          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-        </svg>
-      </div>
-      <div class="brand-text">
-        <h1>FocusGuard</h1>
-      </div>
-    </div>
+<body class="popup">
+  <header class="brick head">
+    <span class="win win--mark" data-state="open" aria-hidden="true"><span class="win__leaf"></span><span class="win__pane"><span class="yeti"></span></span></span>
+    <h1>FocusGuard AI</h1>
+    <a class="iconbtn" id="openSettings" href="options.html" target="_blank" rel="noopener" aria-label="Settings" hidden>
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h8M16 6h4M4 12h4M12 12h8M4 18h10M18 18h2"/><circle cx="14" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="16" cy="18" r="2"/></svg>
+    </a>
   </header>
 
-  <section class="context-card" id="contextCard">
-    <div class="card-header-row">
-      <p class="eyebrow">Active Context</p>
-    </div>
-    
-    <div id="contextActive" hidden>
-      <div class="context-title-row">
-        <h2 id="contextTitle">—</h2>
-        <span class="state-pill" id="contextStatePill">Active</span>
-      </div>
-      <p class="status-line" id="contextMeta"></p>
-      <div class="context-actions" id="contextActions" hidden>
-        <button class="action-btn primary-btn" id="backToWorkBtn">
-          <span class="action-icon">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
-              <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-            </svg>
-          </span>
-          <span id="backToWorkLabel">Back to work</span>
-        </button>
-        <div class="propose-actions" id="interventionExtra">
-          <button class="action-btn small ghost" id="seeProgressBtn">See progress</button>
-          <button class="action-btn small ghost" id="takeBreakBtn">Take a break</button>
-          <button class="action-btn small ghost" id="extendBtn">Extend</button>
+  <div class="body">
+    <!-- Consent not given yet -->
+    <section class="stack" id="consentView" hidden>
+      <h2 tabindex="-1">Finish setting up</h2>
+      <p class="muted">FocusGuard AI doesn't look at any tabs until you've read what it does and clicked Start.</p>
+      <button class="btn primary" id="openOnboarding" type="button">Open setup</button>
+    </section>
+
+    <!-- Signed out -->
+    <section class="stack" id="signedOutView" hidden>
+      <h2 tabindex="-1">Sign in</h2>
+      <!-- R40: Google is the primary, first button; the emailed code is the secondary option below it. -->
+      <button class="btn primary" id="googleBtn" type="button">Continue with Google</button>
+      <p class="divider" id="divider"><span>or</span></p>
+      <form id="emailForm" class="stack" novalidate>
+        <label for="email">Email</label>
+        <input id="email" type="email" autocomplete="email" required />
+        <button class="btn" type="submit">Email me a code</button>
+      </form>
+      <form class="stack" id="codeForm" novalidate hidden>
+        <p class="muted" id="codeHint"></p>
+        <label for="code">6-digit code</label>
+        <input id="code" inputmode="numeric" autocomplete="one-time-code" pattern="\d{6}" maxlength="6" required />
+        <button class="btn primary" type="submit">Sign in</button>
+        <button class="btn ghost" id="differentEmail" type="button">Use a different email</button>
+      </form>
+      <p class="fb problem" id="signInError" role="alert"></p>
+    </section>
+
+    <!-- Signed in -->
+    <main class="stack" id="mainView" hidden>
+      <div class="win win--card" id="ctxWin" data-state="paused" role="group" aria-label="Current task">
+        <span class="win__leaf" aria-hidden="true"></span>
+        <!-- The Yeti looks out of the open window; he sits under the leaf, so the leaf closing covers him -->
+        <span class="yeti win__yeti" aria-hidden="true"></span>
+        <div class="win__pane card">
+          <h2 id="ctxTitle" tabindex="-1"></h2>
+          <span class="pill" id="phasePill"></span>
+          <p class="muted" id="ctxMeta"></p>
+          <p class="hand note" id="welcomeNote"></p>
+          <p id="ctxDetail"></p>
         </div>
       </div>
-    </div>
 
-    <div id="contextPropose" hidden>
-      <p class="propose-note" id="proposeNote">Detected: —</p>
-      <input class="propose-input" id="proposeTitle" type="text" maxlength="120" placeholder="What are you working on?" />
-      <div class="propose-actions">
-        <button class="action-btn small ghost" id="proposeCancelBtn">Cancel</button>
-        <button class="action-btn small confirm" id="proposeOkBtn">Confirm Target</button>
-      </div>
-    </div>
-  </section>
+      <!-- One primary at a time: Back (a check-in is showing), Resume (on a break), Turn back on (paused), or Yes, track it (a proposal). -->
+      <button class="btn back" id="backBtn" type="button" hidden>Back to it</button>
+      <button class="btn primary" id="resumeBtn" type="button" hidden>Resume</button>
+      <button class="btn primary" id="unpauseBtn" type="button" hidden>Turn check-ins back on</button>
 
-  <section class="focus-card" id="focusCard" style="display: none;">
-    <div class="focus-accent"></div>
-    <div class="focus-top">
-      <div>
-        <p class="eyebrow" style="display: none;">On this tab</p>
-        <h2 id="currentFocus" style="display: none;">Detecting…</h2>
-      </div>
-      <div class="timer-pulse">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
-          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 14.59L8.71 12.3a1 1 0 1 1 1.41-1.41L12 12.59l4.88-4.88a1 1 0 0 1 1.41 1.41z" />
-        </svg>
-      </div>
-    </div>
-    <div class="timer-row">
-      <div class="progress-track">
-        <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-      </div>
-      <div class="timer-labels">
-        <span id="elapsedLabel">00:00</span>
-        <span id="goalLabel" class="goal-label">25:00 goal</span>
-      </div>
-    </div>
-    <button class="pause-btn" id="pauseBtn" title="Pause / Resume focus">
-      <svg viewBox="0 0 24 24" width="16" height="16" fill="#ffffff">
-        <path d="M6 5h4v14H6zM14 5h4v14h-4z" />
-      </svg>
-    </button>
-  </section>
-
-  <section class="actions">
-    <button class="action-btn secondary-action" id="logInterrupt">
-      <span class="action-icon alert-icon">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-          <line x1="12" y1="9" x2="12" y2="13" />
-          <line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
-      </span>
-      <span class="btn-label">Log Interruption</span>
-      <span class="chevron">›</span>
-    </button>
-    <button class="action-btn teal" id="quickBreak">
-      <span class="action-icon break-icon">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-        </svg>
-      </span>
-      <span class="btn-label">Quick Break (5m)</span>
-      <span class="chevron">⚡</span>
-    </button>
-  </section>
-
-  <section class="stats-section">
-    <div class="section-title-row">
-      <h3>Stats at a Glance</h3>
-      <span class="today-tag">Today</span>
-    </div>
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-icon mint">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
+      <form class="stack" id="proposalForm" hidden>
+        <div class="stack tight">
+          <label for="proposalTitle">Working on this?</label>
+          <input class="hand" id="proposalTitle" type="text" maxlength="120" required />
         </div>
-        <div class="stat-details">
-          <p class="stat-label">Focus Time</p>
-          <p class="stat-value" id="focusTime">0m</p>
+        <div class="stack tight">
+          <label for="proposalMode">Kind of work</label>
+          <select id="proposalMode">
+            <option value="work">Work</option>
+            <option value="learning">Learning</option>
+            <option value="personal">Personal</option>
+          </select>
         </div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-icon coral">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
-          </svg>
+        <div class="pair">
+          <button class="btn primary" type="submit">Yes, track it</button>
+          <button class="btn ghost" id="proposalCancel" type="button">Not now</button>
         </div>
-        <div class="stat-details">
-          <p class="stat-label">Interrupts</p>
-          <p class="stat-value" id="interrupts">0</p>
-        </div>
-      </div>
-    </div>
-  </section>
+        <p class="fb" id="proposalFb" role="status"></p>
+      </form>
 
-  <section class="insight" id="insightCard" hidden>
-    <div class="insight-header">
-      <span class="insight-spark">✨</span>
-      <span class="insight-title">AI Focus Nudge</span>
-    </div>
-    <p class="insight-text" id="insightText"></p>
-    <p class="insight-suggestion" id="insightSuggestion"></p>
-  </section>
+      <section class="stack" id="ctxActions" aria-label="Task actions">
+        <form class="stack tight" id="breakForm">
+          <label for="breakNote">Your note for when you’re back</label>
+          <input class="hand" id="breakNote" type="text" maxlength="200" autocomplete="off" placeholder="Optional" />
+        </form>
+        <div class="actions">
+          <button class="btn" id="breakBtn" type="submit" form="breakForm">Take a break</button>
+          <details id="pauseMenu">
+            <summary class="btn">Pause</summary>
+            <div class="menu">
+              <button class="btn" data-pause="30m" type="button">For 30 minutes</button>
+              <button class="btn" data-pause="tomorrow" type="button">Until tomorrow</button>
+              <button class="btn" data-pause="off" type="button">Until I turn them back on</button>
+            </div>
+          </details>
+        </div>
+        <p class="fb" id="actionFb" role="status"></p>
+        <div class="newtask">
+          <button class="btn ghost" id="newCtxBtn" type="button">Start something new</button>
+          <div class="undo" id="undoRow" hidden>
+            <p id="taskFb" role="status"></p>
+            <button class="btn" id="undoEndBtn" type="button">Undo</button>
+          </div>
+          <p class="fb" id="endedFb" role="status"></p>
+        </div>
+      </section>
 
-  <footer class="footer">
-    <a id="dashboardLink" href="#" target="_blank">
-      <span>Dashboard</span>
-      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-        <polyline points="15 3 21 3 21 9" />
-        <line x1="10" y1="14" x2="21" y2="3" />
-      </svg>
+      <!-- Beast Mode: quiet until asked for -->
+      <details class="beast" id="beastBox">
+        <summary>
+          <span>Beast Mode</span>
+          <span class="val" id="beastState">Off</span>
+          <svg class="ico chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+        </summary>
+        <div class="stack panel">
+          <div class="stack" id="beastOn" hidden>
+            <p id="beastText"></p>
+            <button class="btn" id="beastStop" type="button">Stop Beast Mode</button>
+          </div>
+          <form class="stack" id="beastForm" novalidate>
+            <p class="muted">Closes the sites you choose for a set time. You can always open one for 10 minutes.</p>
+            <label for="beastSites">Sites to close</label>
+            <textarea id="beastSites" rows="2" placeholder="reddit.com, youtube.com"></textarea>
+            <label for="beastMinutes">For how long</label>
+            <select id="beastMinutes" required>
+              <option value="">Choose…</option>
+              <option value="25">25 minutes</option>
+              <option value="50">50 minutes</option>
+              <option value="90">90 minutes</option>
+              <option value="180">3 hours</option>
+            </select>
+            <button class="btn" id="beastStart" type="submit">Start Beast Mode</button>
+          </form>
+          <p class="fb" id="beastFb" role="status"></p>
+        </div>
+      </details>
+    </main>
+  </div>
+
+  <footer class="foot">
+    <a class="btn block" id="dashboardLink" href="#" target="_blank" rel="noopener">Open dashboard
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
     </a>
-    <div class="mascot-pill" title="FocusGuard Companion">
-      <div class="mascot-orb">
-        <svg viewBox="0 0 24 24" width="12" height="12" fill="#0f766e">
-          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-        </svg>
-      </div>
-      <span id="mascotHint">Stay focused & hydrated!</span>
-    </div>
   </footer>
 
-  <script src="../config.js"></script>
-  <script src="popup.js"></script>
+  <script type="module" src="popup.js"></script>
 </body>
 </html>

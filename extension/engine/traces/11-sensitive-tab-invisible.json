@@ -1,0 +1,1 @@
+{"name":"sensitive_tab_invisible","events":["P",{"t":600,"tab":3,"url":"https://online.chase.com/acct","title":"Account 1234567 – Chase"},{"t":620,"tab":4,"url":"https://reddit.com","incognito":true},{"t":900,"tab":1}],"expect":{"absentStrings":["chase","1234567","reddit"],"scheduleCount":{"grace":0},"ctx.resources":["figma.com"],"momentumS":590}}

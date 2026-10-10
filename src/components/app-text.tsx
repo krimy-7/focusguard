@@ -1,26 +1,27 @@
 import { Text, type TextProps } from 'react-native';
 
-import { cn, TEXT_COLORS, type TwColorName } from '@/theme/tailwind';
-import type { TypographyVariant } from '@/theme';
+import { TYPE, useTheme, type TypeVariant } from '@/theme';
+import { webStyle } from '@/theme/web';
 
-const VARIANT_CLASSES: Record<TypographyVariant, string> = {
-  headlineXl: 'font-headline text-headline-xl',
-  headlineLg: 'font-headline text-headline-lg',
-  headlineLgMobile: 'font-headline text-headline-lg-mobile',
-  headlineMd: 'font-headline-semibold text-headline-md',
-  bodyLg: 'font-body-medium text-body-lg',
-  bodyMd: 'font-body text-body-md',
-  labelLg: 'font-body-bold text-label-lg',
-  labelSm: 'font-body-semi text-label-sm',
+type Tone = 'ink' | 'ink2' | 'danger' | 'onInk' | 'cream';
+
+type Props = TextProps & {
+  variant?: TypeVariant;
+  tone?: Tone;
+  /** Renders a real heading (h1 to h3 on web, header role on native). */
+  level?: 1 | 2 | 3;
 };
 
-type AppTextProps = TextProps & {
-  variant?: TypographyVariant;
-  color?: TwColorName;
-};
-
-export function AppText({ variant = 'bodyMd', color = 'on-surface', className, ...rest }: AppTextProps) {
+/** All FocusGuard text. Colour comes from the theme tokens, size and family from the type scale. */
+export function AppText({ variant = 'body', tone = 'ink', level, style, ...rest }: Props) {
+  const t = useTheme();
+  const colour = { ink: t.ink, ink2: t.ink2, danger: t.danger, onInk: t.onInk, cream: t.railInk }[tone];
+  const heading = level ? ({ role: 'heading', 'aria-level': level } as TextProps) : null;
   return (
-    <Text className={cn(VARIANT_CLASSES[variant], TEXT_COLORS[color], className)} {...rest} />
+    <Text
+      {...heading}
+      {...rest}
+      style={[TYPE[variant], { color: colour }, level ? webStyle({ textWrap: 'balance' }) : null, style]}
+    />
   );
 }

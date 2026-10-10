@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign in with Google · FocusGuard AI</title>
+  <link rel="stylesheet" href="../styles/tokens.css" />
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    main { flex: 1; width: 100%; max-width: 480px; margin: 0 auto; padding: 56px 24px 64px; display: grid; gap: 16px; align-content: start; justify-items: start; }
+    h1 { font-size: 28px; line-height: 1.2; font-weight: 700; }
+    h1:focus { outline: none; }
+    .muted { max-width: 44ch; }
+    .row { display: flex; gap: 12px; flex-wrap: wrap; }
+    /* The email fallback matters only when Google didn't work */
+    .alt { display: none; padding-top: 8px; }
+    #retry:not([hidden]) ~ .alt { display: block; }
+  </style>
+</head>
+<body>
+  <header class="brick head">
+    <span class="win win--mark" data-state="open" aria-hidden="true"><span class="win__leaf"></span><span class="win__pane"><span class="yeti"></span></span></span>
+    <p class="name">FocusGuard AI</p>
+  </header>
+  <main>
+    <span class="win win--hero arrive" id="win" data-state="wait" aria-hidden="true"><span class="win__leaf"></span><span class="win__pane"><span class="yeti"></span></span></span>
+    <h1 id="heading" tabindex="-1">Sign in with Google</h1>
+    <p class="muted" id="msg" role="status" aria-live="polite">Opening Google…</p>
+    <div class="row">
+      <button class="btn primary" id="retry" type="button" hidden>Try again</button>
+      <button class="btn" id="done" type="button" hidden>Close this tab</button>
+    </div>
+    <p class="muted alt">Prefer an email code? Click the FocusGuard AI icon in Chrome’s toolbar and choose “Email me a code”.</p>
+  </main>
+  <script type="module" src="google.js"></script>
+</body>
+</html>
