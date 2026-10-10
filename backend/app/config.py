@@ -6,39 +6,24 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
-    app_name: str = "FocusGuard"
-    app_env: str = "development"
     debug: bool = False
-    demo_mode: bool = False
-    enable_dev_routes: bool = False
+    database_url: str = "sqlite:///./focusguard.db"
 
-    database_url: str = ""
+    supabase_url: str = ""
+    supabase_jwks_url: str = ""
+    supabase_issuer: str = ""
+    supabase_audience: str = "authenticated"
+    supabase_service_role_key: str = ""
 
-    ai_provider: str = "mock"
-    ai_model: str = "deepseek-chat"
-
-    deepseek_api_key: str = ""
-    openai_api_key: str = ""
-    openai_api_key_first: str = ""
-    openai_api_key_second: str = ""
-    openai_base_url: str = "https://api.openai.com/v1"
-    openai_model: str = "gpt-4o-mini"
-    openai_audio_model: str = "whisper-1"
-
-    claude_api_key: str = ""
-    claude_model: str = "claude-3-5-sonnet-latest"
-
-    gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
-
-    ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "qwen3:0.6b"
-
-    cors_origins: str = "http://localhost:8081,http://localhost:19006"
+    dashboard_origins: str = "http://localhost:8081"
+    extension_id: str = ""
 
     @property
-    def cors_origin_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+    def allowed_origins(self) -> list[str]:
+        origins = [o.strip() for o in self.dashboard_origins.split(",") if o.strip()]
+        if self.extension_id:
+            origins.append(f"chrome-extension://{self.extension_id}")
+        return origins
 
 
 @lru_cache
