@@ -119,7 +119,7 @@ Storage keys (`chrome.storage.local` unless noted): `fg_engine` (**session**), `
 
 ## Contract resolutions (lead, after stream plans — these override anything above)
 
-R1. **Test commands:** Node 24 does not accept a bare directory. Use globs: `node --test "extension/engine/**/*.test.js"`, `node --test "extension/{auth,ai,beast,popup}/**/*.test.js"`, `node --test "extension/shell/**/*.test.js" "extension/*.test.js"`, `npm test` (dashboard, `src/**/*.test.mjs`).
+R1. **Test commands:** Node 24 does not accept a bare directory. Use globs: `node --test "extension/engine/**/*.test.js"`, `node --test "extension/{auth,ai,beast,popup}/**/*.test.js"`, `node --test "extension/shell/**/*.test.js" "extension/nudge/**/*.test.js" "extension/copy/**/*.test.js"`, `npm test` (dashboard, `src/**/*.test.mjs`).
 R2. **Grace:** the *user setting* `settings.grace_s` is 120..900 (C1, UI chips 120/300/600). The *engine's computed* grace clamps to 60..900 (momentum/risk). Both true; no conflict.
 R3. **`POST /goals {lines}`:** split on newlines only; trim; drop empties; >20 lines or any title >200 chars → 422 (no silent truncation). Default `category` = `"work"`.
 R4. **`PATCH /me` settings:** top-level merge; `quiet_hours: []` clears; absent keys omitted in responses (never `null`).
@@ -165,6 +165,7 @@ R39. **Name & distribution (D-17, D-18):** user-visible product name is **"Focus
      Fixed values (public, safe to commit): extension ID **`jkkgdjhaoomnjkblodmmjoikglknmifi`**; manifest `"key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArc4SzN6+lHoUOsIX8HiBRGfPa80oyWcIM5+VOqkNy3nma4Hpl0AHsvRzV6mpClHXRLrN8IRtSSDSkmpOTxJVmnuCv/036QNy3lzsEKYqhM4BQtiZbWimyHk3pSLm5e89Zpm3HYvMmyClJUGrrhIVVSyagF+TypWq/xjvmrQci7yoL/RLTtMTaPzgsl9G8NphtgfcMHMNHSpXTeXHyEGCZGo4+Phs6L1bT0xL2HpamaSmB/pOG3EpoHWudf4nTj2dIbu0Jbe1xBHKN87HldsRmaQDEO1i7pB6xzm2tpz7zFO24r+wom/mNddT6US1gPG5o61RpQaoEHWZczDHtZKCawIDAQAB"`. The private key is at `~/.focusguard/extension-key.pem` on the maintainer's machine only.
 R40. **Sign-in order (D-22):** in the popup (E) and the dashboard sign-in screen (C), **"Continue with Google" is the primary, first button**; "Email me a code" is the secondary option below it. Email codes are delivered by Supabase via Gmail SMTP (no code impact; README/runbook only).
 R41. **R24 amended (after plan review):** `intervention.suppressed` may also be `'beast'` or `'not_drifting'` (not counted as nudges). Additional record kinds `context`, `resource`, `focus` (R32) exist; the accumulator ignores kinds it doesn't count. Records use `contextId` (never `ctxId`). Break-resume recovery has `trigger:'break_ended', awayS:0` (excluded from `longest_detour_s`). `unrelate` is sent **without** an `id`. Engine `startup` heartbeat is sent only from `runtime.onStartup` (not `onInstalled` updates).
+R42. **`minimum_chrome_version` = "127"** (raised from 120 after build): `chrome.action.openPopup()` — used by the notification click and `show_progress` — needs Chrome 127.
 R30. **Types:** stream C adds `@types/chrome` to root devDependencies so `tsc -p extension/jsconfig.json` type-checks `// @ts-check` files. Dashboard settings route is `${DASHBOARD_URL}/settings`.
 
 ## Review Focus (cross-stream; each line has a test in the owning stream)

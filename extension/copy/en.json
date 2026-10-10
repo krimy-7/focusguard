@@ -1,0 +1,46 @@
+{
+  "nudge_l1": [
+    "Still taking a detour? You were working on {context}.",
+    "Quick check-in: {context} is right where you left it.",
+    "Want a few more minutes, or are we heading back to {context}?"
+  ],
+  "nudge_l2": [
+    "Your {context} is crying in the corner 😭",
+    "Bro, {context} is still waiting for you.",
+    "Plot twist: {context} didn't finish itself."
+  ],
+  "recovered": ["You're back. Let's finish it."],
+  "welcome_back": ["Welcome back. {context} is right where you left it."],
+  "explainer": {
+    "1": "You're seeing this because you were away from {context} longer than your grace time.",
+    "2": "This second check-in only shows when the first one is still open a few minutes later."
+  },
+  "ui": {
+    "card_label": "FocusGuard AI check-in",
+    "back": "Back",
+    "this_is": "This is…",
+    "part_of": "Part of {context}",
+    "new_task": "A new task",
+    "new_task_placeholder": "What are you working on?",
+    "start": "Start",
+    "extend": "+5 min",
+    "break": "Break",
+    "break_note_placeholder": "Leave yourself a note for next time?",
+    "start_break": "Start break",
+    "dismiss": "Dismiss",
+    "settings": "Change this in Settings",
+    "got_it": "Got it",
+    "welcome_title": "Welcome back",
+    "your_note": "Your note: {note}",
+    "sites": "You were on {sites}"
+  },
+  "notif": {
+    "title": "FocusGuard AI",
+    "back": "Back",
+    "extend": "+5 min",
+    "propose": "Working on {title}?",
+    "propose_body": "Confirm to start this context, or open FocusGuard AI to rename it.",
+    "yes": "Yes, start",
+    "not_now": "Not now"
+  }
+}

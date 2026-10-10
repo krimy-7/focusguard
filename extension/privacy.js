@@ -1,37 +1,29 @@
-// FocusGuard privacy floor. Loaded by background.js via importScripts.
-// Self-check: `node extension/privacy.js`.
+// @ts-check
+// FocusGuard privacy floor. Pure ESM, imported by shell/adapters.js.
+// Tests: extension/shell/test/privacy.test.js
 
 // Hosts we never observe: finance, health, password managers, private
-// messaging, government/tax. Matching tabs send nothing and are never
-// treated as context or distraction.
-// ponytail: hardcoded list; make it user-editable if false positives show up.
+// messaging, government/tax. Matching tabs become blind landings (host:null)
+// and never reach the engine.
+// ponytail: hardcoded list; users add their own via fg_extra_sensitive (shell/adapters.js).
 const SENSITIVE_HOST =
   /paypal|bank|esewa|khalti|(^|\.)chase\.com$|1password|bitwarden|lastpass|mychart|healthcare|(^|\.)web\.whatsapp\.com$|(^|\.)messenger\.com$|(^|\.)mail\.proton\.me$|(^|\.)gov(\.[a-z]{2})?$/i;
 
-function isSensitiveHost(host) {
+/** @param {string|null|undefined} host */
+export function isSensitiveHost(host) {
   return SENSITIVE_HOST.test(host || "");
 }
 
-// Strip emails and long digit runs (order/account/phone numbers) from a tab
-// title before it can leave the browser.
-function sanitizeTitle(title) {
+/**
+ * Strip emails and long digit runs (order/account/phone numbers) from a tab title.
+ * @param {unknown} title
+ * @returns {string}
+ */
+export function sanitizeTitle(title) {
   return String(title || "")
     .replace(/[^\s@]+@[^\s@]+\.[^\s@]+/g, "")
     .replace(/\d{4,}/g, "")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 120);
-}
-
-if (typeof module !== "undefined" && require.main === module) {
-  const assert = require("assert");
-  assert.strictEqual(sanitizeTitle("Inbox (3) - jane.doe@gmail.com - Gmail"), "Inbox (3) - - Gmail");
-  assert.strictEqual(sanitizeTitle("Order 123456789   shipped\n"), "Order shipped");
-  assert.strictEqual(sanitizeTitle("x".repeat(300)).length, 120);
-  assert.strictEqual(sanitizeTitle(undefined), "");
-  for (const h of ["www.paypal.com", "online.chase.com", "web.whatsapp.com", "irs.gov", "nepal.gov.np", "vault.bitwarden.com", "mail.proton.me"])
-    assert.ok(isSensitiveHost(h), h);
-  for (const h of ["github.com", "purchase.example.com", "governance.io", "whatsapp.com", "proton.me", ""])
-    assert.ok(!isSensitiveHost(h), h);
-  console.log("privacy.js ok");
 }

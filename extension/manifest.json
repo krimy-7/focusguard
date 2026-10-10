@@ -1,28 +1,18 @@
 {
   "manifest_version": 3,
-  "name": "FocusGuard",
-  "version": "1.1.0",
-  "description": "Privacy-first focus coach. Watches your context, gives you grace, and nudges you back on track.",
-  "permissions": ["tabs", "storage", "notifications"],
-  "host_permissions": ["<all_urls>"],
-  "background": {
-    "service_worker": "background.js"
-  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArc4SzN6+lHoUOsIX8HiBRGfPa80oyWcIM5+VOqkNy3nma4Hpl0AHsvRzV6mpClHXRLrN8IRtSSDSkmpOTxJVmnuCv/036QNy3lzsEKYqhM4BQtiZbWimyHk3pSLm5e89Zpm3HYvMmyClJUGrrhIVVSyagF+TypWq/xjvmrQci7yoL/RLTtMTaPzgsl9G8NphtgfcMHMNHSpXTeXHyEGCZGo4+Phs6L1bT0xL2HpamaSmB/pOG3EpoHWudf4nTj2dIbu0Jbe1xBHKN87HldsRmaQDEO1i7pB6xzm2tpz7zFO24r+wom/mNddT6US1gPG5o61RpQaoEHWZczDHtZKCawIDAQAB",
+  "name": "FocusGuard AI",
+  "version": "2.0.0",
+  "description": "Privacy-first focus coach. Notices drift from the task you chose, gives you grace, and nudges you back gently.",
+  "minimum_chrome_version": "127",
+  "permissions": ["tabs", "storage", "alarms", "idle", "notifications", "scripting", "tabGroups", "declarativeNetRequestWithHostAccess", "identity"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "FocusGuard"
+    "default_title": "FocusGuard AI",
+    "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" }
   },
-  "icons": {
-    "16": "icons/icon16.png",
-    "32": "icons/icon32.png",
-    "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "run_at": "document_start"
-    }
-  ]
+  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "web_accessible_resources": [{ "resources": ["blocked.html"], "matches": ["<all_urls>"] }]
 }

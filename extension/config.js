@@ -1,23 +1,53 @@
-// Central config for the FocusGuard extension.
-// Override these before loading the extension if your backend is elsewhere
-// (e.g. an ngrok URL for the hackathon demo).
-const FOCUSGUARD_CONFIG = {
-  BASE_URL: "http://localhost:8000",
-  // Where "Go to Dashboard" points (the FocusGuard app).
-  DASHBOARD_URL: "http://localhost:8081",
-  // Only report domains/titles above this many seconds to reduce noise.
-  MIN_CONTEXT_SECONDS: 60,
-  // A tab stay of at least this long counts as a focus session.
-  MIN_SESSION_SECONDS: 300,
-  // Watchdog grace period before the first intervention (minutes).
-  GRACE_MINUTES: 5,
-  // Delay before the second (playful) intervention if the first is ignored.
-  SECOND_MINUTES: 5,
-};
+// @ts-check
+// Central extension config (C4, R11/R28). CONFIG holds the checked-in defaults and is synchronous.
+// Dev overrides live in the gitignored extension/config.local.json (copy config.local.example.json);
+// background.js copies it into storage.local `fg_config_override` at startup, and getConfig() merges it.
+// Service workers forbid dynamic import() and top-level await, hence fetch + storage.
 
-// Merge local, gitignored overrides (extension/config.local.js), e.g.
-// `const FOCUSGUARD_LOCAL_CONFIG = { GRACE_MINUTES: 10 / 60 };` for a demo.
-// Loaded via importScripts in background.js; harmless no-op if missing.
-if (typeof FOCUSGUARD_LOCAL_CONFIG === "object" && FOCUSGUARD_LOCAL_CONFIG) {
-  Object.assign(FOCUSGUARD_CONFIG, FOCUSGUARD_LOCAL_CONFIG);
+/** @typedef {{API_URL:string, SUPABASE_URL:string, SUPABASE_ANON_KEY:string, DASHBOARD_URL:string}} Config */
+
+/** @type {Readonly<Config>} */
+export const CONFIG = Object.freeze({
+  API_URL: "http://localhost:8000",
+  SUPABASE_URL: "",
+  SUPABASE_ANON_KEY: "",
+  DASHBOARD_URL: "http://localhost:8081",
+});
+
+/**
+ * CONFIG merged with fg_config_override. ENGINE = dev-only engine overrides, e.g. {"GRACE_DEFAULT_S": 60}. Never throws.
+ * @param {{get:(k:string)=>Promise<Record<string, any>>}|undefined} [storage]
+ * @returns {Promise<Config & {ENGINE: Record<string, number>}>}
+ */
+export async function getConfig(storage = globalThis.chrome?.storage?.local) {
+  try {
+    const o = storage ? (await storage.get("fg_config_override")).fg_config_override : null;
+    return { ...CONFIG, ...(o || {}), ENGINE: o?.ENGINE || {} };
+  } catch {
+    return { ...CONFIG, ENGINE: {} };
+  }
+}
+
+/**
+ * Copy config.local.json into fg_config_override; a missing file removes the key so stale overrides clear. Never throws.
+ * @param {(url:string)=>Promise<{ok:boolean, json:()=>Promise<any>}>} [fetchFn]
+ * @param {(path:string)=>string} [getURL]
+ * @param {{set:(o:Record<string, any>)=>Promise<void>, remove:(k:string)=>Promise<void>}} [storage]
+ */
+export async function loadLocalConfigIntoStorage(
+  fetchFn = (u) => fetch(u),
+  getURL = (p) => globalThis.chrome.runtime.getURL(p),
+  storage = globalThis.chrome?.storage?.local,
+) {
+  try {
+    const res = await fetchFn(getURL("config.local.json"));
+    if (res.ok) return void (await storage?.set({ fg_config_override: await res.json() }));
+  } catch {
+    /* no local config */
+  }
+  try {
+    await storage?.remove("fg_config_override");
+  } catch {
+    /* storage unavailable: defaults stand */
+  }
 }
