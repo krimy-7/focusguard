@@ -1,0 +1,1138 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-10T14:29:09.267Z",
+  "title": "Design System: FocusGuard AI",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Sal-Wood Ink",
+        "canonical": "#2B1E17",
+        "tonalRamp": [
+          "#130804",
+          "#2E211A",
+          "#4B3C35",
+          "#695A52",
+          "#8A7971",
+          "#AC9A91",
+          "#D2C0B7",
+          "#FDEAE1"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Sal-Wood Ink 2",
+        "canonical": "#5A4A40",
+        "tonalRamp": [
+          "#140802",
+          "#2F2018",
+          "#4B3C32",
+          "#6A5A4F",
+          "#8B796E",
+          "#AD9A8F",
+          "#D3C0B4",
+          "#FEEADE"
+        ]
+      },
+      "cream": {
+        "role": "neutral",
+        "displayName": "Lime-Wash Cream",
+        "canonical": "#FBF6EC",
+        "tonalRamp": [
+          "#0E0B05",
+          "#27241C",
+          "#433F37",
+          "#615D55",
+          "#817D74",
+          "#A29E95",
+          "#C8C4BA",
+          "#F3EEE4"
+        ]
+      },
+      "ground-cool": {
+        "role": "neutral",
+        "displayName": "Cool Lime-Wash",
+        "canonical": "#E1E9E8",
+        "tonalRamp": [
+          "#070C0C",
+          "#1F2525",
+          "#3B4140",
+          "#585F5E",
+          "#787F7E",
+          "#99A09F",
+          "#BEC6C5",
+          "#E8F0EF"
+        ]
+      },
+      "ground-lime": {
+        "role": "neutral",
+        "displayName": "Lime-Wash Middle",
+        "canonical": "#E8EBE4",
+        "tonalRamp": [
+          "#0A0C08",
+          "#232520",
+          "#3E413B",
+          "#5C5F59",
+          "#7C7E78",
+          "#9DA099",
+          "#C2C5BE",
+          "#EDF0E9"
+        ]
+      },
+      "ground-warm": {
+        "role": "neutral",
+        "displayName": "Warm Lime-Wash",
+        "canonical": "#EFE9DB",
+        "tonalRamp": [
+          "#0F0B03",
+          "#282419",
+          "#443F34",
+          "#625D51",
+          "#827D70",
+          "#A49E91",
+          "#C9C4B6",
+          "#F4EEE0"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Plaster Surface",
+        "canonical": "#F6F7F1",
+        "tonalRamp": [
+          "#0B0C08",
+          "#242420",
+          "#3F403B",
+          "#5D5E59",
+          "#7D7E78",
+          "#9E9F99",
+          "#C4C5BF",
+          "#EEEFE9"
+        ]
+      },
+      "field": {
+        "role": "neutral",
+        "displayName": "Plaster Field",
+        "canonical": "#FBFBF7",
+        "tonalRamp": [
+          "#0B0B09",
+          "#242421",
+          "#40403D",
+          "#5E5E5A",
+          "#7D7D7A",
+          "#9F9F9B",
+          "#C4C4C0",
+          "#EFEFEB"
+        ]
+      },
+      "stone": {
+        "role": "tertiary",
+        "displayName": "Stone",
+        "canonical": "#E7E4DA",
+        "tonalRamp": [
+          "#0D0B05",
+          "#26241D",
+          "#424038",
+          "#605E55",
+          "#807D74",
+          "#A19E95",
+          "#C7C4BA",
+          "#F1EEE4"
+        ]
+      },
+      "stone-edge": {
+        "role": "tertiary",
+        "displayName": "Stone Edge",
+        "canonical": "#8B7D70",
+        "tonalRamp": [
+          "#130902",
+          "#2D2217",
+          "#4A3D31",
+          "#685B4F",
+          "#887A6D",
+          "#AA9C8E",
+          "#D0C1B3",
+          "#FBEBDD"
+        ]
+      },
+      "brick": {
+        "role": "primary",
+        "displayName": "Fired Brick",
+        "canonical": "#9A3E24",
+        "tonalRamp": [
+          "#1F0000",
+          "#440F01",
+          "#712006",
+          "#983D23",
+          "#BD5E43",
+          "#E27F63",
+          "#FEAD96",
+          "#FEE9E3"
+        ]
+      },
+      "brick-joint": {
+        "role": "neutral",
+        "displayName": "Brick Joint",
+        "canonical": "#7E3019",
+        "tonalRamp": [
+          "#1E0100",
+          "#450D00",
+          "#6F220A",
+          "#92422B",
+          "#B6634B",
+          "#DB846B",
+          "#FBAE98",
+          "#FFE9E3"
+        ]
+      },
+      "brass": {
+        "role": "secondary",
+        "displayName": "Temple Brass",
+        "canonical": "#C8963E",
+        "tonalRamp": [
+          "#130900",
+          "#312002",
+          "#543A07",
+          "#7A5610",
+          "#A3730C",
+          "#C6953C",
+          "#EEBA65",
+          "#FFECCE"
+        ]
+      },
+      "brass-tint": {
+        "role": "secondary",
+        "displayName": "Brass Tint",
+        "canonical": "#F4E7C8",
+        "tonalRamp": [
+          "#120A00",
+          "#2D2308",
+          "#493F24",
+          "#685C41",
+          "#887C60",
+          "#AA9D80",
+          "#D0C3A5",
+          "#FBEECE"
+        ]
+      },
+      "moss": {
+        "role": "secondary",
+        "displayName": "Moss",
+        "canonical": "#4E6B3C",
+        "tonalRamp": [
+          "#030F00",
+          "#142B02",
+          "#2D491B",
+          "#4B6739",
+          "#6A8857",
+          "#8AAA78",
+          "#AFD09C",
+          "#D9FBC6"
+        ]
+      },
+      "moss-hover": {
+        "role": "secondary",
+        "displayName": "Moss Hover",
+        "canonical": "#415C32",
+        "tonalRamp": [
+          "#020F00",
+          "#132B02",
+          "#2E481F",
+          "#4B673C",
+          "#6A875B",
+          "#8BA97B",
+          "#B0CFA0",
+          "#DAFAC9"
+        ]
+      },
+      "moss-tint": {
+        "role": "secondary",
+        "displayName": "Moss Tint",
+        "canonical": "#E4ECDA",
+        "tonalRamp": [
+          "#080D03",
+          "#212619",
+          "#3C4234",
+          "#5A6051",
+          "#798070",
+          "#9AA291",
+          "#C0C7B6",
+          "#EAF2E0"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Danger Clay",
+        "canonical": "#8C2A1A",
+        "tonalRamp": [
+          "#210000",
+          "#480701",
+          "#771404",
+          "#9B3828",
+          "#C05A47",
+          "#E67C68",
+          "#FDAD9D",
+          "#FEE9E5"
+        ]
+      },
+      "placeholder": {
+        "role": "neutral",
+        "displayName": "Placeholder Wood",
+        "canonical": "#6A5B51",
+        "tonalRamp": [
+          "#130803",
+          "#2E2118",
+          "#4A3C33",
+          "#695A50",
+          "#8A7A6F",
+          "#AB9B90",
+          "#D2C0B5",
+          "#FDEBDF"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "Ink Hover",
+        "canonical": "#45322A",
+        "tonalRamp": [
+          "#160702",
+          "#311F18",
+          "#4E3B32",
+          "#6D5850",
+          "#8E786F",
+          "#B0998F",
+          "#D6BEB4",
+          "#FFE9E1"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgba(43, 30, 23, 0.16)",
+        "tonalRamp": [
+          "#130804",
+          "#2E211A",
+          "#4B3C35",
+          "#695A52",
+          "#8A7971",
+          "#AC9A91",
+          "#D2C0B7",
+          "#FDEAE1"
+        ]
+      },
+      "frame": {
+        "role": "neutral",
+        "displayName": "Window Frame",
+        "canonical": "#2B1E17",
+        "tonalRamp": [
+          "#130804",
+          "#2E211A",
+          "#4B3C35",
+          "#695A52",
+          "#8A7971",
+          "#AC9A91",
+          "#D2C0B7",
+          "#FDEAE1"
+        ]
+      },
+      "leaf-open": {
+        "role": "secondary",
+        "displayName": "Open Leaf",
+        "canonical": "#CFDDBF",
+        "tonalRamp": [
+          "#060E00",
+          "#1E2810",
+          "#39442B",
+          "#576248",
+          "#768267",
+          "#97A487",
+          "#BCCAAC",
+          "#E6F5D6"
+        ]
+      },
+      "leaf-wait": {
+        "role": "secondary",
+        "displayName": "Waiting Leaf",
+        "canonical": "#EBD6A0",
+        "tonalRamp": [
+          "#110A00",
+          "#2E2200",
+          "#4F3D03",
+          "#6E5B28",
+          "#8F7B48",
+          "#B19D69",
+          "#D7C28D",
+          "#FEEDC3"
+        ]
+      },
+      "leaf-paused": {
+        "role": "tertiary",
+        "displayName": "Paused Leaf",
+        "canonical": "#D9D5C9",
+        "tonalRamp": [
+          "#0E0B04",
+          "#27241B",
+          "#434036",
+          "#615D53",
+          "#817D72",
+          "#A29E93",
+          "#C8C4B8",
+          "#F2EEE2"
+        ]
+      },
+      "lattice-groove": {
+        "role": "neutral",
+        "displayName": "Lattice Groove",
+        "canonical": "#6E5445",
+        "tonalRamp": [
+          "#180500",
+          "#341E10",
+          "#52392B",
+          "#715748",
+          "#927767",
+          "#B59887",
+          "#DBBDAC",
+          "#FFEADE"
+        ]
+      },
+      "private-pane": {
+        "role": "neutral",
+        "displayName": "Private Pane",
+        "canonical": "#2B1E17",
+        "tonalRamp": [
+          "#130804",
+          "#2E211A",
+          "#4B3C35",
+          "#695A52",
+          "#8A7971",
+          "#AC9A91",
+          "#D2C0B7",
+          "#FDEAE1"
+        ]
+      },
+      "ink-dark": {
+        "role": "primary",
+        "displayName": "Sal-Wood Ink (dark)",
+        "canonical": "#EFE9DB",
+        "tonalRamp": [
+          "#0F0B03",
+          "#282419",
+          "#443F34",
+          "#625D51",
+          "#827D70",
+          "#A49E91",
+          "#C9C4B6",
+          "#F4EEE0"
+        ]
+      },
+      "ink-2-dark": {
+        "role": "neutral",
+        "displayName": "Sal-Wood Ink 2 (dark)",
+        "canonical": "#C9BFB2",
+        "tonalRamp": [
+          "#100A03",
+          "#2A2319",
+          "#473E33",
+          "#655C51",
+          "#857C70",
+          "#A69D90",
+          "#CCC2B5",
+          "#F7EDDF"
+        ]
+      },
+      "on-ink-dark": {
+        "role": "neutral",
+        "displayName": "On-Ink (dark)",
+        "canonical": "#1A1310",
+        "tonalRamp": [
+          "#100907",
+          "#2A221F",
+          "#463E3A",
+          "#645B58",
+          "#847B77",
+          "#A69C98",
+          "#CCC2BD",
+          "#F7ECE7"
+        ]
+      },
+      "ground-cool-dark": {
+        "role": "neutral",
+        "displayName": "Cool Lime-Wash (dark)",
+        "canonical": "#1A1310",
+        "tonalRamp": [
+          "#100907",
+          "#2A221F",
+          "#463E3A",
+          "#645B58",
+          "#847B77",
+          "#A69C98",
+          "#CCC2BD",
+          "#F7ECE7"
+        ]
+      },
+      "ground-lime-dark": {
+        "role": "neutral",
+        "displayName": "Lime-Wash Middle (dark)",
+        "canonical": "#1E1612",
+        "tonalRamp": [
+          "#110906",
+          "#2A221E",
+          "#473D39",
+          "#655B56",
+          "#857B76",
+          "#A79C96",
+          "#CDC1BC",
+          "#F8ECE6"
+        ]
+      },
+      "ground-warm-dark": {
+        "role": "neutral",
+        "displayName": "Warm Lime-Wash (dark)",
+        "canonical": "#231913",
+        "tonalRamp": [
+          "#120905",
+          "#2C211B",
+          "#483D36",
+          "#675B54",
+          "#877A73",
+          "#A99B93",
+          "#CFC1B9",
+          "#FAEBE3"
+        ]
+      },
+      "surface-dark": {
+        "role": "neutral",
+        "displayName": "Plaster Surface (dark)",
+        "canonical": "#2B1E17",
+        "tonalRamp": [
+          "#130804",
+          "#2E211A",
+          "#4B3C35",
+          "#695A52",
+          "#8A7971",
+          "#AC9A91",
+          "#D2C0B7",
+          "#FDEAE1"
+        ]
+      },
+      "field-dark": {
+        "role": "neutral",
+        "displayName": "Plaster Field (dark)",
+        "canonical": "#33251D",
+        "tonalRamp": [
+          "#140803",
+          "#2E2119",
+          "#4B3C34",
+          "#6A5A51",
+          "#8A7970",
+          "#AC9A90",
+          "#D3C0B5",
+          "#FEEADF"
+        ]
+      },
+      "stone-dark": {
+        "role": "tertiary",
+        "displayName": "Stone (dark)",
+        "canonical": "#3A322B",
+        "tonalRamp": [
+          "#100A05",
+          "#2A221C",
+          "#463E37",
+          "#655C54",
+          "#857B73",
+          "#A69C94",
+          "#CCC2B9",
+          "#F7ECE3"
+        ]
+      },
+      "brick-dark": {
+        "role": "primary",
+        "displayName": "Fired Brick (dark)",
+        "canonical": "#6E2A17",
+        "tonalRamp": [
+          "#1F0000",
+          "#440E01",
+          "#6B2714",
+          "#8D4633",
+          "#B16651",
+          "#D58771",
+          "#FEAD96",
+          "#FEE9E3"
+        ]
+      },
+      "brick-veil-dark": {
+        "role": "primary",
+        "displayName": "Brick Veil (dark)",
+        "canonical": "rgba(20, 12, 8, 0.35)",
+        "tonalRamp": [
+          "#110906",
+          "#2B221D",
+          "#473D38",
+          "#665B56",
+          "#867B75",
+          "#A79C96",
+          "#CEC1BB",
+          "#F8ECE5"
+        ]
+      },
+      "brass-dark": {
+        "role": "secondary",
+        "displayName": "Temple Brass (dark)",
+        "canonical": "#D4A24E",
+        "tonalRamp": [
+          "#130900",
+          "#322000",
+          "#563A00",
+          "#7C5502",
+          "#A37314",
+          "#C69540",
+          "#EEBB67",
+          "#FFECCF"
+        ]
+      },
+      "brass-tint-dark": {
+        "role": "secondary",
+        "displayName": "Brass Tint (dark)",
+        "canonical": "#3A2C1A",
+        "tonalRamp": [
+          "#140800",
+          "#2F210F",
+          "#4C3D2A",
+          "#6A5B47",
+          "#8B7A66",
+          "#AD9B86",
+          "#D3C1AB",
+          "#FEEBD5"
+        ]
+      },
+      "moss-dark": {
+        "role": "secondary",
+        "displayName": "Moss (dark)",
+        "canonical": "#86A86F",
+        "tonalRamp": [
+          "#040F00",
+          "#142B00",
+          "#2C4912",
+          "#496832",
+          "#688951",
+          "#89AB72",
+          "#AED196",
+          "#D7FCBF"
+        ]
+      },
+      "moss-hover-dark": {
+        "role": "secondary",
+        "displayName": "Moss Hover (dark)",
+        "canonical": "#9CBB86",
+        "tonalRamp": [
+          "#040F00",
+          "#152B00",
+          "#2E4818",
+          "#4C6736",
+          "#6B8855",
+          "#8BAA75",
+          "#B0D09A",
+          "#DAFBC3"
+        ]
+      },
+      "moss-tint-dark": {
+        "role": "secondary",
+        "displayName": "Moss Tint (dark)",
+        "canonical": "#23301C",
+        "tonalRamp": [
+          "#040F01",
+          "#1C2815",
+          "#374530",
+          "#54634D",
+          "#73836C",
+          "#94A48C",
+          "#B9CAB1",
+          "#E3F5DB"
+        ]
+      },
+      "danger-dark": {
+        "role": "tertiary",
+        "displayName": "Danger Clay (dark)",
+        "canonical": "#F0A08F",
+        "tonalRamp": [
+          "#200000",
+          "#490600",
+          "#6A271B",
+          "#8D4638",
+          "#B06657",
+          "#D58777",
+          "#FEAC9B",
+          "#FEE9E4"
+        ]
+      },
+      "placeholder-dark": {
+        "role": "neutral",
+        "displayName": "Placeholder Wood (dark)",
+        "canonical": "#B3A799",
+        "tonalRamp": [
+          "#110902",
+          "#2B2217",
+          "#483E32",
+          "#665C4F",
+          "#877B6E",
+          "#A89C8E",
+          "#CEC2B4",
+          "#F9ECDD"
+        ]
+      },
+      "primary-hover-dark": {
+        "role": "primary",
+        "displayName": "Ink Hover (dark)",
+        "canonical": "#FBF6EC",
+        "tonalRamp": [
+          "#0E0B05",
+          "#27241C",
+          "#433F37",
+          "#615D55",
+          "#817D74",
+          "#A29E95",
+          "#C8C4BA",
+          "#F3EEE4"
+        ]
+      },
+      "line-dark": {
+        "role": "neutral",
+        "displayName": "Hairline (dark)",
+        "canonical": "rgba(239, 233, 219, 0.16)",
+        "tonalRamp": [
+          "#0F0B03",
+          "#282419",
+          "#443F34",
+          "#625D51",
+          "#827D70",
+          "#A49E91",
+          "#C9C4B6",
+          "#F4EEE0"
+        ]
+      },
+      "edge-dark": {
+        "role": "neutral",
+        "displayName": "Control Edge (dark)",
+        "canonical": "#B3A799",
+        "tonalRamp": [
+          "#110902",
+          "#2B2217",
+          "#483E32",
+          "#665C4F",
+          "#877B6E",
+          "#A89C8E",
+          "#CEC2B4",
+          "#F9ECDD"
+        ]
+      },
+      "frame-dark": {
+        "role": "neutral",
+        "displayName": "Window Frame (dark)",
+        "canonical": "#7A5C47",
+        "tonalRamp": [
+          "#180600",
+          "#361D09",
+          "#543925",
+          "#745642",
+          "#957660",
+          "#B89780",
+          "#DFBCA5",
+          "#FEEADD"
+        ]
+      },
+      "leaf-open-dark": {
+        "role": "secondary",
+        "displayName": "Open Leaf (dark)",
+        "canonical": "#3F5733",
+        "tonalRamp": [
+          "#030F00",
+          "#152B08",
+          "#304724",
+          "#4D6641",
+          "#6C8660",
+          "#8DA880",
+          "#B2CEA5",
+          "#DCF9CE"
+        ]
+      },
+      "leaf-wait-dark": {
+        "role": "secondary",
+        "displayName": "Waiting Leaf (dark)",
+        "canonical": "#6B5128",
+        "tonalRamp": [
+          "#140800",
+          "#322002",
+          "#533A10",
+          "#735930",
+          "#94784F",
+          "#B6996F",
+          "#DDBF93",
+          "#FEECD1"
+        ]
+      },
+      "leaf-paused-dark": {
+        "role": "tertiary",
+        "displayName": "Paused Leaf (dark)",
+        "canonical": "#4C4239",
+        "tonalRamp": [
+          "#110904",
+          "#2B221A",
+          "#483E35",
+          "#665B52",
+          "#867B71",
+          "#A89C92",
+          "#CEC2B7",
+          "#F9ECE1"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "The Today sentence on wide dashboard screens; key phrase underlined in brass."
+      },
+      "display-sm": {
+        "displayName": "Display Small",
+        "purpose": "The Today sentence on narrow screens; loading titles."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Page h1 on the dashboard and in extension pages (28px)."
+      },
+      "heading": {
+        "displayName": "Heading",
+        "purpose": "Section h2; the task title when the window is closed or narrow."
+      },
+      "wordmark": {
+        "displayName": "Wordmark",
+        "purpose": "FocusGuard AI beside the window mark on every brick header."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Everything FocusGuard says. 16px; the only size in the popup and nudge card."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels, nav labels, selected History day, dashboard buttons."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Extension buttons and state pills (Mukta 700)."
+      },
+      "small": {
+        "displayName": "Small",
+        "purpose": "Secondary lines, chips, counts. Nothing is smaller than 14px."
+      },
+      "hand": {
+        "displayName": "Hand",
+        "purpose": "The user's own goals on the dashboard (Kalam 22px)."
+      },
+      "hand-field": {
+        "displayName": "Hand Field",
+        "purpose": "Dashboard add-goal and edit-goal inputs (Kalam 18px)."
+      },
+      "hand-compact": {
+        "displayName": "Hand Compact",
+        "purpose": "Break note, task name, welcome-back note in the popup and nudge card (Kalam 16px)."
+      }
+    },
+    "shadows": [
+      {
+        "name": "nudge-card-lift",
+        "value": "0 0 0 1px rgba(43,30,23,0.16), 0 14px 34px rgba(43,30,23,0.32)",
+        "purpose": "The injected check-in card floating over a foreign page (dark: lift rgba(0,0,0,0.55))."
+      },
+      {
+        "name": "snackbar-lift",
+        "value": "0 8px 20px rgba(43,30,23,0.28)",
+        "purpose": "The dashboard undo toast."
+      },
+      {
+        "name": "rail-inner-shade",
+        "value": "inset -6px 0 10px -6px rgba(43,30,23,0.55)",
+        "purpose": "Soft inner shadow on the brick rail's content-facing edge (top edge for the bottom tab bar)."
+      },
+      {
+        "name": "header-hairline",
+        "value": "0 1px 0 rgba(43,30,23,0.35)",
+        "purpose": "Lower edge of the extension brick header."
+      },
+      {
+        "name": "engraved-wordmark",
+        "value": "0 1px 0 rgba(43,30,23,0.35)",
+        "purpose": "text-shadow on cream text over brick only."
+      },
+      {
+        "name": "window-hairline",
+        "value": "inset 0 0 0 1px rgba(200,150,62,0.55)",
+        "purpose": "Brass line just inside every lattice-window frame."
+      },
+      {
+        "name": "pin-ring",
+        "value": "0 0 0 3px #C8963E",
+        "purpose": "The \"click here\" ring on the setup page pin-it art."
+      }
+    ],
+    "motion": [
+      {
+        "name": "leaf-slide",
+        "value": "500ms cubic-bezier(0.2, 0.7, 0.2, 1)",
+        "purpose": "Lattice leaf transform between states (dashboard: Easing.out(cubic), 500ms)."
+      },
+      {
+        "name": "pane-fade",
+        "value": "350ms linear",
+        "purpose": "Pane opacity as the leaf closes or opens; colour changes ride 500ms."
+      },
+      {
+        "name": "plate-fade",
+        "value": "300ms (delay 300ms closing, 120ms opening)",
+        "purpose": "The words plate over a closed window (dashboard)."
+      },
+      {
+        "name": "yeti-fade",
+        "value": "250ms (delay 250ms opening, 150ms closing)",
+        "purpose": "Yeti fades with the leaf (dashboard)."
+      },
+      {
+        "name": "hero-arrive",
+        "value": "900ms cubic-bezier(0.2, 0.7, 0.2, 1) 250ms backwards",
+        "purpose": "The hero window leaf slides open once on setup and the Google tab."
+      },
+      {
+        "name": "nudge-in",
+        "value": "card 200ms ease-out opacity; leaf 500ms cubic-bezier(0.3, 0.7, 0.2, 1) 100ms, 7px travel",
+        "purpose": "Injected card entrance, only under prefers-reduced-motion: no-preference."
+      },
+      {
+        "name": "control-colour",
+        "value": "150ms",
+        "purpose": "Button and nav hover colour/opacity."
+      },
+      {
+        "name": "chevron-turn",
+        "value": "200ms",
+        "purpose": "Disclosure chevrons and the Pause menu caret."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "prefers-reduced-motion: reduce => transition: none; animation: none",
+        "purpose": "Every transition and animation is off; the leaf jumps (extension CSS and dashboard useReducedMotion)."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "960px"
+      },
+      {
+        "name": "window-narrow-stage",
+        "value": "440px"
+      },
+      {
+        "name": "compact-setup",
+        "value": "480px"
+      },
+      {
+        "name": "settings-column",
+        "value": "640px"
+      },
+      {
+        "name": "reading-column",
+        "value": "720px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one primary action in a view: ink fill, cream text, 10px corner, 44px tall.",
+      "html": "<button class=\"ds-btn-primary\" type=\"button\">Add goal</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 1.5px solid var(--primary, #2B1E17); border-radius: 10px; background: var(--primary, #2B1E17); color: var(--on-primary, #FBF6EC); font: 700 16px/1.2 var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); cursor: pointer; transition: background-color .15s, color .15s; } .ds-btn-primary:hover { background: var(--primary-hover, #45322A); border-color: var(--primary-hover, #45322A); } .ds-btn-primary:active { opacity: .85; } .ds-btn-primary:focus-visible { outline: 3px solid var(--focus, #2B1E17); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: .55; cursor: not-allowed; }"
+    },
+    {
+      "name": "Back Button",
+      "kind": "button",
+      "refersTo": "button-back",
+      "description": "The way back from a drift: moss fill, cream text. Popup, nudge card and block page only.",
+      "html": "<button class=\"ds-btn-back\" type=\"button\">Back to Landing page redesign</button>",
+      "css": ".ds-btn-back { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border: 1.5px solid var(--moss, #4E6B3C); border-radius: 10px; background: var(--moss, #4E6B3C); color: var(--on-moss, #FBF6EC); font: 700 16px/1.2 var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); cursor: pointer; transition: background-color .15s; } .ds-btn-back:hover { background: var(--moss-hover, #415C32); border-color: var(--moss-hover, #415C32); } .ds-btn-back:focus-visible { outline: 3px solid var(--focus, #2B1E17); outline-offset: 2px; }"
+    },
+    {
+      "name": "Quiet Button",
+      "kind": "button",
+      "refersTo": "button-quiet",
+      "description": "Every non-primary action: transparent with a 1.5px ink border, 8% ink wash on hover.",
+      "html": "<button class=\"ds-btn-quiet\" type=\"button\">Take a break</button>",
+      "css": ".ds-btn-quiet { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border: 1.5px solid var(--edge, #2B1E17); border-radius: 10px; background: transparent; color: var(--ink, #2B1E17); font: 700 16px/1.2 var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); cursor: pointer; transition: background-color .15s; } .ds-btn-quiet:hover { background: var(--hover, rgba(43, 30, 23, .08)); } .ds-btn-quiet:focus-visible { outline: 3px solid var(--focus, #2B1E17); outline-offset: 2px; } .ds-btn-quiet:disabled { opacity: .55; cursor: not-allowed; }"
+    },
+    {
+      "name": "Hand Field",
+      "kind": "input",
+      "refersTo": "field-hand",
+      "description": "A text field for the user's own words: field tone, 1.5px ink border, Kalam, 44px tall.",
+      "html": "<label class=\"ds-field-label\" for=\"ds-goal\">Your note for when you’re back</label><input class=\"ds-field-hand\" id=\"ds-goal\" type=\"text\" placeholder=\"Optional\" />",
+      "css": ".ds-field-label { display: block; margin-bottom: 4px; color: var(--ink, #2B1E17); font: 600 16px/1.3 var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); } .ds-field-hand { display: block; width: 100%; min-height: 44px; padding: 8px 12px; border: 1.5px solid var(--edge, #2B1E17); border-radius: 10px; background: var(--field, #FBFBF7); color: var(--ink, #2B1E17); font: 400 16px/1.3 var(--hand, Kalam, 'Segoe Print', cursive); box-sizing: border-box; } .ds-field-hand::placeholder { color: var(--placeholder, #6A5B51); opacity: 1; } .ds-field-hand:focus-visible { outline: 3px solid var(--focus, #2B1E17); outline-offset: 2px; }"
+    },
+    {
+      "name": "Brick Rail",
+      "kind": "nav",
+      "refersTo": "rail",
+      "description": "The dashboard rail: fired brick under clay grain, wordmark, three links, the active one a cream plate.",
+      "html": "<nav class=\"ds-rail\" aria-label=\"Main\"><p class=\"ds-rail-name\">FocusGuard AI</p><a class=\"ds-rail-link ds-rail-link-active\" href=\"#\" aria-current=\"page\">Today</a><a class=\"ds-rail-link\" href=\"#\">History</a><a class=\"ds-rail-link\" href=\"#\">Settings</a></nav>",
+      "css": ".ds-rail { width: 232px; display: grid; gap: 4px; align-content: start; padding: 24px 16px; box-sizing: border-box; color: var(--on-brick, #FBF6EC); background-color: var(--brick, #9A3E24); background-image: url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22180%22%20height%3D%22180%22%3E%3C!--%20Fired-clay%20grain%2C%20multiply%20over%20brick.%20Tile%20180x180.%20--%3E%3Cfilter%20id%3D%22n%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.9%22%20numOctaves%3D%222%22%20stitchTiles%3D%22stitch%22%2F%3E%3CfeColorMatrix%20values%3D%220%200%200%200%20.1%20%200%200%200%200%20.06%20%200%200%200%200%20.03%20%200%200%200%20.55%200%22%2F%3E%3C%2Ffilter%3E%3Crect%20width%3D%22180%22%20height%3D%22180%22%20filter%3D%22url(%23n)%22%2F%3E%3C%2Fsvg%3E\"), url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2296%22%20height%3D%2240%22%20viewBox%3D%220%200%2096%2040%22%3E%3C!--%20Newari%20dachi-apa%20fired-brick%20coursing%2C%20half%20bond%2C%20hairline%20joints.%20Tile%2096x40.%20--%3E%3Crect%20width%3D%2296%22%20height%3D%2240%22%20fill%3D%22%237E3019%22%2F%3E%3Crect%20x%3D%220.5%22%20y%3D%220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%239A3E24%22%2F%3E%3Crect%20x%3D%2232.5%22%20y%3D%220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23A3452A%22%2F%3E%3Crect%20x%3D%2264.5%22%20y%3D%220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23933A21%22%2F%3E%3Crect%20x%3D%22-15.5%22%20y%3D%2210.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%239F4227%22%2F%3E%3Crect%20x%3D%2216.5%22%20y%3D%2210.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23983D23%22%2F%3E%3Crect%20x%3D%2248.5%22%20y%3D%2210.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23A14328%22%2F%3E%3Crect%20x%3D%2280.5%22%20y%3D%2210.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23963C22%22%2F%3E%3Crect%20x%3D%220.5%22%20y%3D%2220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%239C4026%22%2F%3E%3Crect%20x%3D%2232.5%22%20y%3D%2220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%239A3E24%22%2F%3E%3Crect%20x%3D%2264.5%22%20y%3D%2220.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23A3452A%22%2F%3E%3Crect%20x%3D%22-15.5%22%20y%3D%2230.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23933A21%22%2F%3E%3Crect%20x%3D%2216.5%22%20y%3D%2230.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%239F4227%22%2F%3E%3Crect%20x%3D%2248.5%22%20y%3D%2230.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23983D23%22%2F%3E%3Crect%20x%3D%2280.5%22%20y%3D%2230.5%22%20width%3D%2231%22%20height%3D%229%22%20fill%3D%22%23A14328%22%2F%3E%3C%2Fsvg%3E\"); background-size: 180px 180px, 96px 40px; background-blend-mode: multiply, normal; box-shadow: inset -6px 0 10px -6px rgba(43, 30, 23, .55); font-family: var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); } .ds-rail-name { margin: 0 0 24px; font-size: 18px; font-weight: 700; text-shadow: 0 1px 0 rgba(43, 30, 23, .35); } .ds-rail-link { display: flex; align-items: center; min-height: 44px; padding: 0 12px; border-radius: 8px; color: inherit; font-size: 16px; font-weight: 600; text-decoration: none; text-shadow: 0 1px 0 rgba(43, 30, 23, .35); transition: background-color .15s; } .ds-rail-link:hover { background: rgba(255, 255, 255, .14); } .ds-rail-link-active, .ds-rail-link-active:hover { background: #FBF6EC; color: #2B1E17; text-shadow: none; } .ds-rail-link:focus-visible { outline: 3px solid #FBF6EC; outline-offset: 2px; }"
+    },
+    {
+      "name": "Lattice Window",
+      "kind": "custom",
+      "refersTo": "window-open",
+      "description": "The signature: carved frame, sliding lattice leaf, state in the leaf position and pane tint. Open, waiting, paused.",
+      "html": "<div class=\"ds-win\" data-state=\"open\" role=\"group\" aria-label=\"Current task: In focus\"><div class=\"ds-win-leaf\"></div><div class=\"ds-win-pane\"><strong>Landing page redesign</strong><span>In focus</span></div></div><div class=\"ds-win\" data-state=\"wait\" role=\"group\" aria-label=\"Current task: Waiting\"><div class=\"ds-win-leaf\"></div><div class=\"ds-win-pane\"><strong>Landing page redesign</strong><span>Waiting</span></div></div><div class=\"ds-win\" data-state=\"paused\" role=\"group\" aria-label=\"Current task: Paused\"><div class=\"ds-win-leaf\"></div><div class=\"ds-win-pane\"><strong>No task in progress</strong><span>Paused</span></div></div>",
+      "css": ".ds-win { --jamb: 28px; position: relative; display: block; width: 260px; min-height: 96px; margin-bottom: 12px; overflow: hidden; isolation: isolate; box-sizing: border-box; background: var(--pane); border: 5px solid var(--frame, #2B1E17); border-bottom-width: 8px; border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(200, 150, 62, .55); font-family: var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); color: var(--ink, #2B1E17); transition: background-color .5s; } .ds-win-pane { position: relative; z-index: 1; display: grid; gap: 2px; padding: 14px calc(100% - var(--x) + 12px) 14px 16px; font-size: 16px; line-height: 1.3; } .ds-win-leaf { position: absolute; inset: 0; z-index: 2; pointer-events: none; transform: translateX(var(--x)); background-color: var(--leaf-bg); background-image: linear-gradient(var(--stile), var(--stile)), url(\"data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'16'%20height%3D'16'%3E%3Cpath%20d%3D'M0%200L16%2016M16%200L0%2016'%20stroke%3D'%232B1E17'%20stroke-width%3D'3.2'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M0%200L16%2016M16%200L0%2016'%20stroke%3D'%236E5445'%20stroke-width%3D'.7'%20fill%3D'none'%2F%3E%3Crect%20x%3D'6.3'%20y%3D'6.3'%20width%3D'3.4'%20height%3D'3.4'%20transform%3D'rotate(45%208%208)'%20fill%3D'%23C8963E'%20stroke%3D'%232B1E17'%20stroke-width%3D'.8'%2F%3E%3C%2Fsvg%3E\"); background-repeat: no-repeat, repeat; background-size: 5px 100%, 96px 96px; transition: transform .5s cubic-bezier(.2, .7, .2, 1), background-color .5s; } .ds-win[data-state=\"open\"] { --pane: var(--moss-tint, #E4ECDA); --leaf-bg: var(--leaf-open, #CFDDBF); --stile: var(--moss, #4E6B3C); --x: calc(100% - var(--jamb)); } .ds-win[data-state=\"wait\"] { --pane: var(--brass-tint, #F4E7C8); --leaf-bg: var(--leaf-wait, #EBD6A0); --stile: var(--brass, #C8963E); --x: 60%; } .ds-win[data-state=\"paused\"] { --pane: var(--stone, #E7E4DA); --leaf-bg: var(--leaf-paused, #D9D5C9); --stile: var(--stone-edge, #8B7D70); --x: 0%; } .ds-win[data-state=\"paused\"] .ds-win-pane { margin: 12px; padding: 12px 14px; border-radius: 3px; background: var(--stone, #E7E4DA); } .ds-win-pane strong { font-weight: 700; } @media (prefers-reduced-motion: reduce) { .ds-win, .ds-win-leaf { transition: none; } }"
+    },
+    {
+      "name": "State Pill",
+      "kind": "chip",
+      "refersTo": "pill-open",
+      "description": "The popup's state label under the task title: filled in the state colour, sentence case, bold.",
+      "html": "<span class=\"ds-pill ds-pill-open\">On task</span> <span class=\"ds-pill ds-pill-wait\">Waiting</span> <span class=\"ds-pill ds-pill-paused\">Paused</span>",
+      "css": ".ds-pill { display: inline-block; padding: 3px 9px 2px; border-radius: 5px; font: 700 16px/1.3 var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); } .ds-pill-open { background: var(--moss, #4E6B3C); color: var(--on-moss, #FBF6EC); } .ds-pill-wait { background: var(--brass, #C8963E); color: var(--on-brass, #2B1E17); } .ds-pill-paused { background: var(--ink, #2B1E17); color: var(--on-ink, #FBF6EC); }"
+    },
+    {
+      "name": "Nudge Card",
+      "kind": "card",
+      "refersTo": "nudge-card",
+      "description": "The folder-tab check-in card that floats in a page corner: one line, Back in moss, two quiet links.",
+      "html": "<div class=\"ds-nudge\"><div class=\"ds-nudge-tab\"><span class=\"ds-nudge-mark\" aria-hidden=\"true\"></span><span class=\"ds-nudge-name\">FocusGuard AI</span></div><p class=\"ds-nudge-text\">Quick check-in: Landing page redesign is right where you left it.</p><div class=\"ds-nudge-row\"><button class=\"ds-nudge-btn ds-nudge-back\" type=\"button\">Back</button><button class=\"ds-nudge-btn\" type=\"button\">+5 min</button><button class=\"ds-nudge-btn\" type=\"button\">Break</button></div><div class=\"ds-nudge-sub\"><a href=\"#\">This is part of my task</a><a href=\"#\">Why this?</a></div></div>",
+      "css": ".ds-nudge { position: relative; width: 320px; max-width: 100%; margin-top: 24px; padding: 22px 14px 8px; box-sizing: border-box; border-radius: 10px; background: var(--surface, #F6F7F1); color: var(--ink, #2B1E17); font: 400 16px/1.3 var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); box-shadow: 0 0 0 1px var(--line, rgba(43, 30, 23, .16)), 0 14px 34px rgba(43, 30, 23, .32); } .ds-nudge-tab { position: absolute; left: 14px; top: -20px; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 12px 0 4px; border-radius: 10px 10px 0 0; background: var(--surface, #F6F7F1); } .ds-nudge-mark { width: 44px; height: 32px; box-sizing: border-box; border: 2px solid #2B1E17; border-radius: 3px; background: linear-gradient(90deg, #F4E7C8 0 58%, #C8963E 58% 62%, transparent 62%), url(\"data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'16'%20height%3D'16'%3E%3Cpath%20d%3D'M0%200L16%2016M16%200L0%2016'%20stroke%3D'%232B1E17'%20stroke-width%3D'3.2'%20fill%3D'none'%2F%3E%3Cpath%20d%3D'M0%200L16%2016M16%200L0%2016'%20stroke%3D'%236E5445'%20stroke-width%3D'.7'%20fill%3D'none'%2F%3E%3Crect%20x%3D'6.3'%20y%3D'6.3'%20width%3D'3.4'%20height%3D'3.4'%20transform%3D'rotate(45%208%208)'%20fill%3D'%23C8963E'%20stroke%3D'%232B1E17'%20stroke-width%3D'.8'%2F%3E%3C%2Fsvg%3E\"); background-size: auto, 16px 16px; } .ds-nudge-name { font-weight: 700; } .ds-nudge-text { margin: 0; min-height: 40px; } .ds-nudge-row { display: grid; grid-template-columns: 1fr 1.1fr 1fr; gap: 8px; margin-top: 6px; } .ds-nudge-btn { min-height: 44px; padding: 0 8px; border: 1.5px solid var(--ink, #2B1E17); border-radius: 8px; background: transparent; color: inherit; font: 700 16px/1 var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); white-space: nowrap; cursor: pointer; } .ds-nudge-btn:hover { background: var(--hover, rgba(43, 30, 23, .08)); } .ds-nudge-back { background: var(--moss, #4E6B3C); border-color: var(--moss, #4E6B3C); color: var(--on-moss, #FBF6EC); } .ds-nudge-back:hover { background: var(--moss-hover, #415C32); } .ds-nudge-sub { display: flex; gap: 16px; margin-top: 4px; } .ds-nudge-sub a { color: var(--ink-2, #5A4A40); font-weight: 400; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; } .ds-nudge-btn:focus-visible, .ds-nudge-sub a:focus-visible { outline: 3px solid var(--focus, #2B1E17); outline-offset: 2px; }"
+    },
+    {
+      "name": "Notice",
+      "kind": "custom",
+      "refersTo": "notice-try",
+      "description": "A calm inline message: stone for information, brass tint for \"that did not work, here is what to do\". Never red.",
+      "html": "<p class=\"ds-notice ds-notice-info\" role=\"status\"><svg class=\"ds-notice-ico\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 11v5M12 7.6v.01\"/></svg>Offline. Showing what was loaded earlier.</p><p class=\"ds-notice ds-notice-try\" role=\"alert\"><svg class=\"ds-notice-ico\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 11v5M12 7.6v.01\"/></svg>Couldn’t reach the server. Nothing was saved.</p>",
+      "css": ".ds-notice { display: flex; align-items: center; gap: 12px; margin: 0 0 8px; padding: 12px 16px; border-radius: 6px; color: var(--ink, #2B1E17); font: 400 14px/20px var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); } .ds-notice-info { background: var(--stone, #E7E4DA); } .ds-notice-try { background: var(--brass-tint, #F4E7C8); font-weight: 600; } .ds-notice-ico { flex: none; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }"
+    },
+    {
+      "name": "History Plate",
+      "kind": "custom",
+      "refersTo": "plate",
+      "description": "One day at the fixed scale: stone band with brass check-in dots over a moss focus fill. Selected = heavier border and brass bar.",
+      "html": "<div class=\"ds-plates\"><button class=\"ds-plate\" type=\"button\" aria-pressed=\"false\"><span class=\"ds-plate-box\"><span class=\"ds-plate-band\"><i></i><i></i></span><span class=\"ds-plate-fill\" style=\"height:30%\"></span></span><span class=\"ds-plate-day\">Fri 9</span></button><button class=\"ds-plate ds-plate-selected\" type=\"button\" aria-pressed=\"true\"><span class=\"ds-plate-box\"><span class=\"ds-plate-band\"><i></i></span><span class=\"ds-plate-fill\" style=\"height:25%\"></span></span><span class=\"ds-plate-day\">Sat 10</span></button></div>",
+      "css": ".ds-plates { display: flex; gap: 12px; } .ds-plate { display: grid; gap: 6px; width: 92px; padding: 0; border: 0; background: none; color: var(--ink-2, #5A4A40); font: 400 14px/20px var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); text-align: center; cursor: pointer; } .ds-plate-box { display: flex; flex-direction: column; height: 156px; overflow: hidden; box-sizing: border-box; border: 2px solid var(--ink, #2B1E17); border-radius: 4px; background: var(--surface, #F6F7F1); } .ds-plate-band { display: flex; flex-wrap: wrap; gap: 3px; align-content: center; justify-content: center; height: 34px; padding: 0 3px; background: var(--stone, #E7E4DA); } .ds-plate-band i { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--ink, #2B1E17); background: var(--brass, #C8963E); box-sizing: border-box; } .ds-plate-fill { margin-top: auto; background: var(--moss, #4E6B3C); } .ds-plate-selected { color: var(--ink, #2B1E17); font: 600 16px/22px var(--sans, Mukta, 'Nirmala UI', system-ui, sans-serif); } .ds-plate-selected .ds-plate-box { border-width: 3px; } .ds-plate-selected .ds-plate-day::after { content: \"\"; display: block; width: 70%; height: 4px; margin: 2px auto 0; border-radius: 2px; background: var(--brass, #C8963E); } .ds-plate:focus-visible { outline: 3px solid var(--focus, #2B1E17); outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Tikijhyal Window",
+    "overview": "FocusGuard looks out through a carved Newari lattice window: it notices your drift, and you are never seen. Everything in the system is built from that one object. A dark-wood frame holds a sliding lattice leaf; the leaf's position says whether you are on task, being waited for, paused or private, and a small calm Yeti looks out from behind it. The shell around the window is fired brick laid in dachi-apa coursing, the ground is lime-wash plaster drifting from cool to warm, the ink is sal wood, and the only two signal colours are brass (waiting) and moss (on task, and the way back).\n\nThe system refuses two things: the category's soft-teal wellness-SaaS cards, and its neon \"hardcore focus\" opposite. It is quiet, carved and warm rather than glowing. Density is low: one reading column, one primary action per moment, generous 44px targets. Ornament is limited to the window; everything else is flat, bordered and legible. Depth comes from material (brick, plaster, wood) and tone, not from shadow.\n\nThe two surfaces share this world but are built separately: the **extension** (popup, settings, setup, injected nudge card, block page, Google sign-in tab) is plain HTML and CSS driven by `extension/styles/tokens.css`; the **dashboard** (`src/app`: sign-in, Today, History, Settings) is Expo Router with NativeWind, whose colour and type tokens live in TypeScript (`src/theme/index.ts`) and whose Tailwind config carries layout utilities only. Section \"Components\" lists where each piece lives on both.",
+    "keyCharacteristics": [
+      "One ornament, always meaningful: the lattice window carries state; it is never decoration.",
+      "Fired-brick shell with fired-clay grain (never a flat fill); lime-wash ground with plaster grain; cards and fields stay flat.",
+      "Sal-wood ink (never black); brass is a fill, moss is on-task and Back; nothing ever turns red except the delete-account zone.",
+      "Two voices: Mukta for everything FocusGuard says, Kalam only for the user's own words. Both cover Devanagari and are bundled locally.",
+      "Light by default, dark by system preference with the same roles; the block page is always warm-dark.",
+      "Targets at least 44px, WCAG 2.2 AA, reduced motion makes the leaf instant."
+    ],
+    "rules": [
+      {
+        "name": "The Nothing-Turns-Red Rule",
+        "body": "State restyles in place: brass for waiting, moss for back. No error, warning or overdue state is ever red. Danger clay exists for the delete-account zone alone, and failed saves are a calm brass-tint notice that says what to do.",
+        "section": "colors"
+      },
+      {
+        "name": "The Brass-Is-a-Fill Rule",
+        "body": "Brass draws, fills and underlines; it never sets type. Any brass element that carries meaning also carries it in text, weight or shape (selected History plate: heavier border and label as well as the brass bar).",
+        "section": "colors"
+      },
+      {
+        "name": "The Sal-Wood Rule",
+        "body": "Ink is warm wood, never `#000`; the ground is never neutral. Pure white appears only in the Yeti's eye glints and the Google \"G\" tile, which Google specifies.",
+        "section": "colors"
+      },
+      {
+        "name": "The Moss Rule",
+        "body": "Moss means on task, done, or Back. It is not a decorative green and there is no second green.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Voices Rule",
+        "body": "Mukta for everything FocusGuard says; Kalam only for words the user typed or will read back as their own (goals, break notes, task names in inputs). Never Kalam for UI chrome, never Mukta for a goal.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Size Rule",
+        "body": "The popup and the nudge card use a single 16px size; rank is carried by weight (400 / 600 / 700), reversal (filled versus outlined) and case only. This is enforced in the popup by `.popup *:not(svg) { font-size: 1em }`.",
+        "section": "typography"
+      },
+      {
+        "name": "The Bundled Rule",
+        "body": "Fonts are local files with `unicode-range` splits, so the browser fetches Devanagari only when it is needed. The injected nudge card registers them under private family names (`FocusGuard Mukta`, `FocusGuard Kalam`) so no host page's CSS can collide, and shows itself once they load, raced against 150ms.",
+        "section": "typography"
+      },
+      {
+        "name": "The One Primary Rule",
+        "body": "At any moment a view has one primary action. Everything else is outlined or a text link. If two things want to be primary, one of them is not.",
+        "section": "layout"
+      },
+      {
+        "name": "The Same Scale Rule",
+        "body": "Anywhere days, sessions or counts are compared, they share one fixed scale and shape. No score, no streak, no ranking, no \"minutes wasted\".",
+        "section": "layout"
+      },
+      {
+        "name": "The Texture Ceiling Rule",
+        "body": "Texture lives on the shell (brick) and the ground (plaster) only. Cards, fields, plates, notices, buttons and the window pane stay flat and clean. Running body copy never sits on brick; only wordmarks, nav labels and the rail's one privacy line (all 16px or larger) do. Secondary 14px lines may sit on the plaster ground only in ink or ink-2 (6:1 or better). Texture is never animated and never carries information.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Carved-Not-Floating Rule",
+        "body": "A resting surface gets a line, not a shadow. A lift is allowed only for the card that floats over a foreign page and the undo toast. New components inherit the line.",
+        "section": "elevation"
+      },
+      {
+        "name": "The One Ornament Rule",
+        "body": "The lattice window is the only ornament, and it always carries state. No decorative lattice borders, dividers or backgrounds.",
+        "section": "shapes"
+      },
+      {
+        "name": "The Stile Stays on the Leaf Rule",
+        "body": "A coloured edge stripe is the lattice leaf's stile and nothing else. Cards, notices, list rows and callouts do not get a coloured side border.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "**Do** draw state with the lattice window: moss pane and open leaf for on task, brass pane and half-closed leaf for waiting, stone and a closed leaf for paused, a fine brass grille for private.",
+      "**Do** keep the shell as brick under grain and the ground as plaster over the cool-to-warm gradient; keep cards, fields and plates flat with a 1px line.",
+      "**Do** set ink at #2B1E17 (dark #EFE9DB) and let the ground drift cool to warm; keep cream text on brick at 5:1 or better on every tile.",
+      "**Do** use one primary action per view, Back in moss when a check-in is showing, and keep every target at 44px or taller.",
+      "**Do** set the user's own words in Kalam and everything FocusGuard says in Mukta; both must render Devanagari.",
+      "**Do** let reduced motion make the leaf instant, and keep texture still.",
+      "**Do** put a window mark and wordmark on every brick header, and reuse the Yeti and lattice geometry from `extension/brand/` rather than redrawing it.",
+      "**Do** compare days at one fixed scale, and phrase every count as a plain fact.",
+      "**Do** keep nothing under 14px, and 16px in the popup and nudge card.",
+      "**Do** write sentence case, plain and warm: a supportive friend, never a coach. One short sentence and one action beat a paragraph.",
+      "**Do** make Back the primary verb of a drift moment, and name the user's own task in it (\"Back to Landing page redesign\").",
+      "**Do** say \"task\" in user-facing copy; use \"context\" only where Settings names the tracked thing. Say \"check-in\" for the nudge, \"detour\" for drift, \"break\" for a break, \"Beast Mode\" as a proper noun.",
+      "**Do** say what happened and what to do on errors, and end failed saves with \"Nothing was saved.\"",
+      "**Do** make escalation gentler, not louder (\"No rush. Back to {task} whenever you're ready.\").",
+      "**Do** state privacy literally and where it matters (\"Page titles and full addresses never leave your browser.\"); sites are named by host only."
+    ],
+    "donts": [
+      "**Don't** turn anything red outside the delete-account zone: no error banners, overdue states, or red badges.",
+      "**Don't** use brass for text, or use a second green; brass is a fill and moss is on-task or Back.",
+      "**Don't** put texture behind cards, fields, buttons, or the window pane, or animate it.",
+      "**Don't** add shadows to resting surfaces; a lift belongs only to the floating nudge card and the undo toast.",
+      "**Don't** add a coloured side border to cards, notices or list rows; the stile belongs to the lattice leaf.",
+      "**Don't** use `#000`, neutral grey grounds, or pure white fills (the Yeti's eye glints and Google's \"G\" tile are the only whites).",
+      "**Don't** put eyebrows, kickers or all-caps labels above headings; the system has none. The date and other meta lines sit under the heading, in ink-2.",
+      "**Don't** use glyph or emoji icons; icons are authored inline line SVG.",
+      "**Don't** load fonts or images from a CDN, add decorative lattice borders, or make the Yeti emote, speak, or appear outside a window.",
+      "**Don't** add scores, streaks, rankings, or \"minutes wasted\" to any surface.",
+      "**Don't** use the words lazy, failed, wasted, \"distracted again\", \"you should have\", disappointing; don't compare the user with others or personify the task as hurt or abandoned.",
+      "**Don't** use urgency, exclamation marks, or guilt framing; don't show a count as a judgement.",
+      "**Don't** show raw technical errors (\"Failed to fetch\") to the user."
+    ]
+  }
+}
